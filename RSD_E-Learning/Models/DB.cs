@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Runtime.CompilerServices;
 
 namespace RSD_E_Learning.Models;
 
@@ -25,9 +26,10 @@ public class DB(DbContextOptions options) : DbContext(options)
 
     // ----------------------------------- classes ------------------------------------ //
 
-
+    // ROLE
     public enum UserRole { Admin, Teacher, Student }
 
+    // USER
     public class User
     {
         public int Id { get; set; } // PK
@@ -51,6 +53,7 @@ public class DB(DbContextOptions options) : DbContext(options)
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 
+    // TEACHER
     public class Teacher
     {
         [Key]
@@ -67,6 +70,7 @@ public class DB(DbContextOptions options) : DbContext(options)
 
     }
 
+    // STUDENT
     public class Student
     {
         [Key]
@@ -82,6 +86,7 @@ public class DB(DbContextOptions options) : DbContext(options)
         public DateTime EnrollmentDate { get; set; } = DateTime.UtcNow;
     }
 
+    //CATEGORY
     public class Category
     {
         public int CategoryId { get; set; }
@@ -93,6 +98,7 @@ public class DB(DbContextOptions options) : DbContext(options)
         public string? Description { get; set; }
     }
 
+    // AUDITLOG
     public class AuditLog
     {
         public int AuditLogId { get; set; } // PK
@@ -103,19 +109,53 @@ public class DB(DbContextOptions options) : DbContext(options)
 
     }
 
+    // COURSE
     public class Course
     {
-        
+        public int Id { get; set; } // PK
+
+        [Required, StringLength(100)]
+        public string Title { get; set; } = "";
+
+        public string? Description { get; set; }
+
+        [ForeignKey(nameof(Category))]
+        public int CategoryId { get; set; } // FK
+
+        [ForeignKey(nameof(Teacher))]
+        public int TeacherId { get; set; } // FK
     }
 
+    // ENROLLMENT
     public class Enrollment
     {
+        public int EnrollmentId { get; set; } // PK
 
+        public int StudentId { get; set; } // FK
+
+        public int CourseId { get; set; } // FK
+
+        public DateTime EnrolledAt { get; set; } = DateTime.UtcNow;
     }
 
+    // COURSEFILE
     public class CourseFile
     {
+        public int CourseFileId { get; set; } // PK
 
+        public int CourseId { get; set; } // FK
+
+        public int TeacherId { get; set; } // FK
+
+        [Required, StringLength(100)]
+        public string FileName { get; set; } = "";
+
+        [Required, StringLength(200)]
+        public string FilePath { get; set; } = "";
+
+        public DateTime UpdateAt { get; set; } = DateTime.UtcNow;
+
+        public bool IsActive { get; set; } = true;
     }
 
 
