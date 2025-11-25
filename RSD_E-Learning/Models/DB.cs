@@ -12,7 +12,7 @@ public class DB(DbContextOptions options) : DbContext(options)
 
     public DbSet<Teacher> Teachers { get; set; }
 
-    public DbSet<Admin> Teachers { get; set; }
+    public DbSet<Admin> Admins { get; set; }
 
     public DbSet<Student> Students { get; set; }
 
