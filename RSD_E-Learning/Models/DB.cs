@@ -7,9 +7,12 @@ namespace RSD_E_Learning.Models;
 
 public class DB(DbContextOptions options) : DbContext(options)
 {
-    public DbSet<Teacher> Teachers { get; set; }
 
     public DbSet<User> Users { get; set; }
+
+    public DbSet<Teacher> Teachers { get; set; }
+
+    public DbSet<Admin> Teachers { get; set; }
 
     public DbSet<Student> Students { get; set; }
 
@@ -22,6 +25,15 @@ public class DB(DbContextOptions options) : DbContext(options)
     public DbSet<Enrollment> Enrollments { get; set; }
 
     public DbSet<CourseFile> CourseFiles { get; set; }
+
+    public DbSet<Lesson> Lessons { get; set; }
+
+    public DbSet<Certificate> Certificates { get; set; }
+     
+    public DbSet<Assessment> Assessments { get; set; }
+
+    public DbSet<AssessmentSubmission> AssessmentSubmissions { get; set; }
+
 
 
     // ----------------------------------- classes ------------------------------------ //
@@ -61,12 +73,26 @@ public class DB(DbContextOptions options) : DbContext(options)
 
         [ForeignKey(nameof(User))]
         public int UserId { get; set; } // FK
+
         public User? User { get; set; }
 
         [Required, StringLength(100)]
         public string SubjectArea { get; set; } = "";
 
         public bool IsActive { get; set; } = true;
+
+    }
+
+    // ADMIN
+    public class Admin
+    {
+        [Key]
+        public int AdminId { get; set; } // PK
+
+        [ForeignKey(nameof(User))]
+        public int UserId { get; set; } // FK
+
+        public User? User { get; set; }
 
     }
 
@@ -102,11 +128,31 @@ public class DB(DbContextOptions options) : DbContext(options)
     public class AuditLog
     {
         public int AuditLogId { get; set; } // PK
+
         public int? UserId { get; set; } // FK 
+
         public string Action { get; set; } = "";
+
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+
         public string? Details { get; set; }
 
+    }
+
+    // ENROLLMENT
+    public class Enrollment
+    {
+        public int EnrollmentId { get; set; } // PK
+
+        public int StudentId { get; set; } // FK
+
+        public int CourseId { get; set; } // FK
+
+        public DateTime EnrolledAt { get; set; } = DateTime.UtcNow;
+
+        public bool PaymentStatus { get; set; } = false;
+
+        public string? PaymentReference { get; set; }
     }
 
     // COURSE
@@ -124,18 +170,6 @@ public class DB(DbContextOptions options) : DbContext(options)
 
         [ForeignKey(nameof(Teacher))]
         public int TeacherId { get; set; } // FK
-    }
-
-    // ENROLLMENT
-    public class Enrollment
-    {
-        public int EnrollmentId { get; set; } // PK
-
-        public int StudentId { get; set; } // FK
-
-        public int CourseId { get; set; } // FK
-
-        public DateTime EnrolledAt { get; set; } = DateTime.UtcNow;
     }
 
     // COURSEFILE
@@ -158,5 +192,64 @@ public class DB(DbContextOptions options) : DbContext(options)
         public bool IsActive { get; set; } = true;
     }
 
+    // LESSON
+    public class Lesson
+    {
+        public int LessonId { get; set; } // PK
+
+        public int CourseId { get; set; } // FK
+
+        [Required, StringLength(100)]
+        public string Title { get; set; } = "";
+
+        [Required, StringLength(200)]
+        public string FilePath { get; set; } = "";
+
+        public string? Content { get; set; }
+    }
+
+    // CERTIFICATE
+    public class Certificate
+    {
+        public int CertificateId { get; set; } // PK
+
+        public int StudentId { get; set; } // FK
+
+        public int CourseId { get; set; } // FK
+
+        public DateTime IssuedDate { get; set; } = DateTime.UtcNow;
+
+        [Required, StringLength(100)]
+        public string CertificateURL { get; set; } = "";
+    }
+
+    // ASSESSMENT
+    public class Assessment
+    {
+        public int AssessmentId { get; set; } // PK
+
+        public int CourseId { get; set; } // FK
+
+        [Required, StringLength(200)]
+        public string Title { get; set; } = "";
+
+        public int? TotalMarks { get; set; }
+
+        public DateTime DeadLine { get; set; }
+    }
+
+    // ASSESSMENT SUBMISSION
+    public class AssessmentSubmission
+    {
+        public int SubmissionId { get; set; } // PK
+
+        public int StudentId { get; set; } // FK
+
+        public int LessonId { get; set; } // FK
+
+        public DateTime SubmittedDate { get; set; } = DateTime.UtcNow;
+
+        public double? Grade { get; set; }
+    }
 
 }
