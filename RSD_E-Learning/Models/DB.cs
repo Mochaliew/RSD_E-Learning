@@ -5,8 +5,12 @@ using System.Runtime.CompilerServices;
 
 namespace RSD_E_Learning.Models;
 
-public class DB(DbContextOptions options) : DbContext(options)
+public class DB : DbContext
 {
+
+    public  DB(DbContextOptions<DB> options) : base(options)
+    {
+    }
 
     public DbSet<User> Users { get; set; }
 
@@ -44,7 +48,8 @@ public class DB(DbContextOptions options) : DbContext(options)
     // USER
     public class User
     {
-        public int Id { get; set; } // PK
+        [Key]
+        public int UserId { get; set; } // PK
 
         [StringLength(100)]
         public string FullName { get; set; } = "";
@@ -101,6 +106,7 @@ public class DB(DbContextOptions options) : DbContext(options)
     //CATEGORY
     public class Category
     {
+        [Key]
         public int CategoryId { get; set; }
 
         [StringLength(100)]
@@ -113,6 +119,7 @@ public class DB(DbContextOptions options) : DbContext(options)
     // AUDITLOG
     public class AuditLog
     {
+        [Key]
         public int AuditLogId { get; set; } // PK
 
         public int? UserId { get; set; } // FK 
@@ -128,6 +135,7 @@ public class DB(DbContextOptions options) : DbContext(options)
     // ENROLLMENT
     public class Enrollment
     {
+        [Key]
         public int EnrollmentId { get; set; } // PK
 
         public int StudentId { get; set; } // FK
@@ -144,6 +152,7 @@ public class DB(DbContextOptions options) : DbContext(options)
 
     public class Payment
     {
+        [Key]
         public int PaymentId { get; set; } // PK
 
         public int EnrollmentId { get; set; } // FK
@@ -162,7 +171,8 @@ public class DB(DbContextOptions options) : DbContext(options)
     // COURSE
     public class Course
     {
-        public int Id { get; set; } // PK
+        [Key]
+        public int CourseId { get; set; } // PK
 
         public int CategoryId { get; set; } // FK
 
@@ -173,11 +183,14 @@ public class DB(DbContextOptions options) : DbContext(options)
 
         public string? Description { get; set; }
 
+        public bool isAproved { get; set; } = false;
+
     }
 
     // COURSEFILE
     public class CourseFile
     {
+        [Key]
         public int CourseFileId { get; set; } // PK
 
         public int CourseId { get; set; } // FK
@@ -198,6 +211,7 @@ public class DB(DbContextOptions options) : DbContext(options)
     // LESSON
     public class Lesson
     {
+        [Key]
         public int LessonId { get; set; } // PK
 
         public int CourseId { get; set; } // FK
@@ -217,6 +231,7 @@ public class DB(DbContextOptions options) : DbContext(options)
     // CERTIFICATE
     public class Certificate
     {
+        [Key]
         public int CertificateId { get; set; } // PK
 
         public int StudentId { get; set; } // FK
@@ -234,6 +249,7 @@ public class DB(DbContextOptions options) : DbContext(options)
     // ASSESSMENT
     public class Assessment
     {
+        [Key]
         public int AssessmentId { get; set; } // PK
 
         public int CourseId { get; set; } // FK
@@ -249,6 +265,7 @@ public class DB(DbContextOptions options) : DbContext(options)
     // ASSESSMENT SUBMISSION
     public class AssessmentSubmission
     {
+        [Key]
         public int SubmissionId { get; set; } // PK
 
         public int StudentId { get; set; } // FK

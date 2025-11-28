@@ -1,7 +1,15 @@
+using Microsoft.EntityFrameworkCore;
+using RSD_E_Learning.Models;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddSqlServer<DB>($@"
+    Data Source=(LocalDB)\MSSQLLocalDB;
+    AttachDbFilename={builder.Environment.ContentRootPath}\DB.mdf;
+");
 
 var app = builder.Build();
 
@@ -15,7 +23,8 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseRouting();
-
+app.UseStaticFiles();
+app.MapDefaultControllerRoute();
 app.UseAuthorization();
 
 app.MapStaticAssets();
