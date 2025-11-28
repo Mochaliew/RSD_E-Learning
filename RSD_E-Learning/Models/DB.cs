@@ -29,7 +29,7 @@ public class DB(DbContextOptions options) : DbContext(options)
     public DbSet<Lesson> Lessons { get; set; }
 
     public DbSet<Certificate> Certificates { get; set; }
-     
+
     public DbSet<Assessment> Assessments { get; set; }
 
     public DbSet<AssessmentSubmission> AssessmentSubmissions { get; set; }
@@ -46,16 +46,16 @@ public class DB(DbContextOptions options) : DbContext(options)
     {
         public int Id { get; set; } // PK
 
-        [Required, StringLength(100)]
+        [StringLength(100)]
         public string FullName { get; set; } = "";
 
-        [Required, EmailAddress, StringLength(150)]
+        [EmailAddress, StringLength(150)]
         public string Email { get; set; } = "";
 
-        [Required]
+
         public string PasswordHash { get; set; } = "";
 
-        [Required]
+
         public UserRole Role { get; set; }
 
         public int FailedLoginCount { get; set; } = 0;
@@ -70,13 +70,9 @@ public class DB(DbContextOptions options) : DbContext(options)
     {
         [Key]
         public int TeacherId { get; set; } // PK
-
-        [ForeignKey(nameof(User))]
         public int UserId { get; set; } // FK
 
-        public User? User { get; set; }
-
-        [Required, StringLength(100)]
+        [StringLength(100)]
         public string SubjectArea { get; set; } = "";
 
         public bool IsActive { get; set; } = true;
@@ -89,10 +85,7 @@ public class DB(DbContextOptions options) : DbContext(options)
         [Key]
         public int AdminId { get; set; } // PK
 
-        [ForeignKey(nameof(User))]
         public int UserId { get; set; } // FK
-
-        public User? User { get; set; }
 
     }
 
@@ -102,14 +95,7 @@ public class DB(DbContextOptions options) : DbContext(options)
         [Key]
         public int StudentId { get; set; } // PK
 
-        [ForeignKey(nameof(User))]
         public int UserId { get; set; }
-        public User? User { get; set; }
-
-        [StringLength(50)]
-        public string? ClassName { get; set; }
-
-        public DateTime EnrollmentDate { get; set; } = DateTime.UtcNow;
     }
 
     //CATEGORY
@@ -117,7 +103,7 @@ public class DB(DbContextOptions options) : DbContext(options)
     {
         public int CategoryId { get; set; }
 
-        [Required, StringLength(100)]
+        [StringLength(100)]
         public string Name { get; set; } = "";
 
         [StringLength(250)]
@@ -133,9 +119,9 @@ public class DB(DbContextOptions options) : DbContext(options)
 
         public string Action { get; set; } = "";
 
-        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
-
         public string? Details { get; set; }
+
+        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
     }
 
@@ -150,9 +136,27 @@ public class DB(DbContextOptions options) : DbContext(options)
 
         public DateTime EnrolledAt { get; set; } = DateTime.UtcNow;
 
+        public bool EnrollStatus { get; set; } = false;
+
+    }
+
+    // PAYMENT
+
+    public class Payment
+    {
+        public int PaymentId { get; set; } // PK
+
+        public int EnrollmentId { get; set; } // FK
+
+        public decimal Amount { get; set; }
+
+        public DateTime PaymentDate { get; set; } = DateTime.UtcNow;
+
+        [StringLength(100)]
+        public string PaymentMethod { get; set; } = "";
+
         public bool PaymentStatus { get; set; } = false;
 
-        public string? PaymentReference { get; set; }
     }
 
     // COURSE
@@ -160,16 +164,15 @@ public class DB(DbContextOptions options) : DbContext(options)
     {
         public int Id { get; set; } // PK
 
-        [Required, StringLength(100)]
+        public int CategoryId { get; set; } // FK
+
+        public int TeacherId { get; set; } // FK
+
+        [StringLength(100)]
         public string Title { get; set; } = "";
 
         public string? Description { get; set; }
 
-        [ForeignKey(nameof(Category))]
-        public int CategoryId { get; set; } // FK
-
-        [ForeignKey(nameof(Teacher))]
-        public int TeacherId { get; set; } // FK
     }
 
     // COURSEFILE
@@ -181,7 +184,7 @@ public class DB(DbContextOptions options) : DbContext(options)
 
         public int TeacherId { get; set; } // FK
 
-        [Required, StringLength(100)]
+        [StringLength(100)]
         public string FileName { get; set; } = "";
 
         [Required, StringLength(200)]
@@ -199,13 +202,16 @@ public class DB(DbContextOptions options) : DbContext(options)
 
         public int CourseId { get; set; } // FK
 
-        [Required, StringLength(100)]
+        [StringLength(100)]
         public string Title { get; set; } = "";
 
-        [Required, StringLength(200)]
-        public string FilePath { get; set; } = "";
+        [StringLength(200)]
+        public string PDFFilePath { get; set; } = "";
 
-        public string? Content { get; set; }
+        [StringLength(200)]
+        public string VideoURL { get; set; } = "";
+
+        public string? LessonContent { get; set; }
     }
 
     // CERTIFICATE
@@ -217,9 +223,11 @@ public class DB(DbContextOptions options) : DbContext(options)
 
         public int CourseId { get; set; } // FK
 
+        public string Title { get; set; } = "";
+
         public DateTime IssuedDate { get; set; } = DateTime.UtcNow;
 
-        [Required, StringLength(100)]
+        [StringLength(100)]
         public string CertificateURL { get; set; } = "";
     }
 
@@ -230,7 +238,7 @@ public class DB(DbContextOptions options) : DbContext(options)
 
         public int CourseId { get; set; } // FK
 
-        [Required, StringLength(200)]
+        [StringLength(200)]
         public string Title { get; set; } = "";
 
         public int? TotalMarks { get; set; }
@@ -245,11 +253,17 @@ public class DB(DbContextOptions options) : DbContext(options)
 
         public int StudentId { get; set; } // FK
 
-        public int LessonId { get; set; } // FK
+        public int AssessmentId { get; set; } // FK
+
+        [StringLength(200)]
+        public string FileURL { get; set; } = "";
 
         public DateTime SubmittedDate { get; set; } = DateTime.UtcNow;
 
-        public double? Grade { get; set; }
+        public double? Score { get; set; }
+
+        public string? Feedback { get; set; }
     }
+
 
 }
