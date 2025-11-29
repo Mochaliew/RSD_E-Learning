@@ -1,50 +1,36 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Runtime.CompilerServices;
 
 namespace RSD_E_Learning.Models;
 
-public class DB(DbContextOptions options) : DbContext(options)
+public class DB : DbContext
 {
+    public DB(DbContextOptions<DB> options) : base(options)
+    {
+    }
 
     public DbSet<User> Users { get; set; }
-
     public DbSet<Teacher> Teachers { get; set; }
-
     public DbSet<Admin> Admins { get; set; }
-
     public DbSet<Student> Students { get; set; }
-
     public DbSet<Category> Categories { get; set; }
-
     public DbSet<AuditLog> AuditLogs { get; set; }
-
     public DbSet<Course> Courses { get; set; }
-
     public DbSet<Enrollment> Enrollments { get; set; }
-
     public DbSet<CourseFile> CourseFiles { get; set; }
-
     public DbSet<Lesson> Lessons { get; set; }
-
     public DbSet<Certificate> Certificates { get; set; }
-     
     public DbSet<Assessment> Assessments { get; set; }
-
     public DbSet<AssessmentSubmission> AssessmentSubmissions { get; set; }
 
-
-
-    // ----------------------------------- classes ------------------------------------ //
-
-    // ROLE
+    // ----------------------------------- ROLE ENUM ------------------------------------ //
     public enum UserRole { Admin, Teacher, Student }
 
-    // USER
+    // ----------------------------------- USER ------------------------------------ //
     public class User
     {
-        public int Id { get; set; } // PK
+        public int Id { get; set; }
 
         [Required, StringLength(100)]
         public string FullName { get; set; } = "";
@@ -63,16 +49,21 @@ public class DB(DbContextOptions options) : DbContext(options)
         public DateTime? LockoutEnd { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        // Navigation Properties
+        public Teacher? Teacher { get; set; }
+        public Admin? Admin { get; set; }
+        public Student? Student { get; set; }
     }
 
-    // TEACHER
+    // ----------------------------------- TEACHER ------------------------------------ //
     public class Teacher
     {
         [Key]
-        public int TeacherId { get; set; } // PK
+        public int TeacherId { get; set; }
 
         [ForeignKey(nameof(User))]
-        public int UserId { get; set; } // FK
+        public int UserId { get; set; }
 
         public User? User { get; set; }
 
@@ -81,40 +72,49 @@ public class DB(DbContextOptions options) : DbContext(options)
 
         public bool IsActive { get; set; } = true;
 
+        // Navigation Properties
+        public ICollection<Course> Courses { get; set; } = new List<Course>();
+        public ICollection<CourseFile> CourseFiles { get; set; } = new List<CourseFile>();
     }
 
-    // ADMIN
+    // ----------------------------------- ADMIN ------------------------------------ //
     public class Admin
     {
         [Key]
-        public int AdminId { get; set; } // PK
-
-        [ForeignKey(nameof(User))]
-        public int UserId { get; set; } // FK
-
-        public User? User { get; set; }
-
-    }
-
-    // STUDENT
-    public class Student
-    {
-        [Key]
-        public int StudentId { get; set; } // PK
+        public int AdminId { get; set; }
 
         [ForeignKey(nameof(User))]
         public int UserId { get; set; }
+
+        public User? User { get; set; }
+    }
+
+    // ----------------------------------- STUDENT ------------------------------------ //
+    public class Student
+    {
+        [Key]
+        public int StudentId { get; set; }
+
+        [ForeignKey(nameof(User))]
+        public int UserId { get; set; }
+
         public User? User { get; set; }
 
         [StringLength(50)]
         public string? ClassName { get; set; }
 
         public DateTime EnrollmentDate { get; set; } = DateTime.UtcNow;
+
+        // Navigation Properties
+        public ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
+        public ICollection<Certificate> Certificates { get; set; } = new List<Certificate>();
+        public ICollection<AssessmentSubmission> AssessmentSubmissions { get; set; } = new List<AssessmentSubmission>();
     }
 
-    //CATEGORY
+    // ----------------------------------- CATEGORY ------------------------------------ //
     public class Category
     {
+        [Key]
         public int CategoryId { get; set; }
 
         [Required, StringLength(100)]
@@ -122,43 +122,54 @@ public class DB(DbContextOptions options) : DbContext(options)
 
         [StringLength(250)]
         public string? Description { get; set; }
+
+        // Navigation Properties
+        public ICollection<Course> Courses { get; set; } = new List<Course>();
     }
 
-    // AUDITLOG
+    // ----------------------------------- AUDITLOG ------------------------------------ //
     public class AuditLog
     {
-        public int AuditLogId { get; set; } // PK
+        [Key]
+        public int AuditLogId { get; set; }
 
-        public int? UserId { get; set; } // FK 
+        public int? UserId { get; set; }
 
         public string Action { get; set; } = "";
 
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
         public string? Details { get; set; }
-
     }
 
-    // ENROLLMENT
+    // ----------------------------------- ENROLLMENT ------------------------------------ //
     public class Enrollment
     {
-        public int EnrollmentId { get; set; } // PK
+        [Key]
+        public int EnrollmentId { get; set; }
 
-        public int StudentId { get; set; } // FK
+        [ForeignKey(nameof(Student))]
+        public int StudentId { get; set; }
 
-        public int CourseId { get; set; } // FK
+        [ForeignKey(nameof(Course))]
+        public int CourseId { get; set; }
 
         public DateTime EnrolledAt { get; set; } = DateTime.UtcNow;
 
         public bool PaymentStatus { get; set; } = false;
 
         public string? PaymentReference { get; set; }
+
+        // Navigation Properties
+        public Student? Student { get; set; }
+        public Course? Course { get; set; }
     }
 
-    // COURSE
+    // ----------------------------------- COURSE ------------------------------------ //
     public class Course
     {
-        public int Id { get; set; } // PK
+        [Key]
+        public int Id { get; set; }
 
         [Required, StringLength(100)]
         public string Title { get; set; } = "";
@@ -166,20 +177,32 @@ public class DB(DbContextOptions options) : DbContext(options)
         public string? Description { get; set; }
 
         [ForeignKey(nameof(Category))]
-        public int CategoryId { get; set; } // FK
+        public int CategoryId { get; set; }
 
         [ForeignKey(nameof(Teacher))]
-        public int TeacherId { get; set; } // FK
+        public int TeacherId { get; set; }
+
+        // Navigation Properties
+        public Category? Category { get; set; }
+        public Teacher? Teacher { get; set; }
+        public ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
+        public ICollection<CourseFile> CourseFiles { get; set; } = new List<CourseFile>();
+        public ICollection<Lesson> Lessons { get; set; } = new List<Lesson>();
+        public ICollection<Certificate> Certificates { get; set; } = new List<Certificate>();
+        public ICollection<Assessment> Assessments { get; set; } = new List<Assessment>();
     }
 
-    // COURSEFILE
+    // ----------------------------------- COURSEFILE ------------------------------------ //
     public class CourseFile
     {
-        public int CourseFileId { get; set; } // PK
+        [Key]
+        public int CourseFileId { get; set; }
 
-        public int CourseId { get; set; } // FK
+        [ForeignKey(nameof(Course))]
+        public int CourseId { get; set; }
 
-        public int TeacherId { get; set; } // FK
+        [ForeignKey(nameof(Teacher))]
+        public int TeacherId { get; set; }
 
         [Required, StringLength(100)]
         public string FileName { get; set; } = "";
@@ -190,14 +213,20 @@ public class DB(DbContextOptions options) : DbContext(options)
         public DateTime UpdateAt { get; set; } = DateTime.UtcNow;
 
         public bool IsActive { get; set; } = true;
+
+        // Navigation Properties
+        public Course? Course { get; set; }
+        public Teacher? Teacher { get; set; }
     }
 
-    // LESSON
+    // ----------------------------------- LESSON ------------------------------------ //
     public class Lesson
     {
-        public int LessonId { get; set; } // PK
+        [Key]
+        public int LessonId { get; set; }
 
-        public int CourseId { get; set; } // FK
+        [ForeignKey(nameof(Course))]
+        public int CourseId { get; set; }
 
         [Required, StringLength(100)]
         public string Title { get; set; } = "";
@@ -206,29 +235,42 @@ public class DB(DbContextOptions options) : DbContext(options)
         public string FilePath { get; set; } = "";
 
         public string? Content { get; set; }
+
+        // Navigation Properties
+        public Course? Course { get; set; }
+        public ICollection<AssessmentSubmission> AssessmentSubmissions { get; set; } = new List<AssessmentSubmission>();
     }
 
-    // CERTIFICATE
+    // ----------------------------------- CERTIFICATE ------------------------------------ //
     public class Certificate
     {
-        public int CertificateId { get; set; } // PK
+        [Key]
+        public int CertificateId { get; set; }
 
-        public int StudentId { get; set; } // FK
+        [ForeignKey(nameof(Student))]
+        public int StudentId { get; set; }
 
-        public int CourseId { get; set; } // FK
+        [ForeignKey(nameof(Course))]
+        public int CourseId { get; set; }
 
         public DateTime IssuedDate { get; set; } = DateTime.UtcNow;
 
         [Required, StringLength(100)]
         public string CertificateURL { get; set; } = "";
+
+        // Navigation Properties
+        public Student? Student { get; set; }
+        public Course? Course { get; set; }
     }
 
-    // ASSESSMENT
+    // ----------------------------------- ASSESSMENT ------------------------------------ //
     public class Assessment
     {
-        public int AssessmentId { get; set; } // PK
+        [Key]
+        public int AssessmentId { get; set; }
 
-        public int CourseId { get; set; } // FK
+        [ForeignKey(nameof(Course))]
+        public int CourseId { get; set; }
 
         [Required, StringLength(200)]
         public string Title { get; set; } = "";
@@ -236,20 +278,30 @@ public class DB(DbContextOptions options) : DbContext(options)
         public int? TotalMarks { get; set; }
 
         public DateTime DeadLine { get; set; }
+
+        // Navigation Properties
+        public Course? Course { get; set; }
+        public ICollection<AssessmentSubmission> AssessmentSubmissions { get; set; } = new List<AssessmentSubmission>();
     }
 
-    // ASSESSMENT SUBMISSION
+    // ----------------------------------- ASSESSMENT SUBMISSION ------------------------------------ //
     public class AssessmentSubmission
     {
-        public int SubmissionId { get; set; } // PK
+        [Key]
+        public int SubmissionId { get; set; }
 
-        public int StudentId { get; set; } // FK
+        [ForeignKey(nameof(Student))]
+        public int StudentId { get; set; }
 
-        public int LessonId { get; set; } // FK
+        [ForeignKey(nameof(Lesson))]
+        public int LessonId { get; set; }
 
         public DateTime SubmittedDate { get; set; } = DateTime.UtcNow;
 
         public double? Grade { get; set; }
-    }
 
+        // Navigation Properties
+        public Student? Student { get; set; }
+        public Lesson? Lesson { get; set; }
+    }
 }
