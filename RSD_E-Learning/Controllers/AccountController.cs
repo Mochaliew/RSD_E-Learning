@@ -6,7 +6,7 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using RSD_E_Learning.Models;
-using RSD_E_Learning.Models.ViewModels;
+
 
 namespace RSD_E_Learning.Controllers
 {
@@ -148,3 +148,4 @@ namespace RSD_E_Learning.Controllers
         }
     }
 }
+

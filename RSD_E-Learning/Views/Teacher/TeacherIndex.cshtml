@@ -2,50 +2,70 @@
     ViewData["Title"] = "Teacher Dashboard";
 }
 
-<style>
-    /* Square button helper */
-    .square-btn {
-        aspect-ratio: 1 / 1;          
-        width: 120px;                 
-        padding: 0.5rem;               
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 8px;            
-        text-align: center;
-        white-space: normal;           
-        vertical-align: middle;
-    }
+<!DOCTYPE html>
+<html lang="en">
 
-    .square-btn .btn-label {
-        display: block;
-        font-size: 0.95rem;
-        line-height: 1.1;
-        padding: 0 0.25rem;
-    }
+    <head>
 
-</style>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>@ViewData["Title"]</title>
+        <link rel="stylesheet" href="~/css/Teacher.css" />
 
-<div class="text-center">
-    <h1 class="display-4">Teacher Zone</h1>
-    <p>Welcome to back, [ fetch teacher name from database base on login ]</p>
+        <style>
+            /* Square button helper */
+            .square-btn {
+                aspect-ratio: 1 / 1;
+                width: 120px;
+                padding: 0.5rem;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 8px;
+                text-align: center;
+                white-space: normal;
+                vertical-align: middle;
+            }
 
-    <p>
-        <a class="btn btn-primary square-btn" asp-controller="Teacher" asp-action="CreateCourse">
-            <span class="btn-label">Create Course</span>
-        </a>
+                .square-btn .btn-label {
+                    display: block;
+                    font-size: 0.95rem;
+                    line-height: 1.1;
+                    padding: 0 0.25rem;
+                }
 
-        <a class="btn btn-primary square-btn" asp-controller="Teacher" asp-action="ViewCourse">
-            <span class="btn-label">View Courses' Detail</span>
-        </a>
-    </p>
-    <p>
-        <a class="btn btn-primary square-btn" asp-controller="Teacher" asp-action="CreateAssessment">
-            <span class="btn-label">Create Assessment</span>
-        </a>
+        </style>
 
-        <a class="btn btn-primary square-btn" asp-controller="Teacher" asp-action="ViewAssessment">
-            <span class="btn-label">View Assessments' Detail</span>
-        </a>
-    </p>
-</div>
+    </head>
+
+    <body>
+
+        <div class="text-center">
+            <h1 class="display-4">Teacher Zone</h1>
+            <p>Welcome to back, [ fetch teacher name from database base on login ]</p>
+
+            <p>
+                <a class="btn btn-primary square-btn" asp-controller="Teacher" asp-action="CreateCourse">
+                    <span class="btn-label">Create Course</span>
+                </a>
+
+                <a class="btn btn-primary square-btn" asp-controller="Teacher" asp-action="ViewCourse">
+                    <span class="btn-label">View Courses' Detail</span>
+                </a>
+            </p>
+            <p>
+                <a class="btn btn-primary square-btn" asp-controller="Teacher" asp-action="CreateAssessment">
+                    <span class="btn-label">Create Assessment</span>
+                </a>
+
+                <a class="btn btn-primary square-btn" asp-controller="Teacher" asp-action="ViewAssessment">
+                    <span class="btn-label">View Assessments' Detail</span>
+                </a>
+            </p>
+        </div>
+
+    </body>
+
+    <script src="~/js/teacher.js"></script>
+
+</html>

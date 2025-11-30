@@ -1,3 +1,165 @@
-﻿@{
-    ViewData["Title"] = "Create Assessment For Your Student";
+﻿
+@{
+    ViewData["Title"] = "Create Assessment";
 }
+
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>@ViewData["Title"]</title>
+        <link rel="stylesheet" href="~/css/Teacher.css" />
+
+    </head>
+
+    <body>
+
+        <div class="container">
+            <div class="header">
+                <h1>Create Assessment</h1>
+                <p>Design a comprehensive assessment for your course</p>
+            </div>
+
+            <div class="progress-bar">
+                <div class="progress-step">
+                    <div class="step-circle active" id="step1Circle">1</div>
+                    <span class="step-label">Basic Info</span>
+                </div>
+                <div class="progress-step">
+                    <div class="step-circle" id="step2Circle">2</div>
+                    <span class="step-label">Add Questions</span>
+                </div>
+                <div class="progress-step">
+                    <div class="step-circle" id="step3Circle">3</div>
+                    <span class="step-label">Preview & Publish</span>
+                </div>
+            </div>
+
+            <form id="assessmentForm">
+                <!-- Step 1: Basic Information -->
+                <div class="form-section active" id="step1">
+                    <div class="form-group">
+                        <label for="assessmentTitle">Assessment Title *</label>
+                        <input type="text" id="assessmentTitle" required placeholder="Enter assessment title">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="courseSelect">Select Course *</label>
+                        <select id="courseSelect" required>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="passingMark">Passing Mark ( /100%) *</label>
+                        <input type="number" id="passingMark" min="0" max="100" value="70" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="timeLimit">Deadine (H)</label>
+                        <input type="number" id="DeadLine" min="0" placeholder="Must be more than 1 hour">
+                    </div>
+
+                    <div class="button-group">
+                        <button type="button" class="btn btn-primary" onclick="nextStep(2)">Next: Add Questions</button>
+                        <a href="/Teacher/TeacherIndex" class="btn btn-cancel">Cancel</a>
+                    </div>
+                </div>
+
+                <!-- Step 2: Add Questions -->
+                <div class="form-section" id="step2">
+                    <div id="questionsContainer">
+                        <!-- Question 1 (Template) -->
+                        <div class="question-container">
+                            <div class="question-header">
+                                <span class="question-number">Question 1</span>
+                            </div>
+                            <div class="form-group">
+                                <label>Question Text *</label>
+                                <textarea class="question-text" rows="3" required placeholder="Enter your question"></textarea>
+                            </div>
+                            <div class="options-group">
+                                <label>Answer Options:</label>
+                                <div class="option-item">
+                                    <span class="option-label">Option A:</span>
+                                    <input type="text" class="option-text" placeholder="Enter option A" required>
+                                    <input type="radio" name="correct-1" value="A" required>
+                                    <label>Correct</label>
+                                </div>
+                                <div class="option-item">
+                                    <span class="option-label">Option B:</span>
+                                    <input type="text" class="option-text" placeholder="Enter option B" required>
+                                    <input type="radio" name="correct-1" value="B">
+                                    <label>Correct</label>
+                                </div>
+                                <div class="option-item">
+                                    <span class="option-label">Option C:</span>
+                                    <input type="text" class="option-text" placeholder="Enter option C" required>
+                                    <input type="radio" name="correct-1" value="C">
+                                    <label>Correct</label>
+                                </div>
+                                <div class="option-item">
+                                    <span class="option-label">Option D:</span>
+                                    <input type="text" class="option-text" placeholder="Enter option D" required>
+                                    <input type="radio" name="correct-1" value="D">
+                                    <label>Correct</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="button" class="add-question-btn" onclick="addQuestion()">+ Add Another Question</button>
+
+                    <div class="button-group">
+                        <button type="button" class="btn btn-secondary" onclick="prevStep(1)">Back</button>
+                        <button type="button" class="btn btn-primary" onclick="nextStep(3)">Next: Preview</button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Preview & Publish -->
+                <div class="form-section" id="step3">
+                    <div class="preview-section">
+                        <h3>Assessment Preview</h3>
+
+                        <div class="preview-info">
+                            <div class="info-item">
+                                <div class="info-label">Assessment Title</div>
+                                <div class="info-value" id="previewTitle">-</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Course</div>
+                                <div class="info-value" id="previewCourse">-</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Total Questions</div>
+                                <div class="info-value" id="previewQuestions">0</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Passing Mark</div>
+                                <div class="info-value" id="previewPassing">-</div>
+                            </div>
+                        </div>
+
+                        <h4 style="margin: 25px 0 15px 0; color: #333;">Questions:</h4>
+                        <div id="previewQuestionsContainer"></div>
+                    </div>
+
+                    <div class="button-group">
+                        <button type="button" class="btn btn-secondary" onclick="prevStep(2)">Back</button>
+                        <button type="button" class="btn btn-primary" onclick="publishAssessment()">Publish Assessment</button>
+                    </div>
+
+                    <div class="success-message" id="successMessage">
+                        ✓ Assessment published successfully!
+                    </div>
+                </div>
+            </form>
+        </div>
+
+    </body>
+
+    <script src="~/js/teacher.js"></script>
+
+</html>

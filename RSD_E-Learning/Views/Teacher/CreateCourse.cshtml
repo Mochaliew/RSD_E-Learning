@@ -1,21 +1,83 @@
-﻿@{
-    ViewData["Title"] = "Create Course For Your Student";
+﻿
+@{
+    ViewData["Title"] = "Create Course";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Course Detail</h1>
-    <p>Hello [ name ] , create your course here!</p>
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>@ViewData["Title"]</title>
+        <link rel="stylesheet" href="~/css/Teacher.css" />
+
+    </head>
+
+    <body>
+
+        <div class="container">
+            <div class="header">
+                <h1>Create New Course</h1>
+                <p>Fill in the details to create your course</p>
+            </div>
+
+            <form method="post" enctype="multipart/form-data" id="courseForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="courseTitle">Course Title *</label>
+                        <input type="text" id="courseTitle" name="courseTitle" required placeholder="Enter course title">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="category">Category *</label>
+                        <select id="category" name="category" required>
+
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Course Description *</label>
+                    <textarea id="description" name="description" required placeholder="Describe what students will learn in this course"></textarea>
+                </div>
 
 
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Title</th>
-                <th>Students</th>
-                <th>Contents</th>
-                <th>Questions</th>
-                <th></th>
-            </tr>
-        </thead>
-    </table>
-</div>
+                <div class="materials-section">
+                    <h3>Course Materials</h3>
+                    <div id="materialsContainer">
+                        <div class="material-item">
+                            <div class="form-group">
+                                <label>Material Type</label>
+                                <select name="materialType[]" class="material-type">
+                                    <option value="pdf">PDF Document</option>
+                                    <option value="video">Video</option>
+                                    <option value="text">Text Lesson</option>
+                                    <option value="code">Code Demo</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Material Title</label>
+                                <input type="text" name="materialTitle[]" placeholder="Enter material title">
+                            </div>
+                            <div class="form-group">
+                                <label>Upload File</label>
+                                <input type="file" name="materialFile[]">
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="add-material-btn" onclick="addMaterial()">+ More</button>
+                </div>
+
+                <div class="button-group">
+                    <button type="submit" name="action" value="submit" class="btn btn-primary">Submit for Approval</button>
+                    <a href="/Teacher/TeacherIndex" class="btn btn-cancel">Cancel</a>
+                </div>
+            </form>
+        </div>
+
+    </body>
+
+    <script src="~/js/teacher.js"></script>
+
+</html>

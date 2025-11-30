@@ -169,7 +169,7 @@ public class DB : DbContext
     public class Course
     {
         [Key]
-        public int Id { get; set; }
+        public int CourseId { get; set; }
 
         [Required, StringLength(100)]
         public string Title { get; set; } = "";
@@ -203,6 +203,8 @@ public class DB : DbContext
 
         [ForeignKey(nameof(Teacher))]
         public int TeacherId { get; set; }
+
+        public string FileType { get; set; } = "";
 
         [Required, StringLength(100)]
         public string FileName { get; set; } = "";
