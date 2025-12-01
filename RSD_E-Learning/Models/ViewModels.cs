@@ -113,20 +113,39 @@ namespace RSD_E_Learning.Models
         public string? Description { get; set; }
     }
 
+    // Course Approval View Models //
+    public class CourseApprovalVm
+    {
+        public int CourseId { get; set; }
+        public string CourseTitle { get; set; } = "";
+        public string TeacherName { get; set; } = "";
+        public string CategoryName { get; set; } = "";
+        public string Status { get; set; } = "";
+    }
+
     // Course File View Models //
     public class CourseFileVm
     {
+        public int FileId { get; set; }
         public int CourseId { get; set; }
-        public int TeacherId { get; set; }
 
         [Required]
         public string FileName { get; set; } = "";
 
+        public string FileType { get; set; } = "";
+
+        public string? Description { get; set; }
+
+        public long Filesize { get; set; }
+
+        public string FileUrl { get; set; } = "";
+
         public DateTime UploadedAt { get; set; }
 
-        public bool IsDisabled { get; set; }
+        public string UploadedBy { get; set; } = "";
     }
 
+    // Login View Models //
     public class LoginViewModel
     {
         [Required, EmailAddress]
@@ -139,12 +158,14 @@ namespace RSD_E_Learning.Models
         public bool RememberMe { get; set; }
     }
 
+    // Reset Password View Models //
     public class ResetPasswordVm
     {
         [Required, EmailAddress]
         public string Email { get; set; } = "";
     }
 
+    // Admin Dashboard View Models //
     public class AdminDashboardVm
     {
         public int TotalTeachers { get; set; }
@@ -161,7 +182,26 @@ namespace RSD_E_Learning.Models
         public DateTime EnrolledAt { get; set; }
     }
 
+    // TransactionList View Models //
+    public class TransactionListVm
+    {
+        public int TransactionId { get; set; }
+        public string StudentName { get; set; } = "";
+        public string CourseTitle { get; set; } = "";
+        public DateTime PaidAt { get; set; }
+        public decimal Amount { get; set; }
+    }
 
+    // Setting View Models //
+    public class SystemSettingsVm
+    {
+        [Required]
+        public string PlatformName { get; set; } = "";
+        public string? ContactEmail { get; set; }
+        public string? SmtpServer { get; set; }
+        public string? SmtpPassword { get; set; }
+        public string? FooterText { get; set; }
+    }
 
 
 }
