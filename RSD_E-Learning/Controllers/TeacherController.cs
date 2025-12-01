@@ -28,5 +28,10 @@ namespace RSD_E_Learning.Controllers
         {
             return View();
         }
+
+        public IActionResult TeacherDashboard()
+        {
+            return View();
+        }
     }
 }

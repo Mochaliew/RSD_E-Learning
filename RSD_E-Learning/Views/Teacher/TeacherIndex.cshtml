@@ -1,5 +1,5 @@
-@{
-    ViewData["Title"] = "Teacher Dashboard";
+﻿@{
+    ViewData["Title"] = "Teacher Zone";
 }
 
 <!DOCTYPE html>
@@ -12,60 +12,75 @@
         <title>@ViewData["Title"]</title>
         <link rel="stylesheet" href="~/css/Teacher.css" />
 
-        <style>
-            /* Square button helper */
-            .square-btn {
-                aspect-ratio: 1 / 1;
-                width: 120px;
-                padding: 0.5rem;
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                border-radius: 8px;
-                text-align: center;
-                white-space: normal;
-                vertical-align: middle;
-            }
-
-                .square-btn .btn-label {
-                    display: block;
-                    font-size: 0.95rem;
-                    line-height: 1.1;
-                    padding: 0 0.25rem;
-                }
-
-        </style>
-
     </head>
 
     <body>
 
-        <div class="text-center">
-            <h1 class="display-4">Teacher Zone</h1>
-            <p>Welcome to back, [ fetch teacher name from database base on login ]</p>
+        <div>
+            <!-- Header -->
+            <div class="zone-header">
+                <h1>Teacher Zone</h1>
+                <p>Welcome back, <strong>Mocha</strong></p>
+            </div>
 
-            <p>
-                <a class="btn btn-primary square-btn" asp-controller="Teacher" asp-action="CreateCourse">
+            <!-- Main Action Buttons -->
+            <div class="action-buttons">
+                <a class="btn btn-primary" asp-controller="Teacher" asp-action="CreateCourse">
                     <span class="btn-label">Create Course</span>
                 </a>
-
-                <a class="btn btn-primary square-btn" asp-controller="Teacher" asp-action="ViewCourse">
+                <a class="btn btn-primary" asp-controller="Teacher" asp-action="ViewCourse">
                     <span class="btn-label">View Courses' Detail</span>
                 </a>
-            </p>
-            <p>
-                <a class="btn btn-primary square-btn" asp-controller="Teacher" asp-action="CreateAssessment">
+                <a class="btn btn-primary" asp-controller="Teacher" asp-action="CreateAssessment">
                     <span class="btn-label">Create Assessment</span>
                 </a>
-
-                <a class="btn btn-primary square-btn" asp-controller="Teacher" asp-action="ViewAssessment">
+                <a class="btn btn-primary" asp-controller="Teacher" asp-action="ViewAssessment">
                     <span class="btn-label">View Assessments' Detail</span>
                 </a>
-            </p>
+            </div>
+
+            <div class="dashboard-preview">
+                <div class="preview-header">
+                    <h2>  Quick DashBoard  </h2>
+                        <a asp-controller="Teacher" asp-action="TeacherDashboard" class="expand-btn">View Full Dashboard</a> 
+
+                </div>
+
+                <div class="preview-stats">
+                    <div class="preview-stat-card">
+                        <div class="stat-number"></div>
+                        <div class="stat-title">Show number of course</div>
+                    </div>
+                    <div class="preview-stat-card">
+                        <div class="stat-number"></div>
+                        <div class="stat-title">show number of students</div>
+                    </div>
+                    <div class="preview-stat-card">
+                        <div class="stat-number"></div>
+                        <div class="stat-title">show number of assessment</div>
+                    </div>
+                    <div class="preview-stat-card">
+                        <div class="stat-number"></div>
+                        <div class="stat-title">show passing rate?</div>
+                    </div>
+                </div>
+
+                <div class="preview-recent">
+                    <div class="recent-section">
+                        <h3>Recent Courses</h3>
+                            <p class="empty-text">No courses yet</p>
+                    </div>
+
+                    <div class="recent-section">
+                        <h3>Recent Assessments</h3>
+                            <p class="empty-text">No assessments yet</p>
+                    </div>
+                </div>
+
+            </div>
         </div>
 
+        <script src="~/js/teacher.js"></script>
     </body>
-
-    <script src="~/js/teacher.js"></script>
 
 </html>

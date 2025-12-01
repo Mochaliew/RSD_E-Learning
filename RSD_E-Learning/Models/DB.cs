@@ -24,6 +24,8 @@ public class DB : DbContext
     public DbSet<Assessment> Assessments { get; set; }
     public DbSet<AssessmentSubmission> AssessmentSubmissions { get; set; }
 
+    public DbSet<AssessmentQuestion> AssessmentQuestions { get; set; }
+
     // ----------------------------------- ROLE ENUM ------------------------------------ //
     public enum UserRole { Admin, Teacher, Student }
 
@@ -305,5 +307,30 @@ public class DB : DbContext
         // Navigation Properties
         public Student? Student { get; set; }
         public Lesson? Lesson { get; set; }
+    }
+
+    // ----------------------------------- ASSESSMENT QUESTION ------------------------------------ //
+
+    public class AssessmentQuestion
+    {
+        [Key]
+        public int QuestionId { get; set; }
+        [ForeignKey(nameof(Assessment))]
+        public int AssessmentId { get; set; }
+
+        [Required, StringLength(500)]
+        public string QuestionDetail { get; set; } = "";
+
+        public string AnswerA { get; set; } = "";
+
+        public string AnswerB { get; set; } = "";
+
+        public string AnswerC { get; set; } = "";
+
+        public string AnswerD { get; set; } = "";
+
+        public string CorrectAnswer { get; set; } = "";
+
+        public Assessment? Assessment { get; set; }
     }
 }

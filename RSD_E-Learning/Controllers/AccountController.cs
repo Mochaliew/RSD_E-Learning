@@ -1,3 +1,4 @@
+/*
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication;
@@ -148,4 +149,5 @@ namespace RSD_E_Learning.Controllers
         }
     }
 }
+*/
 
