@@ -43,7 +43,7 @@ namespace RSD_E_Learning.Models
     }
 
     // Student View Models //
-    public class StudentCreateVm
+    public class StudentRegisterVm
     {
         [Required, StringLength(100)]
         [Display(Name = "Full Name")]
@@ -55,6 +55,10 @@ namespace RSD_E_Learning.Models
         [Required, StringLength(100, MinimumLength = 6)]
         [DataType(DataType.Password)]
         public string Password { get; set; } = "";
+
+        [Required, Compare("Password")]
+        [DataType(DataType.Password)]
+        public string ConfirmPassword { get; set; } = "";
 
         [Display(Name = "Class Name")]
         public string? ClassName { get; set; }
@@ -78,6 +82,15 @@ namespace RSD_E_Learning.Models
 
         public string? ClassName { get; set; } = "";
     }
+
+    public class StudentListVm
+    {
+        public int StudentId { get; set; }
+        public string FullName { get; set; } = "";
+        public string Email { get; set; } = "";
+        public string? ClassName { get; set; }
+    }
+
 
     // Category View Models //
     public class CategoryCreateVm
@@ -131,4 +144,24 @@ namespace RSD_E_Learning.Models
         [Required, EmailAddress]
         public string Email { get; set; } = "";
     }
+
+    public class AdminDashboardVm
+    {
+        public int TotalTeachers { get; set; }
+        public int TotalStudents { get; set; }
+        public int TotalCourses { get; set; }
+        public int NewStudentRegistrations { get; set; }
+        public List<LatestEnrollmentItem> LatestEnrollments { get; set; } = new List<LatestEnrollmentItem>();
+    }
+
+    public class LatestEnrollmentItem
+    {
+        public string StudentName { get; set; } = "";
+        public string CourseTitle { get; set; } = "";
+        public DateTime EnrolledAt { get; set; }
+    }
+
+
+
+
 }

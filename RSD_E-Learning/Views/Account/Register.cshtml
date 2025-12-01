@@ -1,6 +1,6 @@
 @using RSD_E_Learning.Models
 
-@model StudentCreateVm
+@model StudentRegisterVm
 
 @{
     ViewData["Title"] = "Student Registration";
@@ -14,7 +14,7 @@
                     <h4 class="mb-0">Student Registration</h4>
                 </div>
                 <div class="card-body p-4">
-                    
+
                     @if (!ViewData.ModelState.IsValid)
                     {
                         <div class="alert alert-danger">
@@ -50,7 +50,7 @@
                             <input asp-for="Password" type="password" class="form-control" placeholder="Minimum 6 characters" />
                             <span asp-validation-for="Password" class="text-danger small d-block"></span>
                         </div>
-                        
+
                         @*<div class="mb-3">
                             <label asp-for="ConfirmPassword" class="form-label">Confirm Password</label>
                             <input asp-for="ConfirmPassword" type="password" class="form-control" placeholder="Re-enter password" />
