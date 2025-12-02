@@ -1,4 +1,4 @@
-/*
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication;
@@ -30,7 +30,7 @@ namespace RSD_E_Learning.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Register(RegisterViewModel model)
+        public async Task<IActionResult> Register(StudentRegisterVm model)
         {
             if (!ModelState.IsValid)
             {
@@ -149,5 +149,5 @@ namespace RSD_E_Learning.Controllers
         }
     }
 }
-*/
+
 

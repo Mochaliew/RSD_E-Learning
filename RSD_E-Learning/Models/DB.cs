@@ -333,4 +333,30 @@ public class DB : DbContext
 
         public Assessment? Assessment { get; set; }
     }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+
+        // Disable cascade delete for Course -> Teacher relationship
+        modelBuilder.Entity<DB.Course>()
+            .HasOne<DB.Teacher>()
+            .WithMany()
+            .HasForeignKey(c => c.TeacherId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Disable cascade delete for CourseFile -> Teacher relationship
+        modelBuilder.Entity<DB.CourseFile>()
+            .HasOne<DB.Teacher>()
+            .WithMany()
+            .HasForeignKey(cf => cf.TeacherId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Disable cascade delete for Enrollment -> Course relationship
+        modelBuilder.Entity<DB.Enrollment>()
+            .HasOne<DB.Course>()
+            .WithMany()
+            .HasForeignKey(e => e.CourseId)
+            .OnDelete(DeleteBehavior.Restrict);
+    }
 }
