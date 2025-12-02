@@ -1,0 +1,95 @@
+﻿@model RSD_E_Learning.Models.DB.Course
+
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a asp-action="Catalog">Courses</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a asp-controller="Categories" asp-action="Courses" asp-route-id="@Model.CategoryId">
+                    @Model.Category.Name
+                </a>
+            </li>
+            <li class="breadcrumb-item active">@Model.Title</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <h2 class="mb-3">@Model.Title</h2>
+
+            <div class="mb-3">
+                <span class="badge badge-info">@Model.Category.Name</span>
+            </div>
+
+            <p class="lead">@Model.Description</p>
+
+            <hr>
+
+            <h4 class="mb-3">Course Content</h4>
+            @if (Model.Lessons.Any())
+            {
+                <div class="list-group mb-4">
+                    @{
+                        int lessonNumber = 1;
+                    }
+                    @foreach (var lesson in Model.Lessons.OrderBy(l => l.LessonId))
+                    {
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">@lesson.Title</h6>
+                                    <small class="text-muted">Lesson @lessonNumber</small>
+                                </div>
+                                <i class="bi bi-play-circle text-primary" style="font-size: 1.5rem;"></i>
+                            </div>
+                        </div>
+                        lessonNumber++;
+                    }
+                </div>
+            }
+            else
+            {
+                <p class="text-muted">Course content will be available soon.</p>
+            }
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm sticky-top" style="top: 20px;">
+                <div class="card-body">
+                    <h4 class="card-title text-success">Free Course</h4>
+
+                    <hr>
+
+                    <div class="mb-3">
+                        <h6>Instructor</h6>
+                        <p class="mb-0">@Model.Teacher.User.FullName</p>
+                        @if (!string.IsNullOrEmpty(Model.Teacher.SubjectArea))
+                        {
+                            <small class="text-muted">@Model.Teacher.SubjectArea</small>
+                        }
+                    </div>
+
+                    <hr>
+
+                    <div class="mb-3">
+                        <h6>Course Info</h6>
+                        <ul class="list-unstyled mb-0">
+                            <li><i class="bi bi-journal-text"></i> @Model.Lessons.Count Lesson(s)</li>
+                            <li><i class="bi bi-clock"></i> Self-paced learning</li>
+                        </ul>
+                    </div>
+
+                    <button class="btn btn-primary btn-block btn-lg mt-3">
+                        Enroll Now
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

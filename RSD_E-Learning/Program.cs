@@ -11,7 +11,6 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<DB>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
@@ -20,9 +19,23 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.ExpireTimeSpan = TimeSpan.FromHours(24);
     });
 
+var app = builder.Build();  // ? BUILD APP FIRST
 
+// Seed data for testing (MOVED AFTER app is built)
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<DB>();
 
-var app = builder.Build();
+    if (!db.Categories.Any())
+    {
+        db.Categories.AddRange(
+            new DB.Category { Name = "Programming", Description = "Learn to code" },
+            new DB.Category { Name = "Design", Description = "Creative design courses" },
+            new DB.Category { Name = "Business", Description = "Business and marketing" }
+        );
+        db.SaveChanges();
+    }
+}
 
 // Configure middleware
 if (!app.Environment.IsDevelopment())

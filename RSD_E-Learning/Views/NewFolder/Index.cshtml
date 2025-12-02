@@ -1,0 +1,41 @@
+﻿@model List<RSD_E_Learning.Models.DB.Category>
+
+@{
+    ViewData["Title"] = "Course Categories";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4">Browse Course Categories</h2>
+
+    <div class="row">
+        @foreach (var category in Model)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">@category.Name</h5>
+                        <p class="card-text text-muted">
+                            @(category.Description ?? "Explore courses in this category")
+                        </p>
+                        <p class="text-secondary">
+                            <small>@category.Courses.Count course(s) available</small>
+                        </p>
+                    </div>
+                    <div class="card-footer bg-white border-0">
+                        <a asp-action="Courses" asp-route-id="@category.CategoryId"
+                           class="btn btn-primary btn-block">
+                            View Courses
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            <p class="mb-0">No categories available at the moment.</p>
+        </div>
+    }
+</div>
