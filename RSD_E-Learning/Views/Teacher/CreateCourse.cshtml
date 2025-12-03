@@ -100,42 +100,7 @@
     <script src="~/js/teacher.js"></script>
 
     <script>
-        function addMaterial() {
-            const container = document.getElementById('materialsContainer');
-            const newMaterial = document.createElement('div');
-            newMaterial.className = 'material-item';
-            newMaterial.innerHTML = `
-                <button type="button" class="remove-btn" onclick="removeMaterial(this)">Remove</button>
-                <div class="form-group">
-                    <label>Material Type</label>
-                    <select name="materialType" class="material-type">
-                        <option value="pdf">PDF Document</option>
-                        <option value="video">Video</option>
-                        <option value="text">Text Lesson</option>
-                        <option value="code">Code Demo</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Material Title</label>
-                    <input type="text" name="materialTitle" placeholder="Enter material title">
-                </div>
-                <div class="form-group">
-                    <label>Upload File</label>
-                    <input type="file" name="materialFile" accept=".pdf,.doc,.docx,.txt,.mp4,.avi,.mov">
-                    <small style="color:#666;">Max size: 100MB</small>
-                </div>
-            `;
-            container.appendChild(newMaterial);
-        }
 
-        function removeMaterial(button) {
-            const items = document.querySelectorAll('.material-item');
-            if (items.length > 1) {
-                button.closest('.material-item').remove();
-            } else {
-                alert("Bro… you must at least have one material 😭");
-            }
-        }
 
         document.getElementById('courseForm').addEventListener('submit', function (e) {
             const title = courseTitle.value.trim();
@@ -144,7 +109,7 @@
 
             if (!title || !category || !desc) {
                 e.preventDefault();
-                alert('Required fields missing 😭');
+                alert('Required fields missing');
                 return;
             }
 

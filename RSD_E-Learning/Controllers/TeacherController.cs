@@ -1,7 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Cryptography.KeyDerivation;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using RSD_E_Learning.Models;
+using System.Security.Claims;
+using System.Text;
 using static RSD_E_Learning.Models.DB;
 
 namespace RSD_E_Learning.Controllers
@@ -22,8 +27,84 @@ namespace RSD_E_Learning.Controllers
             _logger = logger;
         }
 
+        // -------------------- LOGIN --------------------
+        [HttpGet]
+        public IActionResult TeacherLogin()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> TeacherLogin(string email, string password)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email && u.Role == DB.UserRole.Teacher);
+
+            if (user == null || !VerifyPassword(password, user.PasswordHash))
+            {
+                ModelState.AddModelError("", "Invalid email or password.");
+                return View();
+            }
+
+            var teacher = await _context.Teachers.FirstOrDefaultAsync(t => t.UserId == user.Id);
+
+            if (teacher == null)
+            {
+                ModelState.AddModelError("", "Invalid email or password.");
+                return View();
+            }
+
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, user.FullName),
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim("UserId", user.Id.ToString()),
+                new Claim("StudentId", teacher.TeacherId.ToString()),
+                new Claim("Role", "Teacher")
+            };
+
+            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                new ClaimsPrincipal(identity)
+            );
+
+            return RedirectToAction("Index", "Home");
+        }
+
+
+        // -------------------- LOGOUT --------------------
+        public async Task<IActionResult> Logout()
+        {
+            await HttpContext.SignOutAsync();
+            return RedirectToAction("Login");
+        }
+
+
+        // -------------------- PASSWORD HASHING --------------------
+        private string HashPassword(string password)
+        {
+            byte[] salt = Encoding.UTF8.GetBytes("STATIC-SALT-CHANGE-LATER");
+
+            return Convert.ToBase64String(
+                KeyDerivation.Pbkdf2(
+                    password,
+                    salt,
+                    KeyDerivationPrf.HMACSHA256,
+                    10000,
+                    32
+                )
+            );
+        }
+
+        private bool VerifyPassword(string password, string hash)
+        {
+            return HashPassword(password) == hash;
+        }
+
+
         public IActionResult TeacherIndex()
-        {   
+        {
             return View();
         }
 
@@ -61,7 +142,7 @@ namespace RSD_E_Learning.Controllers
             List<string> materialType,
             List<string> materialTitle,
             List<IFormFile> materialFile)
-        {          
+        {
             // Validate input
             if (string.IsNullOrWhiteSpace(courseTitle) || category == 0 || string.IsNullOrWhiteSpace(description))
             {
@@ -162,5 +243,6 @@ namespace RSD_E_Learning.Controllers
         {
             return View();
         }
+
     }
 }
