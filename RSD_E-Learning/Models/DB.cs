@@ -10,6 +10,8 @@ public class DB : DbContext
     {
     }
 
+
+
     public DbSet<User> Users { get; set; }
     public DbSet<Teacher> Teachers { get; set; }
     public DbSet<Admin> Admins { get; set; }
@@ -178,10 +180,7 @@ public class DB : DbContext
 
         public string? Description { get; set; }
 
-        [ForeignKey(nameof(Category))]
         public int CategoryId { get; set; }
-
-        [ForeignKey(nameof(Teacher))]
         public int TeacherId { get; set; }
 
         // Navigation Properties
@@ -200,10 +199,8 @@ public class DB : DbContext
         [Key]
         public int CourseFileId { get; set; }
 
-        [ForeignKey(nameof(Course))]
         public int CourseId { get; set; }
 
-        [ForeignKey(nameof(Teacher))]
         public int TeacherId { get; set; }
 
         public string FileType { get; set; } = "";
@@ -338,18 +335,22 @@ public class DB : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        // Disable cascade delete for Course -> Teacher relationship
-        modelBuilder.Entity<DB.Course>()
-            .HasOne<DB.Teacher>()
-            .WithMany()
+        modelBuilder.Entity<Course>()
+            .HasOne(c => c.Teacher)
+            .WithMany(t => t.Courses)
             .HasForeignKey(c => c.TeacherId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // Disable cascade delete for CourseFile -> Teacher relationship
-        modelBuilder.Entity<DB.CourseFile>()
-            .HasOne<DB.Teacher>()
+        modelBuilder.Entity<CourseFile>()
+            .HasOne(cf => cf.Teacher)
             .WithMany()
             .HasForeignKey(cf => cf.TeacherId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Enrollment>()
+            .HasOne(e => e.Course)
+            .WithMany(c => c.Enrollments)
+            .HasForeignKey(e => e.CourseId)
             .OnDelete(DeleteBehavior.Restrict);
 
         // Disable cascade delete for Enrollment -> Course relationship

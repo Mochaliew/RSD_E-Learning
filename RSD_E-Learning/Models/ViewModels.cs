@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using System.ComponentModel.DataAnnotations;
 
 namespace RSD_E_Learning.Models
 {
@@ -19,6 +20,20 @@ namespace RSD_E_Learning.Models
         [Display(Name = "Subject Area")]
         public string SubjectArea { get; set; } = "";
 
+    }
+
+    public class CreateCourseVm
+    {
+        [Required, StringLength(150)]
+        public string Title { get; set; } = "";
+
+        [Required]
+        public int CategoryId { get; set; }
+
+        [StringLength(500)]
+        public string? Description { get; set; }
+
+        public IEnumerable<SelectListItem>? CategoryList { get; set; }
     }
 
     public class TeacherEditVM

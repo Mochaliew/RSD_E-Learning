@@ -1,4 +1,4 @@
-﻿@model IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>
+﻿@model CreateCourseVm
 
 @{
     ViewData["Title"] = "Create New Course";
@@ -34,15 +34,15 @@
         <div class="form-row">
             <div class="form-group">
                 <label for="courseTitle">Course Title *</label>
-                <input type="text" id="courseTitle" name="courseTitle"
-                       required placeholder="Enter course title" maxlength="100">
+                <input asp-for="Title" 
+                       required placeholder="Enter course title" maxlength="100"/>
             </div>
 
             <div class="form-group">
                 <label for="category">Category *</label>
-                <select id="category" name="category" required>
+                <select asp-for="CategoryId">
                     <option value="">Select category</option>
-                    @foreach (var item in Model)
+                    @foreach (var item in Model.CategoryList)
                     {
                         <option value="@item.Value">@item.Text</option>
                     }
@@ -52,9 +52,11 @@
 
         <div class="form-group">
             <label for="description">Course Description *</label>
-            <textarea id="description" name="description" required
+            <textarea asp-for="Description" required
                       placeholder="Describe what students will learn" rows="5"></textarea>
         </div>
+        
+        @*
 
         <div class="materials-section">
             <h3>Course Materials</h3>
@@ -89,10 +91,11 @@
             <button type="button" class="add-material-btn" onclick="addMaterial()">+ Add More Material</button>
         </div>
 
+        *@
         <div class="button-group">
             <button type="submit" class="btn btn-primary">Submit Course</button>
             <a asp-controller="Teacher" asp-action="TeacherIndex" class="btn btn-cancel">Cancel</a>
-        </div>
+        </div> 
     </form>
 </div>
 

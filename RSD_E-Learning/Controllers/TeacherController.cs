@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using RSD_E_Learning.Models;
 using System.Security.Claims;
 using System.Text;
-using static RSD_E_Learning.Models.DB;
+
 
 namespace RSD_E_Learning.Controllers
 {
@@ -58,7 +58,7 @@ namespace RSD_E_Learning.Controllers
                 new Claim(ClaimTypes.Name, user.FullName),
                 new Claim(ClaimTypes.Email, user.Email),
                 new Claim("UserId", user.Id.ToString()),
-                new Claim("StudentId", teacher.TeacherId.ToString()),
+                new Claim("TeacherId", teacher.TeacherId.ToString()),
                 new Claim("Role", "Teacher")
             };
 
@@ -104,60 +104,60 @@ namespace RSD_E_Learning.Controllers
         [HttpGet]
         public async Task<IActionResult> CreateCourse()
         {
-            try
+            var model = new CreateCourseVm
             {
-                // Load categories for dropdown
-                var categories = await _context.Categories
-        .OrderBy(c => c.Name)
-        .Select(c => new SelectListItem
-        {
-            Value = c.CategoryId.ToString(),
-            Text = c.Name
-        })
-        .ToListAsync();
+                CategoryList = await _context.Categories
+                    .OrderBy(c => c.Name)
+                    .Select(c => new SelectListItem
+                    {
+                        Value = c.CategoryId.ToString(),
+                        Text = c.Name
+                    })
+                    .ToListAsync()
+            };
 
-                return View(categories);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error loading create course page");
-                TempData["ErrorMessage"] = "Error loading page. Please try again.";
-                return RedirectToAction("Index");
-            }
+            return View(model);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateCourse(
-            string courseTitle,
-            int category,
-            string description,
-            List<string> materialType,
-            List<string> materialTitle,
-            List<IFormFile> materialFile)
+        public async Task<IActionResult> CreateCourse(CreateCourseVm model)
         {
-            // Validate input
-            if (string.IsNullOrWhiteSpace(courseTitle) || category == 0 || string.IsNullOrWhiteSpace(description))
-            {
-                TempData["ErrorMessage"] = "Please fill in all required fields.";
-                return RedirectToAction("CreateCourse");
-            }
-
             try
             {
-                // Create new course
-                var course = new Course
+                // Get current logged-in user id from claims
+                var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "UserId");
+                if (userIdClaim == null)
                 {
-                    Title = courseTitle.Trim(),
-                    Description = description.Trim(),
-                    CategoryId = category,
-                    //TeacherId = teacherId.Value// Set the teacher ID appropriately
+                    TempData["ErrorMessage"] = "User not found. Please login again.";
+                    return RedirectToAction("TeacherLogin");
+                }
+
+                int userId = int.Parse(userIdClaim.Value);
+
+                // Get the Teacher record linked to this User
+                var teacher = await _context.Teachers.FirstOrDefaultAsync(t => t.UserId == userId);
+                if (teacher == null)
+                {
+                    TempData["ErrorMessage"] = "Teacher profile not found.";
+                    return RedirectToAction("TeacherLogin");
+                }
+
+                // Create new course with the current teacher's ID
+                var course = new DB.Course
+                {
+                    Title = model.Title,
+                    CategoryId = model.CategoryId,
+                    Description = model.Description,
+                    TeacherId = teacher.TeacherId,
+
                 };
 
                 _context.Courses.Add(course);
                 await _context.SaveChangesAsync();
 
                 // Process course materials
+                /*
                 if (materialFile != null && materialFile.Count > 0)
                 {
                     for (int i = 0; i < materialFile.Count; i++)
@@ -198,23 +198,26 @@ namespace RSD_E_Learning.Controllers
                                     UpdateAt = DateTime.UtcNow
                                 };
                                 _context.CourseFiles.Add(courseFile);
-                            }
-                            */
-                        }
+                            } 
+                            
+                            
+                        } 
+                
                     }
+                    
 
                     await _context.SaveChangesAsync();
-                }
+                } */
 
                 TempData["SuccessMessage"] = "Course created successfully!";
-                return RedirectToAction("ViewCourse");
+                return RedirectToAction("CreateCourse");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error creating course");
-                TempData["ErrorMessage"] = "An error occurred while creating the course. Please try again.";
+                TempData["ErrorMessage"] = ex.ToString();
                 return RedirectToAction("CreateCourse");
-            }
+            } 
         }
 
         public IActionResult ViewCourse()
