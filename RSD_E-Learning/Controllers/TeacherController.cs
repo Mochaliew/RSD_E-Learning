@@ -63,22 +63,15 @@ namespace RSD_E_Learning.Controllers
             };
 
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-
+            
             await HttpContext.SignInAsync(
                 CookieAuthenticationDefaults.AuthenticationScheme,
                 new ClaimsPrincipal(identity)
             );
 
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("TeacherIndex", "Teacher");
         }
 
-
-        // -------------------- LOGOUT --------------------
-        public async Task<IActionResult> Logout()
-        {
-            await HttpContext.SignOutAsync();
-            return RedirectToAction("Login");
-        }
 
 
         // -------------------- PASSWORD HASHING --------------------
