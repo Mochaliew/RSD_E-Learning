@@ -68,16 +68,17 @@ namespace RSD_E_Learning.Models
     // Teacher Reset Password View Models //
     public class ResetTeacherPasswordVm
     {
-        public int TeacherId { get; set; }
+        [Required]
+        public int UserId { get; set; }
 
-        [Required, StringLength(100, MinimumLength = 6)]
+        [Required]
+        [StringLength(100, MinimumLength = 6)]
         [DataType(DataType.Password)]
-        [Display(Name = "New Password")]
         public string NewPassword { get; set; } = "";
 
-        [Required, Compare("NewPassword")]
+        [Required]
         [DataType(DataType.Password)]
-        [Display(Name = "Confirm Password")]
+        [Compare("NewPassword", ErrorMessage = "Passwords do not match.")]
         public string ConfirmPassword { get; set; } = "";
     }
 
@@ -184,6 +185,20 @@ namespace RSD_E_Learning.Models
         public string UploadedBy { get; set; } = "";
     }
 
+    // Upload Course File View Models //
+    public class UploadCourseFileVm
+    {
+        public int CourseId { get; set; }
+
+        [Required]
+        [Display(Name = "Material Title")]
+        public string FileName { get; set; } = "";
+
+        [Required]
+        [Display(Name = "Upload File")]
+        public IFormFile File { get; set; } = null!;
+    }
+
     // Login View Models //
     public class LoginViewModel
     {
@@ -210,6 +225,8 @@ namespace RSD_E_Learning.Models
         public int TotalTeachers { get; set; }
         public int TotalStudents { get; set; }
         public int TotalCourses { get; set; }
+        public int PendingCourses { get; set; }
+        public int ApprovedCourses { get; set; }
         public int NewStudentRegistrations { get; set; }
         public DateTime LastUpdated { get; set; }
         public List<DB.AuditLog> LatestActivities { get; set; } = new();

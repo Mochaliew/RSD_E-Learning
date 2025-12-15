@@ -15,25 +15,25 @@ namespace RSD_E_Learning.Controllers
             _db = db;
         }
 
+        // ===================== DASHBOARD =====================
         public async Task<IActionResult> Index()
         {
-            var model = new AdminDashboardVm
+            var vm = new AdminDashboardVm
             {
-                TotalTeachers = await _db.Teachers.CountAsync(),
+                // Core statistics
                 TotalStudents = await _db.Students.CountAsync(),
+                TotalTeachers = await _db.Teachers.CountAsync(),
                 TotalCourses = await _db.Courses.CountAsync(),
-                NewStudentRegistrations = await _db.Students
-                    .CountAsync(s => s.EnrollmentDate >= DateTime.UtcNow.AddDays(-7)),
 
-                LastUpdated = DateTime.Now,
+                // Course approval statistics
+                PendingCourses = await _db.Courses.CountAsync(c => !c.IsApproved),
+                ApprovedCourses = await _db.Courses.CountAsync(c => c.IsApproved),
 
-                LatestActivities = await _db.AuditLogs
-                    .OrderByDescending(a => a.Timestamp)
-                    .Take(5)
-                    .ToListAsync()
+                // Dashboard metadata
+                LastUpdated = DateTime.UtcNow
             };
 
-            return View(model);
+            return View(vm);
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using RSD_E_Learning.Models;
@@ -7,7 +6,6 @@ using System.Text;
 
 namespace RSD_E_Learning.Controllers
 {
-    [Authorize(Roles = "Admin")]
     public class AdminTeacherController : Controller
     {
         private readonly DB _db;
@@ -17,7 +15,7 @@ namespace RSD_E_Learning.Controllers
             _db = db;
         }
 
-        // -------------------- LIST TEACHERS --------------------
+        // ================== LIST ==================
         public async Task<IActionResult> Index()
         {
             var teachers = await _db.Teachers
@@ -28,46 +26,43 @@ namespace RSD_E_Learning.Controllers
             return View(teachers);
         }
 
-        // -------------------- CREATE (GET) --------------------
+        // ================== CREATE (GET) ==================
         [HttpGet]
         public IActionResult Create()
         {
-            return View(new TeacherCreateVm());
+            return View();
         }
 
-        // -------------------- CREATE (POST) --------------------
+        // ================== CREATE (POST) ==================
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(TeacherCreateVm vm)
+        public async Task<IActionResult> Create(TeacherCreateVm model)
         {
             if (!ModelState.IsValid)
-                return View(vm);
+                return View(model);
 
-            // Check duplicate email
-            if (await _db.Users.AnyAsync(u => u.Email == vm.Email))
+            if (await _db.Users.AnyAsync(u => u.Email == model.Email))
             {
                 ModelState.AddModelError("Email", "Email already exists.");
-                return View(vm);
+                return View(model);
             }
 
-            // Create User (Teacher)
             var user = new DB.User
             {
-                FullName = vm.FullName,
-                Email = vm.Email,
-                PasswordHash = HashPassword(vm.Password),
+                FullName = model.FullName,
+                Email = model.Email,
                 Role = DB.UserRole.Teacher,
+                PasswordHash = HashPassword(model.Password),
                 CreatedAt = DateTime.UtcNow
             };
 
             _db.Users.Add(user);
             await _db.SaveChangesAsync();
 
-            // Create Teacher profile
             var teacher = new DB.Teacher
             {
                 UserId = user.Id,
-                SubjectArea = vm.SubjectArea,
+                SubjectArea = model.SubjectArea,
                 IsActive = true
             };
 
@@ -75,25 +70,10 @@ namespace RSD_E_Learning.Controllers
             await _db.SaveChangesAsync();
 
             TempData["Success"] = "Teacher account created successfully.";
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction("Index");
         }
 
-        // -------------------- ACTIVATE / DEACTIVATE --------------------
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ToggleStatus(int id)
-        {
-            var teacher = await _db.Teachers.FindAsync(id);
-            if (teacher == null)
-                return NotFound();
-
-            teacher.IsActive = !teacher.IsActive;
-            await _db.SaveChangesAsync();
-
-            return RedirectToAction(nameof(Index));
-        }
-
-        // -------------------- PASSWORD HASHING (PBKDF2) --------------------
+        // ================== PASSWORD HASH ==================
         private string HashPassword(string password)
         {
             byte[] salt = Encoding.UTF8.GetBytes("STATIC-SALT-CHANGE-LATER");
@@ -108,43 +88,5 @@ namespace RSD_E_Learning.Controllers
                 )
             );
         }
-
-        // -------------------- RESET PASSWORD (GET) --------------------
-        [HttpGet]
-        public async Task<IActionResult> ResetPassword(int id)
-        {
-            var teacher = await _db.Teachers
-                .Include(t => t.User)
-                .FirstOrDefaultAsync(t => t.TeacherId == id);
-
-            if (teacher == null)
-                return NotFound();
-
-            ViewBag.TeacherName = teacher.User!.FullName;
-            return View(new ResetTeacherPasswordVm { TeacherId = id });
-        }
-
-        // -------------------- RESET PASSWORD (POST) --------------------
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ResetPassword(ResetTeacherPasswordVm vm)
-        {
-            if (!ModelState.IsValid)
-                return View(vm);
-
-            var teacher = await _db.Teachers
-                .Include(t => t.User)
-                .FirstOrDefaultAsync(t => t.TeacherId == vm.TeacherId);
-
-            if (teacher == null)
-                return NotFound();
-
-            teacher.User!.PasswordHash = HashPassword(vm.NewPassword);
-            await _db.SaveChangesAsync();
-
-            TempData["Success"] = "Teacher password has been reset successfully.";
-            return RedirectToAction(nameof(Index));
-        }
-
     }
 }

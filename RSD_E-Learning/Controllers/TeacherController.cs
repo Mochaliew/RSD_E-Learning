@@ -111,6 +111,7 @@ namespace RSD_E_Learning.Controllers
         }
 
         [HttpGet]
+
         public async Task<IActionResult> CreateCourse()
         {
             var model = new CreateCourseVm
@@ -132,62 +133,131 @@ namespace RSD_E_Learning.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateCourse(CreateCourseVm model)
         {
-            try
+            if (!ModelState.IsValid)
             {
-                // Get current logged-in user id from claims
-                var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "UserId");
-                if (userIdClaim == null)
-                {
-                    TempData["ErrorMessage"] = "User not found. Please login again.";
-                    return RedirectToAction("TeacherLogin");
-                }
+                model.CategoryList = await _context.Categories
+                    .OrderBy(c => c.Name)
+                    .Select(c => new SelectListItem
+                    {
+                        Value = c.CategoryId.ToString(),
+                        Text = c.Name
+                    })
+                    .ToListAsync();
 
-                int userId = int.Parse(userIdClaim.Value);
-
-                // Get the Teacher record linked to this User
-                var teacher = await _context.Teachers.FirstOrDefaultAsync(t => t.UserId == userId);
-                if (teacher == null)
-                {
-                    TempData["ErrorMessage"] = "Teacher profile not found.";
-                    return RedirectToAction("TeacherLogin");
-                }
-
-                // Create new course 
-                var course = new DB.Course
-                {
-                    Title = model.Title,
-                    CategoryId = model.CategoryId,
-                    Description = model.Description,
-                    TeacherId = teacher.TeacherId,
-
-                };
-
-                // Create CourseFile
-                var courseFile = new DB.CourseFile
-                {
-                    CourseId = course.CourseId,
-                    TeacherId = teacher.TeacherId,
-                    FileName = model.materialTitle,
-                    FilePath = model.materialFile,
-                    FileType = model.materialType,
-                    IsActive = true,
-                    UpdateAt = DateTime.UtcNow
-                };
-
-                _context.Courses.Add(course);
-                _context.CourseFiles.Add(courseFile);
-                await _context.SaveChangesAsync();
-
-                TempData["SuccessMessage"] = "Course created successfully!";
-                return RedirectToAction("CreateCourse");
+                return View(model);
             }
-            catch (Exception ex)
+
+            // Get current logged-in user id from claims
+            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "UserId");
+            if (userIdClaim == null)
             {
-                _logger.LogError(ex, "Error creating course");
-                TempData["ErrorMessage"] = ex.ToString();
-                return RedirectToAction("CreateCourse");
+                TempData["ErrorMessage"] = "User not found. Please login again.";
+                return RedirectToAction("TeacherLogin");
             }
+
+            int userId = int.Parse(userIdClaim.Value);
+
+            // Get teacher profile
+            var teacher = await _context.Teachers.FirstOrDefaultAsync(t => t.UserId == userId);
+            if (teacher == null)
+            {
+                TempData["ErrorMessage"] = "Teacher profile not found.";
+                return RedirectToAction("TeacherLogin");
+            }
+
+            var course = new DB.Course
+            {
+                Title = model.Title,
+                CategoryId = model.CategoryId,
+                Description = model.Description,
+                TeacherId = teacher.TeacherId,
+
+                IsApproved = false,
+                IsPublished = false
+            };
+
+
+            _context.Courses.Add(course);
+            await _context.SaveChangesAsync();   // ✅ COURSE SAVED SUCCESSFULLY
+
+            TempData["SuccessMessage"] =
+                "Course submitted successfully and pending admin approval.";
+
+            return RedirectToAction(nameof(CreateCourse));
         }
+
+        [HttpGet]
+        public async Task<IActionResult> UploadMaterial(int courseId)
+        {
+            var course = await _context.Courses.FindAsync(courseId);
+
+            if (course == null || !course.IsApproved)
+            {
+                return Unauthorized();
+            }
+
+            var vm = new UploadCourseFileVm
+            {
+                CourseId = courseId
+            };
+
+            ViewBag.CourseTitle = course.Title;
+            return View(vm);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UploadMaterial(UploadCourseFileVm model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var teacherIdClaim = User.FindFirst("TeacherId");
+            if (teacherIdClaim == null)
+                return Unauthorized();
+
+            int teacherId = int.Parse(teacherIdClaim.Value);
+
+            // 🔐 Ensure course belongs to this teacher
+            var course = await _context.Courses
+                .FirstOrDefaultAsync(c => c.CourseId == model.CourseId &&
+                                          c.TeacherId == teacherId &&
+                                          c.IsApproved);
+
+            if (course == null)
+                return Unauthorized();
+
+            // ================= FILE SAVE =================
+            string uploadsFolder = Path.Combine(_environment.WebRootPath, "coursefiles");
+            Directory.CreateDirectory(uploadsFolder);
+
+            string uniqueFileName = Guid.NewGuid() + Path.GetExtension(model.File.FileName);
+            string physicalPath = Path.Combine(uploadsFolder, uniqueFileName);
+
+            using (var stream = new FileStream(physicalPath, FileMode.Create))
+            {
+                await model.File.CopyToAsync(stream);
+            }
+
+            // ================= DATABASE SAVE =================
+            var courseFile = new DB.CourseFile
+            {
+                CourseId = model.CourseId,
+                TeacherId = teacherId,
+                FileName = model.FileName,
+                FilePath = "/coursefiles/" + uniqueFileName,
+                FileType = Path.GetExtension(model.File.FileName),
+                IsActive = true,
+                UpdateAt = DateTime.UtcNow
+            };
+
+            _context.CourseFiles.Add(courseFile);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Material uploaded successfully.";
+            return RedirectToAction("ViewCourse", new { id = model.CourseId });
+        }
+
 
         public IActionResult ViewCourse()
         {
