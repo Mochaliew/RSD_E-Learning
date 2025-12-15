@@ -143,7 +143,7 @@ namespace RSD_E_Learning.Controllers
                     return RedirectToAction("TeacherLogin");
                 }
 
-                // Create new course with the current teacher's ID
+                // Create new course 
                 var course = new DB.Course
                 {
                     Title = model.Title,
@@ -153,61 +153,21 @@ namespace RSD_E_Learning.Controllers
 
                 };
 
-                _context.Courses.Add(course);
-                await _context.SaveChangesAsync();
-
-                // Process course materials
-                /*
-                if (materialFile != null && materialFile.Count > 0)
+                // Create CourseFile
+                var courseFile = new DB.CourseFile
                 {
-                    for (int i = 0; i < materialFile.Count; i++)
-                    {
-                        var file = materialFile[i];
+                    CourseId = course.CourseId,
+                    TeacherId = teacher.TeacherId,
+                    FileName = model.materialTitle,
+                    FilePath = model.materialFile,
+                    FileType = model.materialType,
+                    IsActive = true,
+                    UpdateAt = DateTime.UtcNow
+                };
 
-                        if (file != null && file.Length > 0)
-                        {
-                            var type = i < materialType.Count ? materialType[i] : "document";
-                            var title = i < materialTitle.Count && !string.IsNullOrWhiteSpace(materialTitle[i])
-                                ? materialTitle[i]
-                                : file.FileName;
-
-                            // Save file and create records
-                            /*
-                            var filePath = await SaveCourseFileAsync(file, course.CourseId, type);
-
-                            if (!string.IsNullOrEmpty(filePath))
-                            {
-                                // Create Lesson record
-                                var lesson = new Lesson
-                                {
-                                    CourseId = course.CourseId,
-                                    Title = title,
-                                    FilePath = filePath,
-                                    Content = $"Material Type: {type}"
-                                };
-                                _context.Lessons.Add(lesson);
-
-                                // Create CourseFile record
-                                var courseFile = new CourseFile
-                                {
-                                    CourseId = course.CourseId,
-                                    //TeacherId = teacherId.Value,//
-                                    FileName = file.FileName,
-                                    FilePath = filePath,
-                                    IsActive = true,
-                                    UpdateAt = DateTime.UtcNow
-                                };
-                                _context.CourseFiles.Add(courseFile);
-                            } 
-                            
-                            
-                        } 
-                
-                    }
-                    
-
-                    await _context.SaveChangesAsync();
-                } */
+                _context.Courses.Add(course);
+                _context.CourseFiles.Add(courseFile);
+                await _context.SaveChangesAsync();
 
                 TempData["SuccessMessage"] = "Course created successfully!";
                 return RedirectToAction("CreateCourse");
@@ -217,7 +177,7 @@ namespace RSD_E_Learning.Controllers
                 _logger.LogError(ex, "Error creating course");
                 TempData["ErrorMessage"] = ex.ToString();
                 return RedirectToAction("CreateCourse");
-            } 
+            }
         }
 
         public IActionResult ViewCourse()

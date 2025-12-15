@@ -34,7 +34,15 @@ namespace RSD_E_Learning.Models
         public string? Description { get; set; }
 
         public IEnumerable<SelectListItem>? CategoryList { get; set; }
+
+        public string materialTitle { get; set; } = "";
+
+        public string materialFile { get; set; } = "";
+
+        public string materialType { get; set; } = "";
+
     }
+
 
     public class TeacherEditVM
     {
