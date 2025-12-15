@@ -99,6 +99,15 @@ namespace RSD_E_Learning.Controllers
                 return View();
             }
 
+            if (user.LockoutEnd != null && user.LockoutEnd > DateTime.UtcNow)
+            {
+                ModelState.AddModelError(
+                    "",
+                    "Your account has been locked. Please contact administrator."
+                );
+                return View();
+            }   
+
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, user.FullName),

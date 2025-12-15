@@ -1,0 +1,47 @@
+﻿@model IEnumerable<RSD_E_Learning.Models.DB.Category>
+
+<h2>Manage Categories</h2>
+
+<a asp-action="Create" class="btn btn-primary mb-3">
+    + Add Category
+</a>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th width="200">Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var c in Model)
+        {
+            <tr>
+                <td>@c.Name</td>
+                <td>@c.Description</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@c.CategoryId"
+                       class="btn btn-sm btn-warning">
+                        Edit
+                    </a>
+
+                    <form asp-action="Delete"
+                          asp-route-id="@c.CategoryId"
+                          method="post"
+                          style="display:inline">
+                        <button class="btn btn-sm btn-danger">
+                            Delete
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a asp-controller="AdminDashboard"
+   asp-action="Index"
+   class="btn btn-secondary">
+    ← Back to Dashboard
+</a>

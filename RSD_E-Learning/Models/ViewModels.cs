@@ -65,6 +65,22 @@ namespace RSD_E_Learning.Models
         public string SubjectArea { get; set; } = "";
     }
 
+    // Teacher Reset Password View Models //
+    public class ResetTeacherPasswordVm
+    {
+        public int TeacherId { get; set; }
+
+        [Required, StringLength(100, MinimumLength = 6)]
+        [DataType(DataType.Password)]
+        [Display(Name = "New Password")]
+        public string NewPassword { get; set; } = "";
+
+        [Required, Compare("NewPassword")]
+        [DataType(DataType.Password)]
+        [Display(Name = "Confirm Password")]
+        public string ConfirmPassword { get; set; } = "";
+    }
+
     // Student View Models //
     public class StudentRegisterVm
     {
@@ -195,7 +211,8 @@ namespace RSD_E_Learning.Models
         public int TotalStudents { get; set; }
         public int TotalCourses { get; set; }
         public int NewStudentRegistrations { get; set; }
-        public List<LatestEnrollmentItem> LatestEnrollments { get; set; } = new List<LatestEnrollmentItem>();
+        public DateTime LastUpdated { get; set; }
+        public List<DB.AuditLog> LatestActivities { get; set; } = new();
     }
 
     public class LatestEnrollmentItem

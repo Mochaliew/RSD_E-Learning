@@ -53,6 +53,15 @@ namespace RSD_E_Learning.Controllers
                 return View();
             }
 
+            if (!teacher.IsActive)
+            {
+                ModelState.AddModelError(
+                    "",
+                    "Your account has been deactivated. Please contact administrator."
+                );
+                return View();
+            }
+
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, user.FullName),

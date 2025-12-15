@@ -1,6 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Cryptography.KeyDerivation;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text;
 
 namespace RSD_E_Learning.Models;
 
@@ -182,6 +184,9 @@ public class DB : DbContext
 
         public int CategoryId { get; set; }
         public int TeacherId { get; set; }
+        public bool IsApproved { get; set; } = false;
+        public bool IsPublished { get; set; } = false;
+
 
         // Navigation Properties
         public Category? Category { get; set; }
@@ -335,6 +340,26 @@ public class DB : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
+        //Admin Seed//
+        var adminUser = new User
+        {
+            Id = 1,
+            FullName = "System Administrator",
+            Email = "admin@elearning.com",
+            PasswordHash = HashPassword("admin123"),
+            Role = UserRole.Admin,
+            CreatedAt = new DateTime(2025, 1, 1)
+        };
+
+        modelBuilder.Entity<User>().HasData(adminUser);
+
+        modelBuilder.Entity<Admin>().HasData(new Admin
+        {
+            AdminId = 1,
+            UserId = 1
+        });
+
+        //Relationships//
         modelBuilder.Entity<Course>()
             .HasOne(c => c.Teacher)
             .WithMany(t => t.Courses)
@@ -360,4 +385,20 @@ public class DB : DbContext
             .HasForeignKey(e => e.CourseId)
             .OnDelete(DeleteBehavior.Restrict);
     }
+    private static string HashPassword(string password)
+    {
+        byte[] salt = Encoding.UTF8.GetBytes("STATIC-SALT-CHANGE-LATER");
+
+        return Convert.ToBase64String(
+            KeyDerivation.Pbkdf2(
+                password,
+                salt,
+                KeyDerivationPrf.HMACSHA256,
+                iterationCount: 10000,
+                numBytesRequested: 32
+            )
+        );
+    }
+
+
 }

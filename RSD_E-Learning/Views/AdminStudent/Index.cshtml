@@ -1,0 +1,79 @@
+﻿@model IEnumerable<RSD_E_Learning.Models.DB.Student>
+
+@{
+    ViewData["Title"] = "Manage Students";
+    Layout = "_Layout";
+}
+
+<h2 class="mb-2">Manage Students</h2>
+
+<a asp-controller="AdminDashboard"
+   asp-action="Index"
+   class="btn btn-secondary mb-3">
+    ← Back to Dashboard
+</a>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Student Name</th>
+            <th>Email</th>
+            <th>Enrolled Courses</th>
+            <th>Payment Status</th>
+            <th>Account Status</th>
+            <th style="width:160px;">Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var s in Model)
+        {
+            bool isAccountActive =
+            s.User!.LockoutEnd == null ||
+            s.User.LockoutEnd < DateTime.UtcNow;
+
+            bool hasUnpaid = s.Enrollments.Any(e => !e.PaymentStatus);
+
+            <tr>
+                <td>@s.User.FullName</td>
+                <td>@s.User.Email</td>
+                <td>
+                    @foreach (var e in s.Enrollments)
+                    {
+                        <div>
+                            @e.Course!.Title
+                        </div>
+                    }
+                </td>
+                <td>
+                    @if (hasUnpaid)
+                    {
+                        <span class="badge bg-danger">Unpaid</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-success">Paid</span>
+                    }
+                </td>
+                <td>
+                    @if (isAccountActive)
+                    {
+                        <span class="badge bg-success">Active</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">Deactivated</span>
+                    }
+                </td>
+                <td>
+                    <form asp-action="ToggleAccountStatus" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="studentId" value="@s.StudentId" />
+                        <button class="btn btn-sm @(isAccountActive ? "btn-warning" : "btn-success")">
+                            @(isAccountActive ? "Deactivate" : "Activate")
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

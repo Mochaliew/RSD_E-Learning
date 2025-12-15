@@ -1,0 +1,49 @@
+﻿@model IEnumerable<RSD_E_Learning.Models.DB.Course>
+
+<h2>Course Approval</h2>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Teacher</th>
+            <th>Category</th>
+            <th width="200">Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var c in Model)
+        {
+            <tr>
+                <td>@c.Title</td>
+                <td>@c.Teacher?.User?.FullName</td>
+                <td>@c.Category?.Name</td>
+                <td>
+                    <form asp-action="Approve"
+                          asp-route-id="@c.CourseId"
+                          method="post"
+                          style="display:inline">
+                        <button class="btn btn-success btn-sm">
+                            Approve
+                        </button>
+                    </form>
+
+                    <form asp-action="Reject"
+                          asp-route-id="@c.CourseId"
+                          method="post"
+                          style="display:inline">
+                        <button class="btn btn-danger btn-sm">
+                            Reject
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a asp-controller="AdminDashboard"
+   asp-action="Index"
+   class="btn btn-secondary">
+    ← Back to Dashboard
+</a>

@@ -6,7 +6,6 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using RSD_E_Learning.Models;
-using Microsoft.IdentityModel.Tokens;
 
 namespace RSD_E_Learning.Controllers
 {
@@ -19,60 +18,71 @@ namespace RSD_E_Learning.Controllers
             _db = db;
         }
 
-        // --- GET: ADMIN LOGIN --- //
+        // -------------------- LOGIN (GET) --------------------
         [HttpGet]
         public IActionResult Login()
         {
-            return View();
+            return View(new LoginViewModel());
         }
 
-        // --- POST: ADMIN LOGIN --- //
+        // -------------------- LOGIN (POST) --------------------
         [HttpPost]
-        public async Task<IActionResult> Login(string email, string password)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Login(LoginViewModel vm)
         {
-            var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == email && u.Role == DB.UserRole.Admin);
+            if (!ModelState.IsValid)
+                return View(vm);
 
-            if (user ==null || !VerifyPassword(password, user.PasswordHash))
+            var user = await _db.Users
+                .FirstOrDefaultAsync(u =>
+                    u.Email == vm.Email &&
+                    u.Role == DB.UserRole.Admin);
+
+            if (user == null || !VerifyPassword(vm.Password, user.PasswordHash))
             {
                 ModelState.AddModelError("", "Invalid admin credentials.");
-                return View();
+                return View(vm);
             }
 
             var admin = await _db.Admins.FirstOrDefaultAsync(a => a.UserId == user.Id);
             if (admin == null)
             {
                 ModelState.AddModelError("", "Admin account not found.");
-                return View();
+                return View(vm);
             }
 
-            // --- CREATE COOKIE CLAIMS --- //
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, user.FullName),
                 new Claim(ClaimTypes.Email, user.Email),
                 new Claim("UserId", user.Id.ToString()),
                 new Claim("AdminId", admin.AdminId.ToString()),
-                new Claim("Role","Admin")
+                new Claim(ClaimTypes.Role, "Admin")
             };
 
-            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var identity = new ClaimsIdentity(
+                claims,
+                CookieAuthenticationDefaults.AuthenticationScheme
+            );
 
             await HttpContext.SignInAsync(
                 CookieAuthenticationDefaults.AuthenticationScheme,
                 new ClaimsPrincipal(identity)
-                );
+            );
 
             return RedirectToAction("Index", "AdminDashboard");
         }
 
-        // --- LOGOUT --- //
+        // -------------------- LOGOUT --------------------
         public async Task<IActionResult> Logout()
         {
-            await HttpContext .SignOutAsync();
+            await HttpContext.SignOutAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme
+            );
             return RedirectToAction("Login");
         }
 
-        // --- PASSWORD HASHING --- //
+        // -------------------- PASSWORD HASHING --------------------
         private string HashPassword(string password)
         {
             byte[] salt = Encoding.UTF8.GetBytes("STATIC-SALT-CHANGE-LATER");
@@ -84,9 +94,8 @@ namespace RSD_E_Learning.Controllers
                     KeyDerivationPrf.HMACSHA256,
                     10000,
                     32
-                    )
-                );
-
+                )
+            );
         }
 
         private bool VerifyPassword(string password, string hash)

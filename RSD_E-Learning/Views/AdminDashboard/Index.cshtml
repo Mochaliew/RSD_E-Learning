@@ -1,0 +1,168 @@
+﻿@model RSD_E_Learning.Models.AdminDashboardVm
+
+@{
+    ViewData["Title"] = "Admin Dashboard";
+    Layout = "_Layout";
+}
+
+<div class="admin-dashboard">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Admin Dashboard</h2>
+        <small class="text-muted">
+            Last updated: @Model.LastUpdated.ToString("dd MMM yyyy, HH:mm")
+        </small>
+    </div>
+
+    <!-- SUMMARY CARDS -->
+    <div class="row mb-4">
+
+        <div class="col-md-3">
+            <div class="card shadow-sm text-center border-primary">
+                <div class="card-body">
+                    <h6>Total Teachers</h6>
+                    <h3>@Model.TotalTeachers</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm text-center border-success">
+                <div class="card-body">
+                    <h6>Total Students</h6>
+                    <h3>@Model.TotalStudents</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm text-center border-warning">
+                <div class="card-body">
+                    <h6>Total Courses</h6>
+                    <h3>@Model.TotalCourses</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm text-center border-info">
+                <div class="card-body">
+                    <h6>New Students (7 days)</h6>
+                    <h3>@Model.NewStudentRegistrations</h3>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- BAR CHART -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h5 class="mb-3">System Overview</h5>
+            <canvas id="overviewChart" height="100"></canvas>
+        </div>
+    </div>
+
+    <!-- ACTION CARDS -->
+    <div class="row">
+
+        <div class="col-md-4 mb-4">
+            <a asp-controller="AdminTeacher" asp-action="Index"
+               class="text-decoration-none text-dark">
+                <div class="card shadow-sm h-100 admin-card">
+                    <div class="card-body text-center">
+                        <h5>Manage Teachers</h5>
+                        <p class="text-muted">
+                            Create, suspend, and reset teacher accounts.
+                        </p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <a asp-controller="AdminStudent" asp-action="Index"
+               class="text-decoration-none text-dark">
+                <div class="card shadow-sm h-100 admin-card">
+                    <div class="card-body text-center">
+                        <h5>Manage Students</h5>
+                        <p class="text-muted">
+                            View student accounts and payment status.
+                        </p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <a asp-controller="AdminCategory" asp-action="Index"
+               class="text-decoration-none text-dark">
+                <div class="card shadow-sm h-100 admin-card">
+                    <div class="card-body text-center">
+                        <h5>Manage Categories</h5>
+                        <p class="text-muted">
+                            Create and organize course categories.
+                        </p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+    </div>
+
+    <!-- ACTIVITY LOG -->
+    <div class="card shadow-sm mt-4">
+        <div class="card-body">
+            <h5>Recent Activities</h5>
+
+            @if (!Model.LatestActivities.Any())
+            {
+                <p class="text-muted">No recent activity.</p>
+            }
+            else
+            {
+                <ul class="list-group list-group-flush">
+                    @foreach (var log in Model.LatestActivities)
+                    {
+                        <li class="list-group-item">
+                            <small class="text-muted">
+                                @log.Timestamp.ToString("dd MMM HH:mm")
+                            </small>
+                            – @log.Action
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+    </div>
+
+</div>
+
+<!-- CHART.JS -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    const ctx = document.getElementById('overviewChart');
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Students', 'Teachers', 'Courses'],
+            datasets: [{
+                label: 'Total Count',
+                data: [
+                    @Model.TotalStudents,
+                    @Model.TotalTeachers,
+                    @Model.TotalCourses
+                ],
+                backgroundColor: ['#198754', '#0d6efd', '#ffc107']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+</script>

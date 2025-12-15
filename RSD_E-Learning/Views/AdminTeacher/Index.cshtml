@@ -1,0 +1,78 @@
+﻿@model IEnumerable<RSD_E_Learning.Models.DB.Teacher>
+
+@{
+    ViewData["Title"] = "Manage Teachers";
+    Layout = "_Layout";
+}
+
+<h2 class="mb-2">Manage Teachers</h2>
+
+<!-- BACK TO ADMIN DASHBOARD -->
+<a asp-controller="AdminDashboard"
+   asp-action="Index"
+   class="btn btn-secondary mb-3">
+    ← Back to Dashboard
+</a>
+
+<a asp-action="Create"
+   class="btn btn-primary mb-3 ms-2">
+    + Add Teacher
+</a>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["Success"]
+    </div>
+}
+
+<table class="table table-bordered table-striped">
+    <thead class="table-light">
+        <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Subject Area</th>
+            <th>Status</th>
+            <th style="width:220px;">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var t in Model)
+        {
+            <tr>
+                <td>@t.User!.FullName</td>
+                <td>@t.User.Email</td>
+                <td>@t.SubjectArea</td>
+                <td>
+                    @if (t.IsActive)
+                    {
+                        <span class="badge bg-success">Active</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">Inactive</span>
+                    }
+                </td>
+                <td>
+                    <!-- RESET PASSWORD -->
+                    <a asp-action="ResetPassword"
+                       asp-route-id="@t.TeacherId"
+                       class="btn btn-sm btn-info mb-1">
+                        Reset Password
+                    </a>
+
+                    <!-- ACTIVATE / DEACTIVATE -->
+                    <form asp-action="ToggleStatus"
+                          method="post"
+                          class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@t.TeacherId" />
+                        <button class="btn btn-sm @(t.IsActive ? "btn-warning" : "btn-success")">
+                            @(t.IsActive ? "Deactivate" : "Activate")
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
