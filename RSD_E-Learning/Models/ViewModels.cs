@@ -35,14 +35,9 @@ namespace RSD_E_Learning.Models
 
         public IEnumerable<SelectListItem>? CategoryList { get; set; }
 
-        public string materialTitle { get; set; } = "";
 
-        public string materialFile { get; set; } = "";
-
-        public string materialType { get; set; } = "";
 
     }
-
 
     public class TeacherEditVM
     {
@@ -192,11 +187,13 @@ namespace RSD_E_Learning.Models
 
         [Required]
         [Display(Name = "Material Title")]
-        public string FileName { get; set; } = "";
+        public string materialTitle { get; set; } = "";
 
         [Required]
         [Display(Name = "Upload File")]
-        public IFormFile File { get; set; } = null!;
+        public IFormFile materialFile { get; set; } = null!;
+
+        public string materialType { get; set; } = "";
     }
 
     // Login View Models //

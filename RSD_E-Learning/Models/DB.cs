@@ -206,7 +206,6 @@ public class DB : DbContext
 
         public int CourseId { get; set; }
 
-        public int TeacherId { get; set; }
 
         public string FileType { get; set; } = "";
 
@@ -222,7 +221,6 @@ public class DB : DbContext
 
         // Navigation Properties
         public Course? Course { get; set; }
-        public Teacher? Teacher { get; set; }
     }
 
     // ----------------------------------- LESSON ------------------------------------ //
@@ -366,11 +364,6 @@ public class DB : DbContext
             .HasForeignKey(c => c.TeacherId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        modelBuilder.Entity<CourseFile>()
-            .HasOne(cf => cf.Teacher)
-            .WithMany()
-            .HasForeignKey(cf => cf.TeacherId)
-            .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<Enrollment>()
             .HasOne(e => e.Course)
