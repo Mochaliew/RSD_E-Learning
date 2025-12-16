@@ -231,22 +231,21 @@ namespace RSD_E_Learning.Controllers
             string uploadsFolder = Path.Combine(_environment.WebRootPath, "coursefiles");
             Directory.CreateDirectory(uploadsFolder);
 
-            string uniqueFileName = Guid.NewGuid() + Path.GetExtension(model.File.FileName);
+            string uniqueFileName = Guid.NewGuid() + Path.GetExtension(model.materialFile.FileName);
             string physicalPath = Path.Combine(uploadsFolder, uniqueFileName);
 
             using (var stream = new FileStream(physicalPath, FileMode.Create))
             {
-                await model.File.CopyToAsync(stream);
+                await model.materialFile.CopyToAsync(stream);
             }
 
             // ================= DATABASE SAVE =================
             var courseFile = new DB.CourseFile
             {
                 CourseId = model.CourseId,
-                TeacherId = teacherId,
-                FileName = model.FileName,
+                FileName = model.materialTitle,
                 FilePath = "/coursefiles/" + uniqueFileName,
-                FileType = Path.GetExtension(model.File.FileName),
+                FileType = Path.GetExtension(model.materialFile.FileName),
                 IsActive = true,
                 UpdateAt = DateTime.UtcNow
             };
