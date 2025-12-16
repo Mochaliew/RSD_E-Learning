@@ -60,7 +60,7 @@
 
 
         <div class="button-group">
-            <button type="submit" class="btn btn-primary">Submit Course</button>
+            <button type="submit" class=" btn btn-primary" >Submit Course</button>
             <a asp-controller="Teacher" asp-action="TeacherIndex" class="btn btn-cancel">Cancel</a>
         </div> 
     </form>
@@ -82,10 +82,6 @@
                 alert('Required fields missing');
                 return;
             }
-
-            const btn = this.querySelector('button[type="submit"]');
-            btn.disabled = true;
-            btn.textContent = "Creating Course...";
         });
     </script>
 }
