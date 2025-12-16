@@ -207,7 +207,6 @@ public class DB : DbContext
 
         public int CourseId { get; set; }
 
-
         public string FileType { get; set; } = "";
 
         [Required, StringLength(100)]
@@ -218,7 +217,7 @@ public class DB : DbContext
 
         public DateTime UpdateAt { get; set; } = DateTime.UtcNow;
 
-        public bool IsActive { get; set; } = true;
+        public bool IsActive { get; set; } = true;  
 
         // Navigation Properties
         public Course? Course { get; set; }
