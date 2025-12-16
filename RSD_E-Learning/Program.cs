@@ -1,8 +1,14 @@
-using Microsoft.AspNetCore.Authentication.Cookies;
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using RSD_E_Learning.Models;
 
+
+
 var builder = WebApplication.CreateBuilder(args);
+
+// Register Certificate Service
+builder.Services.AddScoped<RSD_E_Learning.Services.ICertificateService,
+                           RSD_E_Learning.Services.CertificateService>();
 
 // Add services
 builder.Services.AddControllersWithViews();
@@ -18,12 +24,6 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.LogoutPath = "/Account/Logout";
         options.ExpireTimeSpan = TimeSpan.FromHours(24);
     });
-
-var app = builder.Build();  // ? BUILD APP FIRST
-
-// Register Certificate Service
-builder.Services.AddScoped<RSD_E_Learning.Services.ICertificateService,
-                           RSD_E_Learning.Services.CertificateService>();
 
 // Add API Controllers support if not already added
 builder.Services.AddControllers()
@@ -47,12 +47,13 @@ builder.Services.AddCors(options =>
         });
 });
 
+var app = builder.Build(); // ✅ now in the correct place
+
 // Enable API Controllers
 app.MapControllers();
 
 // Enable CORS if configured
 // app.UseCors("AllowAll");
-
 
 // Configure middleware
 if (!app.Environment.IsDevelopment())
