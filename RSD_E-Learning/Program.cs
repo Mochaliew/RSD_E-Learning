@@ -21,6 +21,38 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 
 var app = builder.Build();  // ? BUILD APP FIRST
 
+// Register Certificate Service
+builder.Services.AddScoped<RSD_E_Learning.Services.ICertificateService,
+                           RSD_E_Learning.Services.CertificateService>();
+
+// Add API Controllers support if not already added
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler =
+            System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.DefaultIgnoreCondition =
+            System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+    });
+
+// Enable CORS if you need API access from other domains
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll",
+        builder =>
+        {
+            builder.AllowAnyOrigin()
+                   .AllowAnyMethod()
+                   .AllowAnyHeader();
+        });
+});
+
+// Enable API Controllers
+app.MapControllers();
+
+// Enable CORS if configured
+// app.UseCors("AllowAll");
+
 
 // Configure middleware
 if (!app.Environment.IsDevelopment())
