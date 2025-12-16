@@ -1,0 +1,197 @@
+﻿@model RSD_E_Learning.Models.DB.Certificate?
+
+@{
+    ViewData["Title"] = "Certificate Verification";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var isValid = ViewBag.IsValid ?? false;
+    var message = ViewBag.Message ?? "";
+}
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+
+            <!-- Verification Status -->
+            <div class="text-center mb-5">
+                @if (isValid)
+                {
+                    <div class="mb-4">
+                        <i class="bi bi-check-circle-fill text-success" style="font-size: 5rem;"></i>
+                    </div>
+                    <h1 class="text-success mb-3">✓ Certificate Verified</h1>
+                    <p class="lead text-muted">@message</p>
+                }
+                else
+                {
+                    <div class="mb-4">
+                        <i class="bi bi-x-circle-fill text-danger" style="font-size: 5rem;"></i>
+                    </div>
+                    <h1 class="text-danger mb-3">✗ Verification Failed</h1>
+                    <p class="lead text-muted">@message</p>
+                }
+            </div>
+
+            @if (isValid && Model != null)
+            {
+                <!-- Certificate Details Card -->
+                <div class="card shadow-lg border-0 mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0"><i class="bi bi-award"></i> Certificate Details</h4>
+                    </div>
+                    <div class="card-body p-4">
+
+                        <!-- Certificate ID -->
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <strong>Certificate ID:</strong>
+                            </div>
+                            <div class="col-md-8">
+                                <span class="badge bg-primary">CERT-@Model.CertificateId.ToString("D6")</span>
+                            </div>
+                        </div>
+
+                        <hr />
+
+                        <!-- Student Information -->
+                        <h5 class="text-primary mb-3">
+                            <i class="bi bi-person-circle"></i> Student Information
+                        </h5>
+                        <div class="row mb-2">
+                            <div class="col-md-4">
+                                <strong>Full Name:</strong>
+                            </div>
+                            <div class="col-md-8">
+                                @(Model.Student?.User?.FullName ?? "N/A")
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <strong>Email:</strong>
+                            </div>
+                            <div class="col-md-8">
+                                @(Model.Student?.User?.Email ?? "N/A")
+                            </div>
+                        </div>
+
+                        <hr />
+
+                        <!-- Course Information -->
+                        <h5 class="text-primary mb-3">
+                            <i class="bi bi-book"></i> Course Information
+                        </h5>
+                        <div class="row mb-2">
+                            <div class="col-md-4">
+                                <strong>Course Title:</strong>
+                            </div>
+                            <div class="col-md-8">
+                                @(Model.Course?.Title ?? "N/A")
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-md-4">
+                                <strong>Category:</strong>
+                            </div>
+                            <div class="col-md-8">
+                                <span class="badge bg-info">@(Model.Course?.Category?.Name ?? "N/A")</span>
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-md-4">
+                                <strong>Instructor:</strong>
+                            </div>
+                            <div class="col-md-8">
+                                @(Model.Course?.Teacher?.User?.FullName ?? "N/A")
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <strong>Subject Area:</strong>
+                            </div>
+                            <div class="col-md-8">
+                                @(Model.Course?.Teacher?.SubjectArea ?? "N/A")
+                            </div>
+                        </div>
+
+                        <hr />
+
+                        <!-- Issuance Information -->
+                        <h5 class="text-primary mb-3">
+                            <i class="bi bi-calendar-check"></i> Issuance Information
+                        </h5>
+                        <div class="row mb-2">
+                            <div class="col-md-4">
+                                <strong>Issue Date:</strong>
+                            </div>
+                            <div class="col-md-8">
+                                @Model.IssuedDate.ToString("MMMM dd, yyyy")
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <strong>Time:</strong>
+                            </div>
+                            <div class="col-md-8">
+                                @Model.IssuedDate.ToString("hh:mm tt")
+                            </div>
+                        </div>
+
+                        <!-- Verification Timestamp -->
+                        <div class="alert alert-light border mt-4">
+                            <small class="text-muted">
+                                <i class="bi bi-clock"></i>
+                                Verified on @DateTime.UtcNow.ToString("MMMM dd, yyyy") at @DateTime.UtcNow.ToString("hh:mm tt") UTC
+                            </small>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Security Features Notice -->
+                <div class="card border-success mb-4">
+                    <div class="card-body">
+                        <h6 class="card-title text-success">
+                            <i class="bi bi-shield-check"></i> Security Features
+                        </h6>
+                        <ul class="mb-0 small">
+                            <li>This certificate is digitally signed and verified</li>
+                            <li>Unique certificate ID: CERT-@Model.CertificateId.ToString("D6")</li>
+                            <li>Stored in secure database</li>
+                            <li>QR code verification enabled</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="text-center">
+                    <a href="@Url.Action("View", "Certificate", new { id = Model.CertificateId })"
+                       class="btn btn-primary btn-lg me-2">
+                        <i class="bi bi-eye"></i> View Full Certificate
+                    </a>
+                    <a href="@Url.Action("Index", "Home")" class="btn btn-outline-secondary btn-lg">
+                        <i class="bi bi-house"></i> Back to Home
+                    </a>
+                </div>
+            }
+            else
+            {
+                <!-- Invalid Certificate Actions -->
+                <div class="card border-danger">
+                    <div class="card-body text-center">
+                        <h5 class="text-danger mb-3">What to do next?</h5>
+                        <p>If you believe this certificate should be valid, please contact support.</p>
+                        <a href="@Url.Action("Index", "Home")" class="btn btn-outline-primary">
+                            <i class="bi bi-house"></i> Return to Home
+                        </a>
+                    </div>
+                </div>
+            }
+
+        </div>
+    </div>
+</div>
+
+<style>
+    .bi {
+        vertical-align: middle;
+    }
+</style>

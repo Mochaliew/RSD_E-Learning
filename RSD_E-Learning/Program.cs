@@ -1,8 +1,14 @@
-using Microsoft.AspNetCore.Authentication.Cookies;
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using RSD_E_Learning.Models;
 
+
+
 var builder = WebApplication.CreateBuilder(args);
+
+// Register Certificate Service
+builder.Services.AddScoped<RSD_E_Learning.Services.ICertificateService,
+                           RSD_E_Learning.Services.CertificateService>();
 
 // Add services
 builder.Services.AddControllersWithViews();
@@ -19,8 +25,35 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.ExpireTimeSpan = TimeSpan.FromHours(24);
     });
 
-var app = builder.Build();  // ? BUILD APP FIRST
+// Add API Controllers support if not already added
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler =
+            System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.DefaultIgnoreCondition =
+            System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+    });
 
+// Enable CORS if you need API access from other domains
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll",
+        builder =>
+        {
+            builder.AllowAnyOrigin()
+                   .AllowAnyMethod()
+                   .AllowAnyHeader();
+        });
+});
+
+var app = builder.Build(); // ✅ now in the correct place
+
+// Enable API Controllers
+app.MapControllers();
+
+// Enable CORS if configured
+// app.UseCors("AllowAll");
 
 // Configure middleware
 if (!app.Environment.IsDevelopment())
