@@ -171,33 +171,66 @@
 
 <h4 class="mb-3">Course Approval</h4>
 
-<div class="row">
+<div class="row g-4 mt-3">
 
-    <div class="col-md-6 mb-3">
-        <div class="card admin-card h-100">
+    <!-- Pending -->
+    <div class="col-md-4">
+        <div class="card shadow-sm border-primary h-100">
             <div class="card-body">
-                <h5 class="card-title">Pending Courses</h5>
-                <h3>@Model.PendingCourses</h3>
-                <p class="text-muted">
+                <h6 class="text-primary text-uppercase fw-bold">
+                    Pending Courses
+                </h6>
+
+                <h2 class="fw-bold mt-2">
+                    @Model.PendingCourses
+                </h2>
+
+                <p class="text-muted mb-4">
                     Courses waiting for admin approval
                 </p>
 
                 <a asp-controller="AdminCourseApproval"
                    asp-action="Index"
-                   class="btn btn-outline-primary">
+                   class="btn btn-outline-primary w-100">
                     Review Pending Courses
                 </a>
             </div>
         </div>
     </div>
 
-    <div class="col-md-6 mb-3">
-        <div class="card admin-card h-100">
+    <!-- Approved -->
+    <div class="col-md-4">
+        <div class="card shadow-sm border-success h-100">
             <div class="card-body">
-                <h5 class="card-title">Approved Courses</h5>
-                <h3>@Model.ApprovedCourses</h3>
+                <h6 class="text-success text-uppercase fw-bold">
+                    Approved Courses
+                </h6>
+
+                <h2 class="fw-bold mt-2">
+                    @Model.ApprovedCourses
+                </h2>
+
                 <p class="text-muted">
-                    Published and available to students
+                    Published & available to students
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rejected -->
+    <div class="col-md-4">
+        <div class="card shadow-sm border-danger h-100">
+            <div class="card-body">
+                <h6 class="text-danger text-uppercase fw-bold">
+                    Rejected Courses
+                </h6>
+
+                <h2 class="fw-bold mt-2 text-danger">
+                    @Model.RejectedCourses
+                </h2>
+
+                <p class="text-muted">
+                    Sent back to teachers for revision
                 </p>
             </div>
         </div>

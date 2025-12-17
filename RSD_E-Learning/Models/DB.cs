@@ -187,6 +187,9 @@ public class DB : DbContext
         public int TeacherId { get; set; }
         public bool IsApproved { get; set; } = false;
         public bool IsPublished { get; set; } = false;
+        public bool IsRejected { get; set; } = false;
+        [StringLength(500)]
+        public string? RejectionReason { get; set; }
 
 
         // Navigation Properties

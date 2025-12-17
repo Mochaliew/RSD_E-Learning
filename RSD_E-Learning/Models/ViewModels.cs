@@ -224,6 +224,7 @@ namespace RSD_E_Learning.Models
         public int TotalCourses { get; set; }
         public int PendingCourses { get; set; }
         public int ApprovedCourses { get; set; }
+        public int RejectedCourses { get; set; }
         public int NewStudentRegistrations { get; set; }
         public DateTime LastUpdated { get; set; }
         public List<DB.AuditLog> LatestActivities { get; set; } = new();

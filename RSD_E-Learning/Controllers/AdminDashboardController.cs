@@ -26,8 +26,9 @@ namespace RSD_E_Learning.Controllers
                 TotalCourses = await _db.Courses.CountAsync(),
 
                 // Course approval statistics
-                PendingCourses = await _db.Courses.CountAsync(c => !c.IsApproved),
+                PendingCourses = await _db.Courses.CountAsync(c => !c.IsApproved && !c.IsRejected),
                 ApprovedCourses = await _db.Courses.CountAsync(c => c.IsApproved),
+                RejectedCourses = await _db.Courses.CountAsync(c => c.IsRejected),  
 
                 // Dashboard metadata
                 LastUpdated = DateTime.UtcNow
