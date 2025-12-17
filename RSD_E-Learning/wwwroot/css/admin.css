@@ -1,0 +1,43 @@
+﻿.admin-stat-card {
+    border-radius: 12px;
+    transition: transform .2s ease, box-shadow .2s ease;
+}
+
+    .admin-stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 20px rgba(0,0,0,.08);
+    }
+
+.admin-card {
+    border-radius: 12px;
+    transition: transform .2s ease;
+}
+
+    .admin-card:hover {
+        transform: translateY(-3px);
+    }
+
+.audit-log-time {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+/* Buttons */
+.btn {
+    border-radius: 8px;
+}
+
+/* Cards */
+.card {
+    border-radius: 12px;
+}
+
+/* Tables */
+.table th {
+    background-color: #f8f9fa;
+}
+
+/* Dashboard spacing */
+.admin-dashboard section {
+    margin-bottom: 2rem;
+}

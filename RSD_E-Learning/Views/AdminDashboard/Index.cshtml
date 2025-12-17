@@ -17,8 +17,9 @@
     <!-- SUMMARY CARDS -->
     <div class="row mb-4">
 
+        <!-- Teachers -->
         <div class="col-md-3">
-            <div class="card shadow-sm text-center border-primary">
+            <div class="card admin-stat-card text-center border-primary h-100">
                 <div class="card-body">
                     <h6>Total Teachers</h6>
                     <h3>@Model.TotalTeachers</h3>
@@ -26,17 +27,25 @@
             </div>
         </div>
 
+        <!-- Students -->
         <div class="col-md-3">
-            <div class="card shadow-sm text-center border-success">
+            <div class="card admin-stat-card text-center border-success h-100">
                 <div class="card-body">
                     <h6>Total Students</h6>
                     <h3>@Model.TotalStudents</h3>
+
+                    <a asp-controller="AdminEnrollment"
+                       asp-action="Index"
+                       class="btn btn-sm btn-outline-success mt-2 w-100">
+                        View Enrollments
+                    </a>
                 </div>
             </div>
         </div>
 
+        <!-- Courses -->
         <div class="col-md-3">
-            <div class="card shadow-sm text-center border-warning">
+            <div class="card admin-stat-card text-center border-warning h-100">
                 <div class="card-body">
                     <h6>Total Courses</h6>
                     <h3>@Model.TotalCourses</h3>
@@ -44,16 +53,24 @@
             </div>
         </div>
 
+        <!-- Transactions -->
         <div class="col-md-3">
-            <div class="card shadow-sm text-center border-info">
+            <div class="card admin-stat-card text-center border-info h-100">
                 <div class="card-body">
                     <h6>New Students (7 days)</h6>
                     <h3>@Model.NewStudentRegistrations</h3>
+
+                    <a asp-controller="AdminTransaction"
+                       asp-action="Index"
+                       class="btn btn-sm btn-outline-info mt-2 w-100">
+                        View Transactions
+                    </a>
                 </div>
             </div>
         </div>
 
     </div>
+
 
     <!-- BAR CHART -->
     <div class="card shadow-sm mb-4">
