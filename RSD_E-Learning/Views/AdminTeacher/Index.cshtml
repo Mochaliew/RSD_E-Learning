@@ -6,10 +6,8 @@
 
 <h2>Manage Teachers</h2>
 
-<!-- Top action: ONLY Add Teacher -->
 <div class="mb-3">
-    <a asp-action="Create"
-       class="btn btn-primary">
+    <a asp-action="Create" class="btn btn-primary">
         + Add Teacher
     </a>
 </div>
@@ -28,7 +26,7 @@
             <th>Email</th>
             <th>Subject Area</th>
             <th>Status</th>
-            <th style="width:240px;">Action</th>
+            <th style="width:260px;">Action</th>
         </tr>
     </thead>
     <tbody>
@@ -49,28 +47,35 @@
                     }
                 </td>
                 <td>
-                    <a asp-action="ResetPassword"
-                       asp-route-id="@teacher.UserId"
+
+                    <!-- RESET PASSWORD (GET PAGE) -->
+                    <a asp-action="ResetTeacherPassword"
+                       asp-route-teacherId="@teacher.TeacherId"
                        class="btn btn-sm btn-outline-warning me-1">
                         Reset Password
                     </a>
 
-                    @if (teacher.IsActive)
-                    {
-                        <a asp-action="Deactivate"
-                           asp-route-id="@teacher.TeacherId"
-                           class="btn btn-sm btn-outline-danger">
-                            Deactivate
-                        </a>
-                    }
-                    else
-                    {
-                        <a asp-action="Activate"
-                           asp-route-id="@teacher.TeacherId"
-                           class="btn btn-sm btn-outline-success">
-                            Activate
-                        </a>
-                    }
+                    <!-- ACTIVATE / DEACTIVATE (POST) -->
+                    <form asp-action="ToggleStatus"
+                          method="post"
+                          class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="teacherId" value="@teacher.TeacherId" />
+
+                        @if (teacher.IsActive)
+                        {
+                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                Deactivate
+                            </button>
+                        }
+                        else
+                        {
+                            <button type="submit" class="btn btn-sm btn-outline-success">
+                                Activate
+                            </button>
+                        }
+                    </form>
+
                 </td>
             </tr>
         }

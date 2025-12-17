@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RSD_E_Learning.Models;
 
@@ -11,9 +12,11 @@ using RSD_E_Learning.Models;
 namespace RSD_E_Learning.Migrations
 {
     [DbContext(typeof(DB))]
-    partial class DBModelSnapshot : ModelSnapshot
+    [Migration("20251217081836_AddCourseRejection")]
+    partial class AddCourseRejection
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -75,38 +78,6 @@ namespace RSD_E_Learning.Migrations
                     b.HasIndex("CourseId");
 
                     b.ToTable("Assessments");
-                });
-
-            modelBuilder.Entity("RSD_E_Learning.Models.DB+AssessmentAttempt", b =>
-                {
-                    b.Property<int>("AttemptId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AttemptId"));
-
-                    b.Property<int>("AssessmentId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("AttemptedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsPassed")
-                        .HasColumnType("bit");
-
-                    b.Property<double>("Score")
-                        .HasColumnType("float");
-
-                    b.Property<int>("StudentId")
-                        .HasColumnType("int");
-
-                    b.HasKey("AttemptId");
-
-                    b.HasIndex("AssessmentId");
-
-                    b.HasIndex("StudentId");
-
-                    b.ToTable("AssessmentAttempts");
                 });
 
             modelBuilder.Entity("RSD_E_Learning.Models.DB+AssessmentQuestion", b =>
@@ -446,36 +417,6 @@ namespace RSD_E_Learning.Migrations
                     b.ToTable("Students");
                 });
 
-            modelBuilder.Entity("RSD_E_Learning.Models.DB+StudentAnswer", b =>
-                {
-                    b.Property<int>("AnswerId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AnswerId"));
-
-                    b.Property<int>("AttemptId")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsCorrect")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("QuestionId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("SelectedAnswer")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("AnswerId");
-
-                    b.HasIndex("AttemptId");
-
-                    b.HasIndex("QuestionId");
-
-                    b.ToTable("StudentAnswers");
-                });
-
             modelBuilder.Entity("RSD_E_Learning.Models.DB+Teacher", b =>
                 {
                     b.Property<int>("TeacherId")
@@ -574,25 +515,6 @@ namespace RSD_E_Learning.Migrations
                         .IsRequired();
 
                     b.Navigation("Course");
-                });
-
-            modelBuilder.Entity("RSD_E_Learning.Models.DB+AssessmentAttempt", b =>
-                {
-                    b.HasOne("RSD_E_Learning.Models.DB+Assessment", "Assessment")
-                        .WithMany()
-                        .HasForeignKey("AssessmentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("RSD_E_Learning.Models.DB+Student", "Student")
-                        .WithMany()
-                        .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Assessment");
-
-                    b.Navigation("Student");
                 });
 
             modelBuilder.Entity("RSD_E_Learning.Models.DB+AssessmentQuestion", b =>
@@ -727,25 +649,6 @@ namespace RSD_E_Learning.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("RSD_E_Learning.Models.DB+StudentAnswer", b =>
-                {
-                    b.HasOne("RSD_E_Learning.Models.DB+AssessmentAttempt", "AssessmentAttempt")
-                        .WithMany("StudentAnswers")
-                        .HasForeignKey("AttemptId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("RSD_E_Learning.Models.DB+AssessmentQuestion", "Question")
-                        .WithMany()
-                        .HasForeignKey("QuestionId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("AssessmentAttempt");
-
-                    b.Navigation("Question");
-                });
-
             modelBuilder.Entity("RSD_E_Learning.Models.DB+Teacher", b =>
                 {
                     b.HasOne("RSD_E_Learning.Models.DB+User", "User")
@@ -760,11 +663,6 @@ namespace RSD_E_Learning.Migrations
             modelBuilder.Entity("RSD_E_Learning.Models.DB+Assessment", b =>
                 {
                     b.Navigation("AssessmentSubmissions");
-                });
-
-            modelBuilder.Entity("RSD_E_Learning.Models.DB+AssessmentAttempt", b =>
-                {
-                    b.Navigation("StudentAnswers");
                 });
 
             modelBuilder.Entity("RSD_E_Learning.Models.DB+Category", b =>

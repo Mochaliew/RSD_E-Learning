@@ -40,11 +40,21 @@ namespace RSD_E_Learning.Controllers
             if (student == null)
                 return NotFound();
 
+            bool isActive =  student.User!.LockoutEnd == null;
+
             // Lock or unlock account
             student.User!.LockoutEnd =
                 student.User.LockoutEnd == null
                     ? DateTime.UtcNow.AddYears(100)
                     : null;
+
+            _db.AuditLogs.Add(new DB.AuditLog
+            {
+                Action = isActive
+           ? $"Deactivated student account: {student.User.Email}"
+           : $"Activated student account: {student.User.Email}",
+                Timestamp = DateTime.UtcNow
+            });
 
             await _db.SaveChangesAsync();
             return RedirectToAction(nameof(Index));

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using RSD_E_Learning.Models;
@@ -6,6 +7,7 @@ using System.Text;
 
 namespace RSD_E_Learning.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class AdminTeacherController : Controller
     {
         private readonly DB _db;
@@ -67,10 +69,94 @@ namespace RSD_E_Learning.Controllers
             };
 
             _db.Teachers.Add(teacher);
+
+            _db.AuditLogs.Add(new DB.AuditLog
+            {
+                UserId = user.Id,
+                Action = $"Created teacher account: {user.Email}",
+                Timestamp = DateTime.UtcNow
+            });
+
             await _db.SaveChangesAsync();
 
             TempData["Success"] = "Teacher account created successfully.";
-            return RedirectToAction("Index");
+            return RedirectToAction(nameof(Index));
+        }
+
+        // ================== ACTIVATE / DEACTIVATE ==================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ToggleStatus(int teacherId)
+        {
+            var teacher = await _db.Teachers
+                .Include(t => t.User)
+                .FirstOrDefaultAsync(t => t.TeacherId == teacherId);
+
+            if (teacher == null || teacher.User == null)
+                return NotFound();
+
+            bool wasActive = teacher.IsActive;
+            teacher.IsActive = !teacher.IsActive;
+
+            _db.AuditLogs.Add(new DB.AuditLog
+            {
+                UserId = teacher.UserId,
+                Action = wasActive
+                    ? $"Deactivated teacher account: {teacher.User.Email}"
+                    : $"Activated teacher account: {teacher.User.Email}",
+                Timestamp = DateTime.UtcNow
+            });
+
+            await _db.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
+
+        // ================== RESET PASSWORD (GET) ==================
+        [HttpGet]
+        public async Task<IActionResult> ResetTeacherPassword(int teacherId)
+        {
+            var teacher = await _db.Teachers
+                .Include(t => t.User)
+                .FirstOrDefaultAsync(t => t.TeacherId == teacherId);
+
+            if (teacher == null || teacher.User == null)
+                return NotFound();
+
+            var vm = new ResetTeacherPasswordVm
+            {
+                UserId = teacher.UserId
+            };
+
+            return View("ResetPassword",vm);
+        }
+
+        // ================== RESET PASSWORD (POST) ==================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetTeacherPassword(ResetTeacherPasswordVm model)
+        {
+            if (!ModelState.IsValid)
+                return View("ResetPassword",model);
+
+            var user = await _db.Users
+                .FirstOrDefaultAsync(u => u.Id == model.UserId && u.Role == DB.UserRole.Teacher);
+
+            if (user == null)
+                return NotFound();
+
+            user.PasswordHash = HashPassword(model.NewPassword);
+
+            _db.AuditLogs.Add(new DB.AuditLog
+            {
+                UserId = user.Id,
+                Action = $"Admin reset password for teacher: {user.Email}",
+                Timestamp = DateTime.UtcNow
+            });
+
+            await _db.SaveChangesAsync();
+
+            TempData["Success"] = "Teacher password has been reset successfully.";
+            return RedirectToAction(nameof(Index));
         }
 
         // ================== PASSWORD HASH ==================
