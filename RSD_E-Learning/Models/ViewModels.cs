@@ -257,5 +257,24 @@ namespace RSD_E_Learning.Models
         public string? FooterText { get; set; }
     }
 
+    // ===============================
+    // Auto Grading View Models
+    // ===============================
+
+    public class AssessmentSubmissionVM
+    {
+        public int AssessmentId { get; set; }
+        public int StudentId { get; set; }
+
+        public List<QuestionAnswerVM> Answers { get; set; } = new();
+    }
+
+    public class QuestionAnswerVM
+    {
+        public int QuestionId { get; set; }
+        public string SelectedAnswer { get; set; } = "";
+    }
 
 }
+
+

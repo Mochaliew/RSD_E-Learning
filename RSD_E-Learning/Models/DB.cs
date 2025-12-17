@@ -31,6 +31,9 @@ public class DB : DbContext
 
     public DbSet<AssessmentQuestion> AssessmentQuestions { get; set; }
 
+    public DbSet<AssessmentAttempt> AssessmentAttempts { get; set; }
+    public DbSet<StudentAnswer> StudentAnswers { get; set; }
+
     // ----------------------------------- ROLE ENUM ------------------------------------ //
     public enum UserRole { Admin, Teacher, Student }
 
@@ -334,6 +337,53 @@ public class DB : DbContext
         public Assessment? Assessment { get; set; }
     }
 
+    // ----------------------------------- ASSESSMENT ATTEMPT ------------------------------------ //
+    public class AssessmentAttempt
+    {
+        [Key]
+        public int AttemptId { get; set; }
+
+        [ForeignKey(nameof(Student))]
+        public int StudentId { get; set; }
+
+        [ForeignKey(nameof(Assessment))]
+        public int AssessmentId { get; set; }
+
+        public DateTime AttemptedAt { get; set; } = DateTime.UtcNow;
+
+        public double Score { get; set; }
+
+        public bool IsPassed { get; set; }
+
+        // Navigation
+        public Student? Student { get; set; }
+        public Assessment? Assessment { get; set; }
+
+        public ICollection<StudentAnswer> StudentAnswers { get; set; } = new List<StudentAnswer>();
+    }
+
+    // ----------------------------------- STUDENT ANSWER ------------------------------------ //
+    public class StudentAnswer
+    {
+        [Key]
+        public int AnswerId { get; set; }
+
+        [ForeignKey(nameof(AssessmentAttempt))]
+        public int AttemptId { get; set; }
+
+        [ForeignKey(nameof(AssessmentQuestion))]
+        public int QuestionId { get; set; }
+
+        [Required]
+        public string SelectedAnswer { get; set; } = "";
+
+        public bool IsCorrect { get; set; }
+
+        // Navigation
+        public AssessmentAttempt? AssessmentAttempt { get; set; }
+        public AssessmentQuestion? Question { get; set; }
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -348,6 +398,12 @@ public class DB : DbContext
             Role = UserRole.Admin,
             CreatedAt = new DateTime(2025, 1, 1)
         };
+
+        modelBuilder.Entity<StudentAnswer>()
+    .HasOne(sa => sa.Question)
+    .WithMany()
+    .HasForeignKey(sa => sa.QuestionId)
+    .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<User>().HasData(adminUser);
 
