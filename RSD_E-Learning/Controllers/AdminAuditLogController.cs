@@ -15,13 +15,30 @@ namespace RSD_E_Learning.Controllers
             _db = db;
         }
 
-        public async Task<IActionResult> Index()
+        // ================== FULL AUDIT LOG ==================
+        public async Task<IActionResult> Index(string module)
         {
-            var logs = await _db.AuditLogs
-                .OrderByDescending(a => a.Timestamp)
-                .Take(200) // prevent overload
+            var logsQuery = _db.AuditLogs.AsQueryable();
+
+            // ✅ Filter by module using action text
+            if (!string.IsNullOrEmpty(module))
+            {
+                logsQuery = module switch
+                {
+                    "Teacher" => logsQuery.Where(l => l.Action.Contains("teacher")),
+                    "Category" => logsQuery.Where(l => l.Action.Contains("category")),
+                    "Course" => logsQuery.Where(l => l.Action.Contains("course")),
+                    "Student" => logsQuery.Where(l => l.Action.Contains("student")),
+                    _ => logsQuery
+                };
+            }
+
+            var logs = await logsQuery
+                .OrderByDescending(l => l.Timestamp)
+                .Take(200) // safety limit
                 .ToListAsync();
 
+            ViewBag.SelectedModule = module;
             return View(logs);
         }
     }
