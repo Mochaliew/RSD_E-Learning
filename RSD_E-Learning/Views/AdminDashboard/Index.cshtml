@@ -15,54 +15,54 @@
     </div>
 
     <!-- SUMMARY CARDS -->
-    <div class="row mb-4">
+    <div class="row g-4 mb-4">
 
-        <!-- Teachers -->
+        <!-- Total Teachers -->
         <div class="col-md-3">
-            <div class="card admin-stat-card text-center border-primary h-100">
+            <div class="card shadow-sm border-primary h-100">
                 <div class="card-body">
-                    <h6>Total Teachers</h6>
-                    <h3>@Model.TotalTeachers</h3>
+                    <h6 class="text-primary fw-bold">Total Teachers</h6>
+                    <h2>@Model.TotalTeachers</h2>
                 </div>
             </div>
         </div>
 
-        <!-- Students -->
+        <!-- Total Students -->
         <div class="col-md-3">
-            <div class="card admin-stat-card text-center border-success h-100">
+            <div class="card shadow-sm border-success h-100">
                 <div class="card-body">
-                    <h6>Total Students</h6>
-                    <h3>@Model.TotalStudents</h3>
+                    <h6 class="text-success fw-bold">Total Students</h6>
+                    <h2>@Model.TotalStudents</h2>
 
                     <a asp-controller="AdminEnrollment"
                        asp-action="Index"
-                       class="btn btn-sm btn-outline-success mt-2 w-100">
+                       class="btn btn-outline-success w-100 mt-3">
                         View Enrollments
                     </a>
                 </div>
             </div>
         </div>
 
-        <!-- Courses -->
+        <!-- Total Courses -->
         <div class="col-md-3">
-            <div class="card admin-stat-card text-center border-warning h-100">
+            <div class="card shadow-sm border-warning h-100">
                 <div class="card-body">
-                    <h6>Total Courses</h6>
-                    <h3>@Model.TotalCourses</h3>
+                    <h6 class="text-warning fw-bold">Total Courses</h6>
+                    <h2>@Model.TotalCourses</h2>
                 </div>
             </div>
         </div>
 
-        <!-- Transactions -->
+        <!-- New Students -->
         <div class="col-md-3">
-            <div class="card admin-stat-card text-center border-info h-100">
+            <div class="card shadow-sm border-info h-100">
                 <div class="card-body">
-                    <h6>New Students (7 days)</h6>
-                    <h3>@Model.NewStudentRegistrations</h3>
+                    <h6 class="text-info fw-bold">New Students (7 days)</h6>
+                    <h2>@Model.NewStudentRegistrations</h2>
 
                     <a asp-controller="AdminTransaction"
                        asp-action="Index"
-                       class="btn btn-sm btn-outline-info mt-2 w-100">
+                       class="btn btn-outline-info w-100 mt-3">
                         View Transactions
                     </a>
                 </div>
@@ -71,61 +71,6 @@
 
     </div>
 
-
-    <!-- BAR CHART -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-body">
-            <h5 class="mb-3">System Overview</h5>
-            <canvas id="overviewChart" height="100"></canvas>
-        </div>
-    </div>
-
-    <!-- ACTION CARDS -->
-    <div class="row">
-
-        <div class="col-md-4 mb-4">
-            <a asp-controller="AdminTeacher" asp-action="Index"
-               class="text-decoration-none text-dark">
-                <div class="card shadow-sm h-100 admin-card">
-                    <div class="card-body text-center">
-                        <h5>Manage Teachers</h5>
-                        <p class="text-muted">
-                            Create, suspend, and reset teacher accounts.
-                        </p>
-                    </div>
-                </div>
-            </a>
-        </div>
-
-        <div class="col-md-4 mb-4">
-            <a asp-controller="AdminStudent" asp-action="Index"
-               class="text-decoration-none text-dark">
-                <div class="card shadow-sm h-100 admin-card">
-                    <div class="card-body text-center">
-                        <h5>Manage Students</h5>
-                        <p class="text-muted">
-                            View student accounts and payment status.
-                        </p>
-                    </div>
-                </div>
-            </a>
-        </div>
-
-        <div class="col-md-4 mb-4">
-            <a asp-controller="AdminCategory" asp-action="Index"
-               class="text-decoration-none text-dark">
-                <div class="card shadow-sm h-100 admin-card">
-                    <div class="card-body text-center">
-                        <h5>Manage Categories</h5>
-                        <p class="text-muted">
-                            Create and organize course categories.
-                        </p>
-                    </div>
-                </div>
-            </a>
-        </div>
-
-    </div>
 
     <!-- ACTIVITY LOG -->
     <div class="card shadow-sm mt-4">
