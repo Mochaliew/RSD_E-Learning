@@ -138,18 +138,14 @@
 
 </div>
 
-<!-- CHART.JS -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-    const ctx = document.getElementById('overviewChart');
-
-    new Chart(ctx, {
+    new Chart(document.getElementById('overviewChart'), {
         type: 'bar',
         data: {
             labels: ['Students', 'Teachers', 'Courses'],
             datasets: [{
-                label: 'Total Count',
                 data: [
                     @Model.TotalStudents,
                     @Model.TotalTeachers,
@@ -159,10 +155,7 @@
             }]
         },
         options: {
-            responsive: true,
-            plugins: {
-                legend: { display: false }
-            }
+            plugins: { legend: { display: false } }
         }
     });
 </script>
@@ -173,22 +166,11 @@
 
 <div class="row g-4 mt-3">
 
-    <!-- Pending -->
     <div class="col-md-4">
         <div class="card shadow-sm border-primary h-100">
             <div class="card-body">
-                <h6 class="text-primary text-uppercase fw-bold">
-                    Pending Courses
-                </h6>
-
-                <h2 class="fw-bold mt-2">
-                    @Model.PendingCourses
-                </h2>
-
-                <p class="text-muted mb-4">
-                    Courses waiting for admin approval
-                </p>
-
+                <h6 class="text-primary fw-bold">Pending Courses</h6>
+                <h2>@Model.PendingCourses</h2>
                 <a asp-controller="AdminCourseApproval"
                    asp-action="Index"
                    class="btn btn-outline-primary w-100">
@@ -198,40 +180,20 @@
         </div>
     </div>
 
-    <!-- Approved -->
     <div class="col-md-4">
         <div class="card shadow-sm border-success h-100">
             <div class="card-body">
-                <h6 class="text-success text-uppercase fw-bold">
-                    Approved Courses
-                </h6>
-
-                <h2 class="fw-bold mt-2">
-                    @Model.ApprovedCourses
-                </h2>
-
-                <p class="text-muted">
-                    Published & available to students
-                </p>
+                <h6 class="text-success fw-bold">Approved Courses</h6>
+                <h2>@Model.ApprovedCourses</h2>
             </div>
         </div>
     </div>
 
-    <!-- Rejected -->
     <div class="col-md-4">
         <div class="card shadow-sm border-danger h-100">
             <div class="card-body">
-                <h6 class="text-danger text-uppercase fw-bold">
-                    Rejected Courses
-                </h6>
-
-                <h2 class="fw-bold mt-2 text-danger">
-                    @Model.RejectedCourses
-                </h2>
-
-                <p class="text-muted">
-                    Sent back to teachers for revision
-                </p>
+                <h6 class="text-danger fw-bold">Rejected Courses</h6>
+                <h2>@Model.RejectedCourses</h2>
             </div>
         </div>
     </div>

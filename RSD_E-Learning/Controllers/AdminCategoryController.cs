@@ -42,6 +42,14 @@ namespace RSD_E_Learning.Controllers
             };
 
             _db.Categories.Add(category);
+
+            //auditlog
+            _db.AuditLogs.Add(new DB.AuditLog
+            {
+                Action = $"Created category: {category.Name}",
+                Timestamp = DateTime.UtcNow
+            });
+
             await _db.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
@@ -76,6 +84,13 @@ namespace RSD_E_Learning.Controllers
             category.Name = model.Name;
             category.Description = model.Description;
 
+            //auditlog
+            _db.AuditLogs.Add(new DB.AuditLog
+            {
+                Action = $"Edited category: {category.Name}",
+                Timestamp = DateTime.UtcNow
+            });
+
             await _db.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
@@ -88,6 +103,13 @@ namespace RSD_E_Learning.Controllers
             if (category == null) return NotFound();
 
             _db.Categories.Remove(category);
+
+            //auditlog
+            _db.AuditLogs.Add(new DB.AuditLog
+            {
+                Action = $"Deleted category: {category.Name}",
+                Timestamp = DateTime.UtcNow
+            });
             await _db.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));

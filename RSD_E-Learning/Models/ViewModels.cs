@@ -258,5 +258,4 @@ namespace RSD_E_Learning.Models
         public string? FooterText { get; set; }
     }
 
-
 }

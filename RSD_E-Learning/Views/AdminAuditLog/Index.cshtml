@@ -1,0 +1,55 @@
+﻿@model IEnumerable<RSD_E_Learning.Models.DB.AuditLog>
+
+@{
+    ViewData["Title"] = "Audit Logs";
+    Layout = "_Layout";
+}
+
+<h2 class="mb-3">System Audit Logs</h2>
+
+<div class="card">
+    <div class="card-body">
+
+        <table class="table table-bordered table-striped align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th style="width: 80px;">ID</th>
+                    <th>User ID</th>
+                    <th>Action</th>
+                    <th>Details</th>
+                    <th style="width: 180px;">Timestamp</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var log in Model)
+                {
+                    <tr>
+                        <td>@log.AuditLogId</td>
+                        <td>
+                            @(log.UserId.HasValue? log.UserId.ToString() : "System")
+                        </td>
+                        <td>@log.Action</td>
+                        <td>@log.Details</td>
+                        <td>@log.Timestamp.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        @if (!Model.Any())
+        {
+            <div class="text-muted text-center mt-3">
+                No audit records found.
+            </div>
+        }
+
+    </div>
+</div>
+
+<div class="mt-4">
+    <a asp-controller="AdminDashboard"
+       asp-action="Index"
+       class="btn btn-secondary">
+        ← Back to Dashboard
+    </a>
+</div>

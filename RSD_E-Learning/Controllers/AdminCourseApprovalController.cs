@@ -13,6 +13,7 @@ public class AdminCourseApprovalController : Controller
         _db = db;
     }
 
+    // ===================== PENDING COURSES =====================
     public async Task<IActionResult> Index()
     {
         var courses = await _db.Courses
@@ -25,35 +26,65 @@ public class AdminCourseApprovalController : Controller
         return View(courses);
     }
 
+    // ===================== APPROVE =====================
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Approve(int id)
     {
-        var course = await _db.Courses.FindAsync(id);
+        var course = await _db.Courses
+            .Include(c => c.Teacher)
+                .ThenInclude(t => t.User)
+            .FirstOrDefaultAsync(c => c.CourseId == id);
+
         if (course == null) return NotFound();
 
         course.IsApproved = true;
         course.IsPublished = true;
         course.IsRejected = false;
         course.RejectionReason = null;
-        await _db.SaveChangesAsync();
 
+        //AUDIT LOG
+        _db.AuditLogs.Add(new DB.AuditLog
+        {
+            Action = $"Approved course: {course.Title} (Teacher: {course.Teacher!.User!.Email})",
+            Timestamp = DateTime.UtcNow
+        });
+
+        await _db.SaveChangesAsync();
         return RedirectToAction(nameof(Index));
     }
 
+    // ===================== REJECT =====================
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Reject(int id, string reason)
     {
-        var course = await _db.Courses.FindAsync(id);
+        if (string.IsNullOrWhiteSpace(reason))
+        {
+            TempData["Error"] = "Rejection reason is required.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        var course = await _db.Courses
+            .Include(c => c.Teacher)
+                .ThenInclude(t => t.User)
+            .FirstOrDefaultAsync(c => c.CourseId == id);
+
         if (course == null) return NotFound();
 
         course.IsApproved = false;
         course.IsPublished = false;
         course.IsRejected = true;
         course.RejectionReason = reason;
-        await _db.SaveChangesAsync();
 
+        //AUDIT LOG
+        _db.AuditLogs.Add(new DB.AuditLog
+        {
+            Action = $"Rejected course: {course.Title} | Reason: {reason}",
+            Timestamp = DateTime.UtcNow
+        });
+
+        await _db.SaveChangesAsync();
         return RedirectToAction(nameof(Index));
     }
 }
