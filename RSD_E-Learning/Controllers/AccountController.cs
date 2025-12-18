@@ -110,11 +110,14 @@ namespace RSD_E_Learning.Controllers
 
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name, user.FullName),
+                new Claim(ClaimTypes.Name, user.Email),
                 new Claim(ClaimTypes.Email, user.Email),
+                new Claim("FullName", user.FullName),
                 new Claim("UserId", user.Id.ToString()),
                 new Claim("StudentId", student.StudentId.ToString()),
-                new Claim("Role", "Student")
+                //new Claim("Role", "Student")
+                new Claim(ClaimTypes.Role, "Student")
+
             };
 
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -126,6 +129,13 @@ namespace RSD_E_Learning.Controllers
 
             return RedirectToAction("Index", "Home");
         }
+
+        [HttpGet]
+        public IActionResult AccessDenied()
+        {
+            return View();
+        }
+
 
 
         // -------------------- LOGOUT --------------------

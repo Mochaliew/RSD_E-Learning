@@ -22,6 +22,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     {
         options.LoginPath = "/Account/Login";
         options.LogoutPath = "/Account/Logout";
+        options.AccessDeniedPath = "/Account/AccessDenied"; // ⭐ THIS WAS MISSING
         options.ExpireTimeSpan = TimeSpan.FromHours(24);
     });
 
@@ -35,24 +36,14 @@ builder.Services.AddControllers()
             System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
     });
 
-// Enable CORS if you need API access from other domains
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAll",
-        builder =>
-        {
-            builder.AllowAnyOrigin()
-                   .AllowAnyMethod()
-                   .AllowAnyHeader();
-        });
-});
+
 
 var app = builder.Build(); // ✅ now in the correct place
 
 // Enable API Controllers
 app.MapControllers();
 
-// Enable CORS if configured
+// Enable CORS if configuredS
 // app.UseCors("AllowAll");
 
 // Configure middleware
