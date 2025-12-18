@@ -183,9 +183,7 @@ namespace RSD_E_Learning.Controllers
             TempData["SuccessMessage"] =
                 "Course submitted successfully and pending admin approval.";
 
-            return RedirectToAction("UploadMaterial",
-    "TeacherController",            
-    new { courseId = course.CourseId });
+            return RedirectToAction("CreateCourse");
         }
 
         [HttpGet]
