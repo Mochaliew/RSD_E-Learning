@@ -38,7 +38,7 @@ namespace RSD_E_Learning.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("Admins", (string)null);
+                    b.ToTable("Admins");
 
                     b.HasData(
                         new
@@ -74,7 +74,39 @@ namespace RSD_E_Learning.Migrations
 
                     b.HasIndex("CourseId");
 
-                    b.ToTable("Assessments", (string)null);
+                    b.ToTable("Assessments");
+                });
+
+            modelBuilder.Entity("RSD_E_Learning.Models.DB+AssessmentAttempt", b =>
+                {
+                    b.Property<int>("AttemptId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AttemptId"));
+
+                    b.Property<int>("AssessmentId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("AttemptedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsPassed")
+                        .HasColumnType("bit");
+
+                    b.Property<double>("Score")
+                        .HasColumnType("float");
+
+                    b.Property<int>("StudentId")
+                        .HasColumnType("int");
+
+                    b.HasKey("AttemptId");
+
+                    b.HasIndex("AssessmentId");
+
+                    b.HasIndex("StudentId");
+
+                    b.ToTable("AssessmentAttempts");
                 });
 
             modelBuilder.Entity("RSD_E_Learning.Models.DB+AssessmentQuestion", b =>
@@ -117,7 +149,7 @@ namespace RSD_E_Learning.Migrations
 
                     b.HasIndex("AssessmentId");
 
-                    b.ToTable("AssessmentQuestions", (string)null);
+                    b.ToTable("AssessmentQuestions");
                 });
 
             modelBuilder.Entity("RSD_E_Learning.Models.DB+AssessmentSubmission", b =>
@@ -151,7 +183,7 @@ namespace RSD_E_Learning.Migrations
 
                     b.HasIndex("StudentId");
 
-                    b.ToTable("AssessmentSubmissions", (string)null);
+                    b.ToTable("AssessmentSubmissions");
                 });
 
             modelBuilder.Entity("RSD_E_Learning.Models.DB+AuditLog", b =>
@@ -177,7 +209,7 @@ namespace RSD_E_Learning.Migrations
 
                     b.HasKey("AuditLogId");
 
-                    b.ToTable("AuditLogs", (string)null);
+                    b.ToTable("AuditLogs");
                 });
 
             modelBuilder.Entity("RSD_E_Learning.Models.DB+Category", b =>
@@ -199,7 +231,7 @@ namespace RSD_E_Learning.Migrations
 
                     b.HasKey("CategoryId");
 
-                    b.ToTable("Categories", (string)null);
+                    b.ToTable("Categories");
                 });
 
             modelBuilder.Entity("RSD_E_Learning.Models.DB+Certificate", b =>
@@ -230,7 +262,7 @@ namespace RSD_E_Learning.Migrations
 
                     b.HasIndex("StudentId");
 
-                    b.ToTable("Certificates", (string)null);
+                    b.ToTable("Certificates");
                 });
 
             modelBuilder.Entity("RSD_E_Learning.Models.DB+Course", b =>
@@ -274,7 +306,7 @@ namespace RSD_E_Learning.Migrations
 
                     b.HasIndex("TeacherId");
 
-                    b.ToTable("Courses", (string)null);
+                    b.ToTable("Courses");
                 });
 
             modelBuilder.Entity("RSD_E_Learning.Models.DB+CourseFile", b =>
@@ -317,7 +349,7 @@ namespace RSD_E_Learning.Migrations
 
                     b.HasIndex("TeacherId");
 
-                    b.ToTable("CourseFiles", (string)null);
+                    b.ToTable("CourseFiles");
                 });
 
             modelBuilder.Entity("RSD_E_Learning.Models.DB+Enrollment", b =>
@@ -354,7 +386,7 @@ namespace RSD_E_Learning.Migrations
 
                     b.HasIndex("StudentId");
 
-                    b.ToTable("Enrollments", (string)null);
+                    b.ToTable("Enrollments");
                 });
 
             modelBuilder.Entity("RSD_E_Learning.Models.DB+Lesson", b =>
@@ -385,7 +417,7 @@ namespace RSD_E_Learning.Migrations
 
                     b.HasIndex("CourseId");
 
-                    b.ToTable("Lessons", (string)null);
+                    b.ToTable("Lessons");
                 });
 
             modelBuilder.Entity("RSD_E_Learning.Models.DB+Student", b =>
@@ -411,7 +443,37 @@ namespace RSD_E_Learning.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("Students", (string)null);
+                    b.ToTable("Students");
+                });
+
+            modelBuilder.Entity("RSD_E_Learning.Models.DB+StudentAnswer", b =>
+                {
+                    b.Property<int>("AnswerId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AnswerId"));
+
+                    b.Property<int>("AttemptId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsCorrect")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("QuestionId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SelectedAnswer")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("AnswerId");
+
+                    b.HasIndex("AttemptId");
+
+                    b.HasIndex("QuestionId");
+
+                    b.ToTable("StudentAnswers");
                 });
 
             modelBuilder.Entity("RSD_E_Learning.Models.DB+Teacher", b =>
@@ -438,7 +500,7 @@ namespace RSD_E_Learning.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("Teachers", (string)null);
+                    b.ToTable("Teachers");
                 });
 
             modelBuilder.Entity("RSD_E_Learning.Models.DB+User", b =>
@@ -477,7 +539,7 @@ namespace RSD_E_Learning.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
 
                     b.HasData(
                         new
@@ -512,6 +574,25 @@ namespace RSD_E_Learning.Migrations
                         .IsRequired();
 
                     b.Navigation("Course");
+                });
+
+            modelBuilder.Entity("RSD_E_Learning.Models.DB+AssessmentAttempt", b =>
+                {
+                    b.HasOne("RSD_E_Learning.Models.DB+Assessment", "Assessment")
+                        .WithMany()
+                        .HasForeignKey("AssessmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("RSD_E_Learning.Models.DB+Student", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Assessment");
+
+                    b.Navigation("Student");
                 });
 
             modelBuilder.Entity("RSD_E_Learning.Models.DB+AssessmentQuestion", b =>
@@ -646,6 +727,25 @@ namespace RSD_E_Learning.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("RSD_E_Learning.Models.DB+StudentAnswer", b =>
+                {
+                    b.HasOne("RSD_E_Learning.Models.DB+AssessmentAttempt", "AssessmentAttempt")
+                        .WithMany("StudentAnswers")
+                        .HasForeignKey("AttemptId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("RSD_E_Learning.Models.DB+AssessmentQuestion", "Question")
+                        .WithMany()
+                        .HasForeignKey("QuestionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("AssessmentAttempt");
+
+                    b.Navigation("Question");
+                });
+
             modelBuilder.Entity("RSD_E_Learning.Models.DB+Teacher", b =>
                 {
                     b.HasOne("RSD_E_Learning.Models.DB+User", "User")
@@ -660,6 +760,11 @@ namespace RSD_E_Learning.Migrations
             modelBuilder.Entity("RSD_E_Learning.Models.DB+Assessment", b =>
                 {
                     b.Navigation("AssessmentSubmissions");
+                });
+
+            modelBuilder.Entity("RSD_E_Learning.Models.DB+AssessmentAttempt", b =>
+                {
+                    b.Navigation("StudentAnswers");
                 });
 
             modelBuilder.Entity("RSD_E_Learning.Models.DB+Category", b =>
