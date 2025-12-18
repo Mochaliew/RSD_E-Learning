@@ -75,6 +75,56 @@
         </div>
     </div>
 
+    <!-- MANAGEMENT SHORTCUTS -->
+    <div class="row g-4 mb-4">
+
+        <div class="col-md-4">
+            <a asp-controller="AdminTeacher"
+               asp-action="Index"
+               class="text-decoration-none text-dark">
+                <div class="card shadow-sm h-100 admin-card">
+                    <div class="card-body text-center">
+                        <h5>Manage Teachers</h5>
+                        <p class="text-muted">
+                            Create, suspend, and reset teacher accounts.
+                        </p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-4">
+            <a asp-controller="AdminStudent"
+               asp-action="Index"
+               class="text-decoration-none text-dark">
+                <div class="card shadow-sm h-100 admin-card">
+                    <div class="card-body text-center">
+                        <h5>Manage Students</h5>
+                        <p class="text-muted">
+                            View student accounts and enrollment status.
+                        </p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-4">
+            <a asp-controller="AdminCategory"
+               asp-action="Index"
+               class="text-decoration-none text-dark">
+                <div class="card shadow-sm h-100 admin-card">
+                    <div class="card-body text-center">
+                        <h5>Manage Categories</h5>
+                        <p class="text-muted">
+                            Create and organize course categories.
+                        </p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+    </div>
+
 
 
     <!-- ACTIVITY LOG -->
