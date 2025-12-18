@@ -115,6 +115,31 @@ using (var scope = app.Services.CreateScope())
 
         db.SaveChanges();
     }
+    // Seed IT categories if none exist
+    if (!db.Categories.Any())
+    {
+        var categories = new List<DB.Category>
+    {
+        new DB.Category
+        {
+            Name = "Software Development",
+            Description = "Covers programming, application development, and software engineering concepts."
+        },
+        new DB.Category
+        {
+            Name = "Networking & Security",
+            Description = "Focuses on computer networks, cybersecurity fundamentals, and system protection."
+        },
+        new DB.Category
+        {
+            Name = "Data & AI",
+            Description = "Includes data analysis, machine learning, and artificial intelligence topics."
+        }
+    };
+
+        db.Categories.AddRange(categories);
+        db.SaveChanges();
+    }
 
 }
 
