@@ -158,22 +158,16 @@ public class DB : DbContext
         [Key]
         public int EnrollmentId { get; set; }
 
-        [ForeignKey(nameof(Student))]
         public int StudentId { get; set; }
+        public Student Student { get; set; } = null!;
 
-        [ForeignKey(nameof(Course))]
         public int CourseId { get; set; }
+        public Course Course { get; set; } = null!;
 
         public DateTime EnrolledAt { get; set; } = DateTime.UtcNow;
-
-        public bool PaymentStatus { get; set; } = false;
-
-        public string? PaymentReference { get; set; }
-
-        // Navigation Properties
-        public Student? Student { get; set; }
-        public Course? Course { get; set; }
+        public bool PaymentStatus { get; set; }
     }
+
 
     // ----------------------------------- COURSE ------------------------------------ //
     public class Course
@@ -418,11 +412,11 @@ public class DB : DbContext
             .OnDelete(DeleteBehavior.Restrict);
 
         // Disable cascade delete for Enrollment -> Course relationship
-        modelBuilder.Entity<DB.Enrollment>()
-            .HasOne<DB.Course>()
-            .WithMany()
-            .HasForeignKey(e => e.CourseId)
-            .OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<Enrollment>()
+         .HasOne(e => e.Student)
+         .WithMany(s => s.Enrollments)
+         .HasForeignKey(e => e.StudentId)
+         .OnDelete(DeleteBehavior.Restrict);
     }
     private static string HashPassword(string password)
     {

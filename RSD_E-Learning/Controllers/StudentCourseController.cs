@@ -49,17 +49,15 @@ namespace RSD_E_Learning.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Enroll(int courseId)
         {
-            var userEmail = User.Identity!.Name;
+            var studentIdClaim = User.FindFirst("StudentId")?.Value;
 
-            var student = await _db.Students
-                .Include(s => s.User)
-                .FirstOrDefaultAsync(s => s.User!.Email == userEmail);
-
-            if (student == null)
+            if (studentIdClaim == null)
                 return Unauthorized();
 
+            int studentId = int.Parse(studentIdClaim);
+
             var alreadyEnrolled = await _db.Enrollments.AnyAsync(e =>
-                e.StudentId == student.StudentId &&
+                e.StudentId == studentId &&
                 e.CourseId == courseId);
 
             if (alreadyEnrolled)
@@ -70,43 +68,45 @@ namespace RSD_E_Learning.Controllers
 
             var enrollment = new DB.Enrollment
             {
-                StudentId = student.StudentId,
+                StudentId = studentId,
                 CourseId = courseId,
                 PaymentStatus = false
             };
 
             _db.Enrollments.Add(enrollment);
+            System.Diagnostics.Debug.WriteLine($"ENROLL → StudentId = {studentId}, CourseId = {courseId}");
             await _db.SaveChangesAsync();
 
             TempData["Message"] = "Enrollment successful!";
             return RedirectToAction("MyCourses");
         }
 
+
+        // ================== MY COURSES ==================
         public async Task<IActionResult> MyCourses()
         {
-            var userEmail = User.Identity!.Name;
+            var studentIdClaim = User.FindFirst("StudentId")?.Value;
 
-            var student = await _db.Students
-                .Include(s => s.User)
-                .FirstOrDefaultAsync(s => s.User!.Email == userEmail);
-
-            if (student == null)
+            if (studentIdClaim == null)
                 return Unauthorized();
 
+            int studentId = int.Parse(studentIdClaim);
+            System.Diagnostics.Debug.WriteLine($"MYCOURSES → StudentId = {studentId}");
+
             var courses = await _db.Enrollments
-                .Where(e => e.StudentId == student.StudentId)
+                .Where(e => e.StudentId == studentId)
                 .Include(e => e.Course)
                     .ThenInclude(c => c.Category)
                 .Include(e => e.Course)
                     .ThenInclude(c => c.Teacher)
                         .ThenInclude(t => t.User)
-                .Select(e => e.Course)
-                .Where(c => c != null)   // ⬅️ CRITICAL
+                .Where(e => e.Course != null)
+                .Select(e => e.Course!)
                 .ToListAsync();
 
-            // ⬅️ ABSOLUTE SAFETY
-            return View(courses ?? new List<DB.Course>());
+            return View(courses);
         }
+
 
 
 
