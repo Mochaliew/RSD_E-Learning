@@ -1,0 +1,49 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+@model List<RSD_E_Learning.Models.DB.Course>
+
+@{
+    ViewData["Title"] = "Available Courses";
+}
+
+<h2>Available Courses</h2>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        No courses available at the moment.
+    </div>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Course</th>
+                <th>Category</th>
+                <th>Instructor</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var course in Model)
+            {
+                <tr>
+                    <td>@course.Title</td>
+                    <td>@course.Category?.Name</td>
+                    <td>@course.Teacher?.User?.FullName</td>
+                    <td>
+                        <a asp-action="Details"
+                           asp-route-id="@course.CourseId"
+                           class="btn btn-primary btn-sm">
+                            View
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

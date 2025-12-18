@@ -22,21 +22,57 @@
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
+
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link text-dark"
+                               asp-area=""
+                               asp-controller="Home"
+                               asp-action="Index">
+                                Home
+                            </a>
                         </li>
+
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                            <a class="nav-link text-dark"
+                               asp-area=""
+                               asp-controller="Home"
+                               asp-action="Privacy">
+                                Privacy
+                            </a>
                         </li>
+
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Teacher" asp-action="TeacherIndex">Teacher</a>
+                            <a class="nav-link text-dark"
+                               asp-area=""
+                               asp-controller="Teacher"
+                               asp-action="TeacherIndex">
+                                Teacher
+                            </a>
                         </li>
+
+                        @* STUDENT COURSES (ONLY AFTER LOGIN) *@
+                        @if (User.Identity?.IsAuthenticated ?? false)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark"
+                                   asp-controller="StudentCourse"
+                                   asp-action="MyCourses">
+                                    My Courses
+                                </a>
+                            </li>
+
+                        }
+
                     </ul>
+
                     <ul class="navbar-nav ms-auto">
                         @if (User.Identity?.IsAuthenticated ?? false)
                         {
                             <li class="nav-item">
-                                <span class="nav-link text-dark">Hello, @User.Identity.Name</span>
+                                <span class="nav-link text-dark">
+                                    Hello, @User.FindFirst("FullName")?.Value
+                                </span>
+
                             </li>
                             <li class="nav-item">
                                 <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
