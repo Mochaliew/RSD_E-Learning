@@ -9,23 +9,27 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/RSD_E_Learning.styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/admin.css" />
-
 </head>
 <body>
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">RSD_E_Learning</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                    aria-expanded="false" aria-label="Toggle navigation">
+                <a class="navbar-brand" asp-controller="Home" asp-action="Index">RSD_E_Learning</a>
+
+                <button class="navbar-toggler" type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target=".navbar-collapse"
+                        aria-expanded="false">
                     <span class="navbar-toggler-icon"></span>
                 </button>
+
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+
+                    <!-- LEFT NAVBAR -->
                     <ul class="navbar-nav flex-grow-1">
 
                         <li class="nav-item">
                             <a class="nav-link text-dark"
-                               asp-area=""
                                asp-controller="Home"
                                asp-action="Index">
                                 Home
@@ -34,24 +38,23 @@
 
                         <li class="nav-item">
                             <a class="nav-link text-dark"
-                               asp-area=""
                                asp-controller="Home"
                                asp-action="Privacy">
                                 Privacy
                             </a>
                         </li>
 
+                        <!-- BROWSE COURSES (VISIBLE TO ALL) -->
                         <li class="nav-item">
                             <a class="nav-link text-dark"
-                               asp-area=""
-                               asp-controller="Teacher"
-                               asp-action="TeacherIndex">
-                                Teacher
+                               asp-controller="Courses"
+                               asp-action="Catalog">
+                                Browse Courses
                             </a>
                         </li>
 
-                        @* STUDENT COURSES (ONLY AFTER LOGIN) *@
-                        @if (User.Identity?.IsAuthenticated ?? false)
+                        <!-- STUDENT ONLY -->
+                        @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Student"))
                         {
                             <li class="nav-item">
                                 <a class="nav-link text-dark"
@@ -60,11 +63,19 @@
                                     My Courses
                                 </a>
                             </li>
-
                         }
+
+                        <li class="nav-item">
+                            <a class="nav-link text-dark"
+                               asp-controller="Teacher"
+                               asp-action="TeacherIndex">
+                                Teacher
+                            </a>
+                        </li>
 
                     </ul>
 
+                    <!-- RIGHT NAVBAR -->
                     <ul class="navbar-nav ms-auto">
                         @if (User.Identity?.IsAuthenticated ?? false)
                         {
@@ -72,78 +83,113 @@
                                 <span class="nav-link text-dark">
                                     Hello, @User.FindFirst("FullName")?.Value
                                 </span>
-
                             </li>
+
                             <li class="nav-item">
-                                <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
-                                    <button type="submit" class="btn btn-link nav-link text-dark">Logout</button>
+                                <form asp-controller="Account"
+                                      asp-action="Logout"
+                                      method="post"
+                                      class="d-inline">
+                                    <button type="submit"
+                                            class="btn btn-link nav-link text-dark">
+                                        Logout
+                                    </button>
                                 </form>
                             </li>
                         }
                         else
                         {
-
                             <li class="nav-item">
-                                <a class="nav-link" asp-controller="Certificate" asp-action="MyCertificates">
-                                    <i class="bi bi-award"></i> My Certificates
+                                <a class="nav-link"
+                                   asp-controller="Certificate"
+                                   asp-action="MyCertificates">
+                                    My Certificates
                                 </a>
                             </li>
+
                             <li class="nav-item dropdown">
-                                <a class="nav-link text-dark dropdown-toggle" href="#" id="studentDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <a class="nav-link text-dark dropdown-toggle"
+                                   href="#"
+                                   data-bs-toggle="dropdown">
                                     Student
                                 </a>
-                                <ul class="dropdown-menu" aria-labelledby="studentDropdown">
+                                <ul class="dropdown-menu">
                                     <li>
-                                        <a class="dropdown-item" asp-controller="Account" asp-action="Register">Register</a>
+                                        <a class="dropdown-item"
+                                           asp-controller="Account"
+                                           asp-action="Register">
+                                            Register
+                                        </a>
                                     </li>
                                     <li>
-                                        <a class="dropdown-item" asp-controller="Account" asp-action="Login">Login</a>
+                                        <a class="dropdown-item"
+                                           asp-controller="Account"
+                                           asp-action="Login">
+                                            Login
+                                        </a>
                                     </li>
                                 </ul>
                             </li>
 
                             <li class="nav-item dropdown">
-                                <a class="nav-link text-dark dropdown-toggle" href="#" id="studentDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <a class="nav-link text-dark dropdown-toggle"
+                                   href="#"
+                                   data-bs-toggle="dropdown">
                                     Teacher
                                 </a>
-                                <ul class="dropdown-menu" aria-labelledby="studentDropdown">
+                                <ul class="dropdown-menu">
                                     <li>
-                                        <a class="dropdown-item" asp-controller="Teacher" asp-action="TeacherLogin">Login</a>
+                                        <a class="dropdown-item"
+                                           asp-controller="Teacher"
+                                           asp-action="TeacherLogin">
+                                            Login
+                                        </a>
                                     </li>
                                 </ul>
                             </li>
 
                             <li class="nav-item dropdown ms-3">
-                                <a class="nav-link text-dark dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <a class="nav-link text-dark dropdown-toggle"
+                                   href="#"
+                                   data-bs-toggle="dropdown">
                                     Admin
                                 </a>
-                                <ul class="dropdown-menu" aria-labelledby="adminDropdown">
+                                <ul class="dropdown-menu">
                                     <li>
-                                        <a class="dropdown-item" asp-controller="AdminLogin" asp-action="Login">Login</a>
+                                        <a class="dropdown-item"
+                                           asp-controller="AdminLogin"
+                                           asp-action="Login">
+                                            Login
+                                        </a>
                                     </li>
                                 </ul>
                             </li>
-
                         }
                     </ul>
+
                 </div>
             </div>
         </nav>
     </header>
+
     <div class="container">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
+
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2025 - RSD_E_Learning - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            &copy; 2025 - RSD_E_Learning -
+            <a asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
     </footer>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

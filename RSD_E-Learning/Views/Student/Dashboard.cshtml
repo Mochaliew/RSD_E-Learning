@@ -1,0 +1,39 @@
+﻿@{
+    ViewData["Title"] = "Student Dashboard";
+}
+
+<h2 class="mb-4">Student Dashboard</h2>
+
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">📘 Browse Courses</h5>
+                <p class="card-text">
+                    View all available courses and enroll.
+                </p>
+                <a asp-controller="Courses"
+                   asp-action="Catalog"
+                   class="btn btn-primary">
+                    Browse Courses
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">🎓 My Courses</h5>
+                <p class="card-text">
+                    View courses you are enrolled in.
+                </p>
+                <a asp-controller="StudentCourse"
+                   asp-action="MyCourses"
+                   class="btn btn-success">
+                    My Courses
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

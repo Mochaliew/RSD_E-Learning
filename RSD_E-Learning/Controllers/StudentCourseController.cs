@@ -82,7 +82,6 @@ namespace RSD_E_Learning.Controllers
             return RedirectToAction("MyCourses");
         }
 
-        // ================== MY COURSES ==================
         public async Task<IActionResult> MyCourses()
         {
             var userEmail = User.Identity!.Name;
@@ -101,10 +100,34 @@ namespace RSD_E_Learning.Controllers
                 .Include(e => e.Course)
                     .ThenInclude(c => c.Teacher)
                         .ThenInclude(t => t.User)
-                .Select(e => e.Course!)
+                .Select(e => e.Course)
+                .Where(c => c != null)   // ⬅️ CRITICAL
+                .ToListAsync();
+
+            // ⬅️ ABSOLUTE SAFETY
+            return View(courses ?? new List<DB.Course>());
+        }
+
+
+
+
+
+        //FAKEDATA
+        [Authorize(Roles = "Student")]
+        public async Task<IActionResult> ByCategory(int categoryId)
+        {
+            var courses = await _db.Courses
+                .Include(c => c.Category)
+                .Include(c => c.Teacher)
+                    .ThenInclude(t => t.User)
+                .Where(c =>
+                    c.CategoryId == categoryId &&
+                    c.IsApproved &&
+                    c.IsPublished)
                 .ToListAsync();
 
             return View(courses);
         }
+
     }
 }

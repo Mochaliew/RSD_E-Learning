@@ -13,17 +13,19 @@ namespace RSD_E_Learning.Controllers
             _db = db;
         }
 
-        // GET: Courses/Catalog (View all courses)
+        // GET: Courses/Catalog (Student Course Catalogue)
         public async Task<IActionResult> Catalog()
         {
-            var courses = await _db.Courses
-                .Include(c => c.Category)
-                .Include(c => c.Teacher)
-                    .ThenInclude(t => t.User)
+
+            var categories = await _db.Categories
+                .Where(cat =>
+                    cat.Courses.Any(course =>
+                        course.IsApproved && course.IsPublished))
                 .ToListAsync();
 
-            return View(courses);
+            return View(categories);
         }
+
 
         // GET: Courses/Details/5 (View single course details)
         public async Task<IActionResult> Details(int id)

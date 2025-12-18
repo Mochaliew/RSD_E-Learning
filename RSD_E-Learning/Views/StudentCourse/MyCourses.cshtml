@@ -6,7 +6,7 @@
 
 <h2>My Enrolled Courses</h2>
 
-@if (!Model.Any())
+@if (Model == null || !Model.Any())
 {
     <div class="alert alert-warning">
         You are not enrolled in any courses yet.
@@ -28,8 +28,17 @@ else
             {
                 <tr>
                     <td>@course.Title</td>
-                    <td>@course.Category?.Name</td>
-                    <td>@course.Teacher?.User?.FullName</td>
+
+                    <td>
+                        @(course.Category != null ? course.Category.Name : "—")
+                    </td>
+
+                    <td>
+                        @(course.Teacher?.User != null
+                                        ? course.Teacher.User.FullName
+                                        : "—")
+            </td>
+
                     <td>
                         <a asp-action="Details"
                            asp-route-id="@course.CourseId"
@@ -38,7 +47,7 @@ else
                         </a>
                     </td>
                 </tr>
-            }
+                }
         </tbody>
     </table>
 }

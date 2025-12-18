@@ -127,7 +127,7 @@ namespace RSD_E_Learning.Controllers
                 new ClaimsPrincipal(identity)
             );
 
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Dashboard", "Student");
         }
 
         [HttpGet]

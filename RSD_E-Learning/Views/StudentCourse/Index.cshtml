@@ -1,15 +1,25 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
-}
-@model List<RSD_E_Learning.Models.DB.Course>
+﻿@model List<RSD_E_Learning.Models.DB.Course>
 
 @{
     ViewData["Title"] = "Available Courses";
 }
 
 <h2>Available Courses</h2>
+
+<!-- CATEGORY FILTER (NEW – minimal & safe) -->
+<form method="get" class="mb-3">
+    <select name="categoryId"
+            class="form-select w-25"
+            onchange="this.form.submit()">
+        <option value="">All Categories</option>
+        @foreach (var cat in ViewBag.Categories)
+        {
+            <option value="@cat.CategoryId">
+                @cat.Name
+            </option>
+        }
+    </select>
+</form>
 
 @if (!Model.Any())
 {
