@@ -258,9 +258,39 @@ namespace RSD_E_Learning.Controllers
         }
 
 
-        public IActionResult ViewCourse()
+        [HttpGet]
+        public async Task<IActionResult> ViewCourse()
         {
-            return View();
+            // Get current teacher ID from claims
+            var teacherIdClaim = User.FindFirst("TeacherId");
+            if (teacherIdClaim == null)
+            {
+                TempData["ErrorMessage"] = "Please login again.";
+                return RedirectToAction("TeacherLogin");
+            }
+
+            int teacherId = int.Parse(teacherIdClaim.Value);
+
+            try
+            {
+                // Load all courses for this teacher with related data
+                var courses = await _context.Courses
+                    .Include(c => c.Category)
+                    .Include(c => c.Enrollments)
+                    .Include(c => c.Lessons)
+                    .Include(c => c.Assessments)
+                    .Where(c => c.TeacherId == teacherId)
+                    .OrderByDescending(c => c.CourseId)
+                    .ToListAsync();
+
+                return View(courses);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error loading courses for teacher {TeacherId}", teacherId);
+                TempData["ErrorMessage"] = "Error loading courses. Please try again.";
+                return View(new List<DB.Course>());
+            }
         }
 
         public IActionResult CreateAssessment()

@@ -1,645 +1,400 @@
-﻿
+﻿@using RSD_E_Learning.Models
+@model IEnumerable<RSD_E_Learning.Models.DB.Course>
+
 @{
-    ViewData["Title"] = "View Courses";
+    ViewData["Title"] = "My Courses";
+    var courses = Model?.ToList() ?? new List<RSD_E_Learning.Models.DB.Course>();
+
+    var approvedCourses = courses.Where(c => c.IsApproved && !c.IsRejected).ToList();
+    var pendingCourses = courses.Where(c => !c.IsApproved && !c.IsRejected).ToList();
+    var rejectedCourses = courses.Where(c => c.IsRejected).ToList();
+
+    var filter = Context.Request.Query["filter"].ToString();
+    if (string.IsNullOrEmpty(filter)) filter = "all";
+
+    var displayCourses = filter switch
+    {
+        "pending" => pendingCourses,
+        "approved" => approvedCourses,
+        "rejected" => rejectedCourses,
+        _ => courses
+    };
 }
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@ViewData["Title"]</title>
-    <link rel="stylesheet" href="~/css/Teacher.css" />
-</head>
-<body data-page="view-course">
-    <div class="container">
-        <div class="header">
-            <h1>My Courses</h1>
-            <div class="header-actions">
-                <input type="text" class="search-box" placeholder="Search courses..." id="searchInput">
-                <a asp-controller="Teacher" asp-action="CreateCourse" class="btn btn-primary">+ Create Course</a>
-                <a asp-controller="Teacher" asp-action="TeacherIndex" class="btn btn-back">Back to Dashboard</a>
-            </div>
-        </div>
+<style>
+    .vc-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 20px;
+    }
 
-        @if (TempData["SuccessMessage"] != null)
-        {
-            <div class="alert alert-success">
-                @TempData["SuccessMessage"]
-            </div>
+    .vc-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+        .vc-header h1 {
+            font-size: 2.5rem;
+            color: #333;
+            margin-bottom: 20px;
         }
 
-        @if (TempData["ErrorMessage"] != null)
-        {
-            <div class="alert alert-error">
-                @TempData["ErrorMessage"]
-            </div>
+    .vc-actions {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        flex-wrap: wrap;
+        margin-bottom: 30px;
+    }
+
+    .vc-search {
+        padding: 12px 20px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        width: 300px;
+        font-size: 1rem;
+    }
+
+    .vc-btn-create {
+        background: #5b6ff5;
+        color: white;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+        .vc-btn-create:hover {
+            background: #4a5ed8;
         }
 
-        <!-- Filter Tabs -->
-        <div class="filter-tabs">
-            <button class="tab-btn active" onclick="filterByStatus('all')">All Courses</button>
-            <button class="tab-btn" onclick="filterByStatus('pending')">Pending Approval</button>
-            <button class="tab-btn" onclick="filterByStatus('approved')">Approved</button>
-            <button class="tab-btn" onclick="filterByStatus('rejected')">Rejected</button>
-        </div>
+    .vc-btn-dashboard {
+        background: white;
+        color: #333;
+        padding: 12px 24px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 1rem;
+        text-decoration: none;
+        display: inline-block;
+    }
 
-        <div class="courses-grid" id="coursesGrid">
-            @if (Model != null && Model.Any())
-            {
-                @foreach (var course in Model)
+        .vc-btn-dashboard:hover {
+            border-color: #5b6ff5;
+            color: #5b6ff5;
+        }
+
+    .vc-filter-tabs {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin: 30px 0;
+        flex-wrap: wrap;
+    }
+
+    .vc-filter-tab {
+        padding: 10px 24px;
+        border: 2px solid #e0e0e0;
+        background: white;
+        border-radius: 8px;
+        font-size: 1rem;
+        color: #666;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+        .vc-filter-tab.vc-active {
+            background: #5b6ff5;
+            color: white;
+            border-color: #5b6ff5;
+        }
+
+        .vc-filter-tab:hover {
+            border-color: #5b6ff5;
+        }
+
+    .vc-empty {
+        text-align: center;
+        padding: 80px 20px;
+    }
+
+    .vc-empty-icon {
+        font-size: 80px;
+        margin-bottom: 20px;
+    }
+
+    .vc-empty h2 {
+        font-size: 2rem;
+        color: #333;
+        margin-bottom: 10px;
+    }
+
+    .vc-empty p {
+        color: #666;
+        font-size: 1.1rem;
+        margin-bottom: 30px;
+    }
+
+    .vc-btn-first {
+        background: #5b6ff5;
+        color: white;
+        padding: 14px 32px;
+        border: none;
+        border-radius: 8px;
+        font-size: 1.1rem;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .vc-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+        margin-top: 30px;
+    }
+
+    .vc-card {
+        background: white;
+        border: 2px solid #e0e0e0;
+        border-radius: 12px;
+        padding: 20px;
+        transition: all 0.3s;
+    }
+
+        .vc-card:hover {
+            border-color: #5b6ff5;
+            box-shadow: 0 4px 12px rgba(91, 111, 245, 0.1);
+        }
+
+        .vc-card h3 {
+            font-size: 1.3rem;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+    .vc-meta {
+        color: #666;
+        font-size: 0.9rem;
+        margin-bottom: 15px;
+    }
+
+    .vc-stats {
+        display: flex;
+        gap: 15px;
+        margin: 15px 0;
+        font-size: 0.9rem;
+        color: #666;
+    }
+
+    .vc-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        margin-bottom: 10px;
+    }
+
+    .vc-badge-approved {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .vc-badge-pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .vc-badge-rejected {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .vc-actions-row {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+    }
+
+    .vc-btn-small {
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        text-decoration: none;
+        border: none;
+        flex: 1;
+        text-align: center;
+    }
+
+    .vc-btn-primary {
+        background: #5b6ff5;
+        color: white;
+    }
+
+    .vc-btn-secondary {
+        background: #f0f0f0;
+        color: #333;
+    }
+
+    .vc-alert {
+        padding: 15px 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    .vc-alert-success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+
+    .vc-alert-danger {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+
+    .vc-rejection {
+        background: #fff3cd;
+        padding: 10px;
+        border-radius: 6px;
+        margin-top: 10px;
+        font-size: 0.9rem;
+    }
+</style>
+
+<div class="vc-container">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="vc-alert vc-alert-success">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="vc-alert vc-alert-danger">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    <div class="vc-header">
+        <h1>My Courses</h1>
+
+        <div class="vc-actions">
+            <input type="text" class="vc-search" id="searchInput" placeholder="Search courses..." />
+            <a href="@Url.Action("CreateCourse", "Teacher")" class="vc-btn-create">+ Create Course</a>
+            <a href="@Url.Action("TeacherDashboard", "Teacher")" class="vc-btn-dashboard">Back to Dashboard</a>
+        </div>
+    </div>
+
+    <div class="vc-filter-tabs">
+        <a href="?filter=all" class="vc-filter-tab @(filter == "all" ? "vc-active" : "")">All Courses (@courses.Count)</a>
+        <a href="?filter=pending" class="vc-filter-tab @(filter == "pending" ? "vc-active" : "")">Pending Approval (@pendingCourses.Count)</a>
+        <a href="?filter=approved" class="vc-filter-tab @(filter == "approved" ? "vc-active" : "")">Approved (@approvedCourses.Count)</a>
+        <a href="?filter=rejected" class="vc-filter-tab @(filter == "rejected" ? "vc-active" : "")">Rejected (@rejectedCourses.Count)</a>
+    </div>
+
+    @if (!courses.Any())
+    {
+        <div class="vc-empty">
+            <div class="vc-empty-icon">📚</div>
+            <h2>No Courses Yet</h2>
+            <p>Start creating your first course to share knowledge with students</p>
+            <a href="@Url.Action("CreateCourse", "Teacher")" class="vc-btn-first">Create Your First Course</a>
+        </div>
+    }
+    else
+    {
+        @if (displayCourses.Any())
+        {
+            <div class="vc-grid">
+                @foreach (var course in displayCourses)
                 {
-                    var status = course.IsApproved ? "approved" : (course.IsRejected ? "rejected" : "pending");
-                    var statusBadgeClass = course.IsApproved ? "status-approved" : (course.IsRejected ? "status-rejected" : "status-pending");
-                    var statusText = course.IsApproved ? "Approved" : (course.IsRejected ? "Rejected" : "Pending");
+                    <div class="vc-card">
+                        @if (course.IsRejected)
+                        {
+                            <span class="vc-badge vc-badge-rejected">Rejected</span>
+                        }
+                        else if (course.IsApproved)
+                        {
+                            <span class="vc-badge vc-badge-approved">Approved</span>
+                        }
+                        else
+                        {
+                            <span class="vc-badge vc-badge-pending">Pending Approval</span>
+                        }
 
-                    <div class="course-card" data-course-id="@course.CourseId" data-status="@status">
-                        <div class="course-thumbnail">
-                            <span>@course.Title.Substring(0, Math.Min(2, course.Title.Length)).ToUpper()</span>
-                            <span class="status-badge @statusBadgeClass">@statusText</span>
+                        <h3>@course.Title</h3>
+                        <div class="vc-meta">
+                            <strong>Category:</strong> @(course.Category?.Name ?? "N/A")
                         </div>
-                        <div class="course-content">
-                            <h3 class="course-title">@course.Title</h3>
-                            <div class="course-meta">
-                                <span>📚 @(course.Category?.Name ?? "Uncategorized")</span>
-                            </div>
-                            <p class="course-description">
-                                @(course.Description?.Length > 150
-                                                        ? course.Description.Substring(0, 150) + "..."
-                                                        : course.Description)
-                    </p>
-                    <div class="course-stats">
-                        <div class="stat-item">
-                            <div class="stat-value">@course.Enrollments.Count</div>
-                            <div class="stat-label">Students</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value">@course.Lessons.Count</div>
-                            <div class="stat-label">Materials</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value">@course.Assessments.Count</div>
-                            <div class="stat-label">Assessments</div>
-                        </div>
-                    </div>
+                        <p>@(course.Description ?? "No description available")</p>
 
-                            <!-- Conditional Action Buttons Based on Status -->
-                            <div class="course-actions">
-                        @if (course.IsApproved)
-                                {
-                                    <!-- APPROVED: Show Upload Material & Add Assessment buttons -->
-                                    <a asp-controller="Teacher" asp-action="UploadMaterial" asp-route-courseId="@course.CourseId"
-                                       class="btn btn-small btn-upload">
-                                        📤 Upload Material
-                                    </a>
-                                    <a asp-controller="Teacher" asp-action="AddAssessment" asp-route-courseId="@course.CourseId"
-                                       class="btn btn-small btn-assessment">
-                                        ✏️ Add Assessment
-                                    </a>
-                                    <a asp-controller="Teacher" asp-action="ViewCourseDetails" asp-route-courseId="@course.CourseId"
-                                       class="btn btn-small btn-view">
-                                        👁️ View
-                                    </a>
-                                }
-                                else if (course.IsRejected)
-                                {
-                                    <!-- REJECTED: Show Rejection Reason button -->
-                                    <button class="btn btn-small btn-rejected"
-                                            onclick="showRejectionReason('@course.CourseId', '@Html.Raw(course.RejectionReason?.Replace("'", "\\'"))')">
-                                        ❌ View Rejection Reason
-                                    </button>
-                                    <button class="btn btn-small btn-edit"
-                                            onclick="editAndResubmit('@course.CourseId')">
-                                        🔄 Edit & Resubmit
-                                    </button>
-                                }
-                                else
-                                {
-                                    <!-- PENDING: Show waiting message -->
-                                    <div class="pending-message">
-                                        <span class="pending-icon">⏳</span>
-                                        <span>Waiting for admin approval</span>
-                                    </div>
-                                }
+                        @if (course.IsRejected && !string.IsNullOrEmpty(course.RejectionReason))
+                        {
+                            <div class="vc-rejection">
+                                <strong>Rejection Reason:</strong> @course.RejectionReason
                             </div>
+                        }
+
+                        <div class="vc-stats">
+                            <span>👥 @(course.Enrollments?.Count ?? 0) Students</span>
+                            <span>📖 @(course.Lessons?.Count ?? 0) Lessons</span>
+                            <span>📝 @(course.Assessments?.Count ?? 0) Assessments</span>
+                        </div>
+
+                        <div class="vc-actions-row">
+                            @if (course.IsApproved)
+                            {
+                                <a href="@Url.Action("UploadMaterial", "Teacher", new { courseId = course.CourseId })" class="vc-btn-small vc-btn-primary">Upload Material</a>
+                                <a href="@Url.Action("CreateAssessment", "Teacher", new { courseId = course.CourseId })" class="vc-btn-small vc-btn-primary">Create Assessment</a>
+                                <a href="#" class="vc-btn-small vc-btn-secondary">Edit</a>
+                                <a href="#" class="vc-btn-small vc-btn-secondary">View</a>
+                            }
+                            else if (!course.IsApproved && course.IsRejected)
+                            {
+                                <a href="#" class="vc-btn-small vc-btn-secondary">lmao rejected</a>
+                            }
+                            else
+                            {
+                                <a href="#" class="vc-btn-small vc-btn-secondary">Be patient</a>
+                            }
                         </div>
                     </div>
                 }
-            }
-            else
-            {
-                <div class="empty-state" style="display: block;">
-                    <div class="empty-state-icon">📚</div>
-                    <h2>No Courses Yet</h2>
-                    <p>Start creating your first course to share knowledge with students</p>
-                    <a asp-controller="Teacher" asp-action="CreateCourse" class="btn btn-primary">Create Your First Course</a>
-                </div>
-            }
-        </div>
-    </div>
-
-    <!-- Rejection Reason Modal -->
-    <div class="modal" id="rejectionModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>❌ Course Rejection Reason</h3>
-                <button class="close-btn" onclick="closeRejectionModal()">&times;</button>
             </div>
-            <div class="modal-body">
-                <div class="rejection-info">
-                    <p class="rejection-label">Reason for Rejection:</p>
-                    <div class="rejection-reason" id="rejectionReasonText"></div>
-                </div>
-                <div class="rejection-actions">
-                    <button class="btn btn-primary" onclick="closeRejectionModal()">Close</button>
-                    <button class="btn btn-secondary" onclick="editCourse()">Edit Course</button>
-                </div>
+        }
+        else
+        {
+            <div class="vc-empty">
+                <div class="vc-empty-icon">📚</div>
+                <h2>No @(filter == "pending" ? "Pending" : filter == "approved" ? "Approved" : "Rejected") Courses</h2>
+                <p>@(filter == "pending" ? "All your courses have been reviewed" : filter == "approved" ? "No approved courses yet" : "No rejected courses")</p>
             </div>
-        </div>
-    </div>
+        }
+    }
+</div>
 
-    <script src="~/js/teacher.js"></script>
-    <script>
-        let currentCourseId = null;
+<script>
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const cards = document.querySelectorAll('.vc-card');
 
-        // Search functionality
-        document.getElementById('searchInput').addEventListener('input', function(e) {
-            const searchTerm = e.target.value.toLowerCase();
-            const courseCards = document.querySelectorAll('.course-card');
-            let visibleCount = 0;
-
-            courseCards.forEach(card => {
-                const title = card.querySelector('.course-title').textContent.toLowerCase();
-                const description = card.querySelector('.course-description').textContent.toLowerCase();
+            cards.forEach(card => {
+                const title = card.querySelector('h3').textContent.toLowerCase();
+                const description = card.querySelector('p').textContent.toLowerCase();
 
                 if (title.includes(searchTerm) || description.includes(searchTerm)) {
                     card.style.display = 'block';
-                    visibleCount++;
                 } else {
                     card.style.display = 'none';
                 }
             });
-
-            checkEmptyState(visibleCount);
         });
-
-        // Filter by status
-        function filterByStatus(status) {
-            const courseCards = document.querySelectorAll('.course-card');
-            const tabs = document.querySelectorAll('.tab-btn');
-            let visibleCount = 0;
-
-            // Update active tab
-            tabs.forEach(tab => tab.classList.remove('active'));
-            event.target.classList.add('active');
-
-            courseCards.forEach(card => {
-                const cardStatus = card.getAttribute('data-status');
-
-                if (status === 'all' || cardStatus === status) {
-                    card.style.display = 'block';
-                    visibleCount++;
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-
-            checkEmptyState(visibleCount);
-        }
-
-        // Show rejection reason modal
-        function showRejectionReason(courseId, reason) {
-            currentCourseId = courseId;
-            document.getElementById('rejectionReasonText').textContent = reason || 'No reason provided';
-            document.getElementById('rejectionModal').classList.add('active');
-        }
-
-        // Close rejection modal
-        function closeRejectionModal() {
-            document.getElementById('rejectionModal').classList.remove('active');
-            currentCourseId = null;
-        }
-
-        // Edit course after rejection
-        function editCourse() {
-            if (currentCourseId) {
-                window.location.href = `/Teacher/EditCourse/${currentCourseId}`;
-            }
-        }
-
-        // Edit and resubmit
-        function editAndResubmit(courseId) {
-            if (confirm('This will allow you to edit the course and resubmit for approval. Continue?')) {
-                window.location.href = `/Teacher/EditCourse/${courseId}`;
-            }
-        }
-
-        // Check if we should show empty state
-        function checkEmptyState(visibleCount) {
-            const emptyState = document.querySelector('.empty-state');
-            const coursesGrid = document.getElementById('coursesGrid');
-
-            if (visibleCount === 0 && emptyState) {
-                emptyState.style.display = 'block';
-                coursesGrid.classList.add('empty');
-            } else if (emptyState) {
-                emptyState.style.display = 'none';
-                coursesGrid.classList.remove('empty');
-            }
-        }
-
-        // Close modal when clicking outside
-        document.getElementById('rejectionModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeRejectionModal();
-            }
-        });
-    </script>
-
-    <style>
-        /* Filter Tabs */
-        .filter-tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-        }
-
-        .tab-btn {
-            padding: 12px 24px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            background: white;
-            color: #666;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .tab-btn:hover {
-            border-color: #667eea;
-            color: #667eea;
-        }
-
-        .tab-btn.active {
-            background: #667eea;
-            color: white;
-            border-color: #667eea;
-        }
-
-        /* Status Badges */
-        .status-badge {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 0.75em;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .status-approved {
-            background: #27ae60;
-            color: white;
-        }
-
-        .status-pending {
-            background: #f39c12;
-            color: white;
-        }
-
-        .status-rejected {
-            background: #e74c3c;
-            color: white;
-        }
-
-        /* Pending Message */
-        .pending-message {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            padding: 15px;
-            background: #fff3cd;
-            border: 2px solid #ffc107;
-            border-radius: 8px;
-            color: #856404;
-            font-weight: 600;
-        }
-
-        .pending-icon {
-            font-size: 1.5em;
-        }
-
-        /* Action Buttons */
-        .btn-small {
-            flex: 1;
-            padding: 10px;
-            font-size: 0.9em;
-            text-align: center;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        .btn-upload {
-            background: #3498db;
-            color: white;
-        }
-
-        .btn-upload:hover {
-            background: #2980b9;
-        }
-
-        .btn-assessment {
-            background: #9b59b6;
-            color: white;
-        }
-
-        .btn-assessment:hover {
-            background: #8e44ad;
-        }
-
-        .btn-view {
-            background: #667eea;
-            color: white;
-        }
-
-        .btn-view:hover {
-            background: #5568d3;
-        }
-
-        .btn-rejected {
-            background: #e74c3c;
-            color: white;
-        }
-
-        .btn-rejected:hover {
-            background: #c0392b;
-        }
-
-        .btn-edit {
-            background: #f39c12;
-            color: white;
-        }
-
-        .btn-edit:hover {
-            background: #e67e22;
-        }
-
-        /* Rejection Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal.active {
-            display: flex;
-        }
-
-        .modal-content {
-            background: white;
-            padding: 0;
-            border-radius: 15px;
-            max-width: 600px;
-            width: 90%;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-            animation: slideDown 0.3s ease;
-        }
-
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 25px;
-            border-bottom: 2px solid #f0f0f0;
-        }
-
-        .modal-header h3 {
-            color: #333;
-            font-size: 1.5em;
-            margin: 0;
-        }
-
-        .close-btn {
-            background: none;
-            border: none;
-            font-size: 2em;
-            cursor: pointer;
-            color: #999;
-            transition: color 0.3s;
-        }
-
-        .close-btn:hover {
-            color: #333;
-        }
-
-        .modal-body {
-            padding: 25px;
-        }
-
-        .rejection-info {
-            background: #fee;
-            border-left: 4px solid #e74c3c;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-
-        .rejection-label {
-            font-weight: 700;
-            color: #c0392b;
-            margin-bottom: 10px;
-            font-size: 0.95em;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .rejection-reason {
-            color: #333;
-            line-height: 1.6;
-            font-size: 1.05em;
-        }
-
-        .rejection-actions {
-            display: flex;
-            gap: 15px;
-            justify-content: flex-end;
-        }
-
-        .btn-secondary {
-            background: #95a5a6;
-            color: white;
-            padding: 12px 25px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: background 0.3s;
-        }
-
-        .btn-secondary:hover {
-            background: #7f8c8d;
-        }
-
-        /* Rest of existing styles... */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 30px 20px;
-        }
-
-        .header {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            margin-bottom: 30px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-        }
-
-        .header h1 {
-            color: #333;
-            font-size: 2.2em;
-            margin-bottom: 20px;
-        }
-
-        .header-actions {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .search-box {
-            padding: 10px 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 1em;
-            width: 250px;
-        }
-
-        .courses-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 25px;
-        }
-
-        .courses-grid.empty {
-            grid-template-columns: 1fr;
-        }
-
-        .course-card {
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-
-        .course-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-        }
-
-        .course-thumbnail {
-            width: 100%;
-            height: 180px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 3em;
-            font-weight: bold;
-            position: relative;
-        }
-
-        .course-content {
-            padding: 20px;
-        }
-
-        .course-title {
-            font-size: 1.3em;
-            color: #333;
-            margin-bottom: 10px;
-            font-weight: 600;
-        }
-
-        .course-meta {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 12px;
-            font-size: 0.9em;
-            color: #666;
-        }
-
-        .course-description {
-            color: #666;
-            line-height: 1.6;
-            margin-bottom: 15px;
-        }
-
-        .course-stats {
-            display: flex;
-            justify-content: space-between;
-            padding: 15px 0;
-            border-top: 1px solid #e0e0e0;
-            border-bottom: 1px solid #e0e0e0;
-            margin-bottom: 15px;
-        }
-
-        .stat-item {
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 1.5em;
-            font-weight: 700;
-            color: #667eea;
-        }
-
-        .stat-label {
-            font-size: 0.85em;
-            color: #666;
-            margin-top: 3px;
-        }
-
-        .course-actions {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            background: white;
-            border-radius: 12px;
-            display: none;
-        }
-
-        .empty-state-icon {
-            font-size: 4em;
-            margin-bottom: 20px;
-        }
-
-    </style>
-</body>
-</html>
+    }
+</script>

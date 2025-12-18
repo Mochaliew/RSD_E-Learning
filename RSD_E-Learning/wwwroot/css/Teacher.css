@@ -546,10 +546,10 @@
     background: #f8f9fa;
 }
 
-    .preview-option.correct {
-        background: #d4edda;
-        border-left: 3px solid #27ae60;
-    }
+.preview-option.correct {
+    background: #d4edda;
+    border-left: 3px solid #27ae60;
+}
 
 .success-message {
     background: #d4edda;
@@ -559,3 +559,5 @@
     margin-top: 20px;
     display: none;
 }
+
+/* ------------------------ View Courses ------------------------ */
