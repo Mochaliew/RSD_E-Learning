@@ -1,0 +1,24 @@
+﻿@model List<RolePermissionVm>
+
+<h3 class="mb-4">Role & Permission Settings</h3>
+
+@foreach (var role in Model)
+{
+    <div class="card mb-3 shadow-sm">
+        <div class="card-body">
+            <h5 class="card-title">@role.RoleName</h5>
+            <ul>
+                @foreach (var permission in role.Permissions)
+                {
+                    <li>@permission</li>
+                }
+            </ul>
+        </div>
+    </div>
+}
+
+<a asp-controller="AdminDashboard"
+   asp-action="Index"
+   class="btn btn-secondary mt-3">
+    ← Back to Dashboard
+</a>

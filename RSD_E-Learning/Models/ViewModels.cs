@@ -291,6 +291,13 @@ namespace RSD_E_Learning.Models
         public string? CertificateTemplatePath { get; set; }
     }
 
+    // Role Permissin View Models //
+    public class RolePermissionVm
+    {
+        public string RoleName { get; set; } = "";
+        public List<string> Permissions { get; set; } = new();
+    }
+
 
     // ===============================
     // Auto Grading View Models
