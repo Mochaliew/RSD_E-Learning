@@ -84,6 +84,38 @@ using (var scope = app.Services.CreateScope())
         db.SaveChanges();
     }
 
+    // Seed teacher if not exists
+    if (!db.Users.Any(u => u.Email == "teacher@elearning.com"))
+    {
+        var teacherUser = new DB.User
+        {
+            FullName = "Default Teacher",
+            Email = "teacher@elearning.com",
+            PasswordHash = Convert.ToBase64String(
+                Microsoft.AspNetCore.Cryptography.KeyDerivation.KeyDerivation.Pbkdf2(
+                    "teacher123",
+                    Encoding.UTF8.GetBytes("STATIC-SALT-CHANGE-LATER"),
+                    Microsoft.AspNetCore.Cryptography.KeyDerivation.KeyDerivationPrf.HMACSHA256,
+                    10000,
+                    32)),
+            Role = DB.UserRole.Teacher,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        db.Users.Add(teacherUser);
+        db.SaveChanges(); // needed to generate UserId
+
+        db.Teachers.Add(new DB.Teacher
+        {
+            UserId = teacherUser.Id,
+            // add more fields if Teacher has them
+            // e.g. Department = "IT",
+            // Phone = "0123456789"
+        });
+
+        db.SaveChanges();
+    }
+
 }
 
 

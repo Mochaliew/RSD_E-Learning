@@ -26,17 +26,11 @@
 
             <!-- Main Action Buttons -->
             <div class="action-buttons">
-                <a class="btn btn-primary" asp-controller="Teacher" asp-action="CreateCourse">
-                    <span class="btn-label">Create Course</span>
-                </a>
                 <a class="btn btn-primary" asp-controller="Teacher" asp-action="ViewCourse">
                     <span class="btn-label">View Courses' Detail</span>
                 </a>
-                <a class="btn btn-primary" asp-controller="Teacher" asp-action="CreateAssessment">
-                    <span class="btn-label">Create Assessment</span>
-                </a>
-                <a class="btn btn-primary" asp-controller="Teacher" asp-action="ViewAssessment">
-                    <span class="btn-label">View Assessments' Detail</span>
+                <a class="btn btn-primary" asp-controller="Teacher" asp-action="ViewLesson">
+                    <span class="btn-label">View Lesson</span>
                 </a>
             </div>
 
@@ -62,14 +56,14 @@
                     </div>
                     <div class="preview-stat-card">
                         <div class="stat-number"></div>
-                        <div class="stat-title">show passing rate?</div>
+                        <div class="stat-title">show number of lesson</div>
                     </div>
                 </div>
 
                 <div class="preview-recent">
                     <div class="recent-section">
-                        <h3>Recent Courses</h3>
-                            <p class="empty-text">No courses yet</p>
+                        <h3>Upcoming lessons</h3>
+                            <p class="empty-text">No lesson yet</p>
                     </div>
 
                     <div class="recent-section">
