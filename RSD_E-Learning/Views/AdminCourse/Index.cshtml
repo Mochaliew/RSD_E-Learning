@@ -1,0 +1,108 @@
+﻿@model List<RSD_E_Learning.Models.DB.Course>
+
+@{
+    ViewData["Title"] = "Manage Courses";
+    string filter = ViewBag.Filter ?? "all";
+}
+
+<h2 class="mb-4">Manage Courses</h2>
+
+<!-- FILTER TABS -->
+<form method="get" asp-action="Index" class="mb-4">
+    <div class="d-flex align-items-center gap-3">
+        <label class="fw-semibold mb-0">Filter by Module:</label>
+
+        <select name="filter" class="form-select w-auto">
+            <option value="all" selected="@((string)ViewBag.Filter == "all")">
+                All
+            </option>
+            <option value="pending" selected="@((string)ViewBag.Filter == "pending")">
+                Pending
+            </option>
+            <option value="approved" selected="@((string)ViewBag.Filter == "approved")">
+                Approved
+            </option>
+            <option value="rejected" selected="@((string)ViewBag.Filter == "rejected")">
+                Rejected
+            </option>
+        </select>
+
+        <button type="submit" class="btn btn-primary px-4">
+            Apply
+        </button>
+    </div>
+</form>
+
+
+<table class="table table-bordered align-middle">
+    <thead class="table-light">
+        <tr>
+            <th>Course</th>
+            <th>Teacher</th>
+            <th>Category</th>
+            <th>Status</th>
+            <th>Published</th>
+            <th style="width:140px">Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var c in Model)
+        {
+            <tr>
+                <td>@c.Title</td>
+                <td>@c.Teacher?.User?.Email</td>
+                <td>@c.Category?.Name</td>
+
+                <!-- STATUS -->
+                <td>
+                    @if (c.IsRejected)
+                    {
+                        <span class="badge bg-danger">Rejected</span>
+                    }
+                    else if (c.IsApproved)
+                    {
+                        <span class="badge bg-success">Approved</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-primary">Pending</span>
+                    }
+                </td>
+
+                <!-- PUBLISHED -->
+                <td>
+                    <span class="badge @(c.IsPublished ? "bg-success" : "bg-secondary")">
+                        @(c.IsPublished ? "Yes" : "No")
+                    </span>
+                </td>
+
+                <!-- ACTION -->
+                <td>
+                    @if (c.IsApproved && !c.IsRejected)
+                    {
+                        <form asp-action="TogglePublish"
+                              asp-route-id="@c.CourseId"
+                              method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+
+                            <button class="btn btn-sm
+                                @(c.IsPublished ? "btn-outline-warning" : "btn-outline-success")">
+                                @(c.IsPublished ? "Unpublish" : "Publish")
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        <span class="text-muted">—</span>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a asp-controller="AdminDashboard"
+   asp-action="Index"
+   class="btn btn-secondary mt-3">
+    ← Back to Dashboard
+</a>
