@@ -391,17 +391,6 @@ public class DB : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        //Admin Seed//
-        var adminUser = new User
-        {
-            Id = 1,
-            FullName = "System Administrator",
-            Email = "admin@elearning.com",
-            PasswordHash = HashPassword("admin123"),
-            Role = UserRole.Admin,
-            CreatedAt = new DateTime(2025, 1, 1)
-        };
-
         modelBuilder.Entity<StudentAnswer>()
         .HasOne(sa => sa.AssessmentAttempt)
         .WithMany(a => a.StudentAnswers)
@@ -413,14 +402,6 @@ public class DB : DbContext
         .WithMany()
         .HasForeignKey(sa => sa.QuestionId)
         .OnDelete(DeleteBehavior.Restrict);
-
-        modelBuilder.Entity<User>().HasData(adminUser);
-
-        modelBuilder.Entity<Admin>().HasData(new Admin
-        {
-            AdminId = 1,
-            UserId = 1
-        });
 
         //Relationships//
         modelBuilder.Entity<Course>()
