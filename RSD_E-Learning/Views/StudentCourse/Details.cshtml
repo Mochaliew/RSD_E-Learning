@@ -38,9 +38,16 @@ else
 
 <hr />
 
-<form asp-action="Enroll" method="post">
+<form asp-controller="StudentCourse"
+      asp-action="Enroll"
+      method="post">
+
+    @Html.AntiForgeryToken()
+
     <input type="hidden" name="courseId" value="@Model.CourseId" />
+
     <button type="submit" class="btn btn-success">
         Enroll Now
     </button>
 </form>
+
