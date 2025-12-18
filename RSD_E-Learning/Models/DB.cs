@@ -21,6 +21,7 @@ public class DB : DbContext
     public DbSet<Student> Students { get; set; }
     public DbSet<Category> Categories { get; set; }
     public DbSet<AuditLog> AuditLogs { get; set; }
+    public DbSet<SystemSetting> SystemSettings { get; set; }
     public DbSet<Course> Courses { get; set; }
     public DbSet<Enrollment> Enrollments { get; set; }
     public DbSet<CourseFile> CourseFiles { get; set; }
@@ -151,6 +152,38 @@ public class DB : DbContext
 
         public string? Details { get; set; }
     }
+
+    // ----------------------------------- SYSTEM SETTINGS ------------------------------------ //
+    public class SystemSetting
+    {
+        [Key]
+        public int SystemSettingId { get; set; }
+
+        // Platform Branding
+        [Required, StringLength(100)]
+        public string PlatformName { get; set; } = "RSD E-Learning";
+
+        public string? LogoPath { get; set; }
+
+        [Required]
+        public string PrimaryColor { get; set; } = "#0d6efd";
+
+        // SMTP / Email
+        public string? SmtpHost { get; set; }
+        public int SmtpPort { get; set; } = 587;
+        public string? SmtpPassword { get; set; }
+        public string? SenderEmail { get; set; }
+        public bool EnableEmailNotification { get; set; } = true;
+
+        // Content Storage
+        public string StorageType { get; set; } = "Local"; // Local / Cloud
+        public int MaxUploadSizeMB { get; set; } = 50;
+        public string AllowedFileTypes { get; set; } = ".pdf,.mp4,.docx";
+
+        // Certificate
+        public string? CertificateTemplatePath { get; set; }
+    }
+
 
     // ----------------------------------- ENROLLMENT ------------------------------------ //
     public class Enrollment

@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using RSD_E_Learning.Models;
 using System.Text;
+using static RSD_E_Learning.Models.DB;
 
 
 
@@ -10,6 +11,10 @@ var builder = WebApplication.CreateBuilder(args);
 // Register Certificate Service
 builder.Services.AddScoped<RSD_E_Learning.Services.ICertificateService,
                            RSD_E_Learning.Services.CertificateService>();
+
+// Email
+builder.Services.AddScoped<IEmailService, EmailService>();
+
 
 // Add services
 builder.Services.AddControllersWithViews();
@@ -55,7 +60,7 @@ using (var scope = app.Services.CreateScope())
         Console.WriteLine("Migration error: " + ex.Message);
     }
 
-    // Seed admin if not exists
+    // Seed admin
     if (!db.Users.Any(u => u.Email == "admin@elearning.com"))
     {
         var adminUser = new DB.User
@@ -138,6 +143,24 @@ using (var scope = app.Services.CreateScope())
     };
 
         db.Categories.AddRange(categories);
+        db.SaveChanges();
+    }
+
+    // Seed System Settings
+    if (!db.SystemSettings.Any())
+    {
+        db.SystemSettings.Add(new SystemSetting
+        {
+            PlatformName = "RSD E-Learning",
+            PrimaryColor = "#0d6efd",
+            StorageType = "Local",
+            MaxUploadSizeMB = 50,
+            AllowedFileTypes = ".pdf,.jpg,.png",
+            EnableEmailNotification = false,
+            SmtpPort = 587,
+            CertificateTemplatePath = "Templates/Certificate/Default.pdf"
+        });
+
         db.SaveChanges();
     }
 

@@ -250,13 +250,36 @@ namespace RSD_E_Learning.Models
     // Setting View Models //
     public class SystemSettingsVm
     {
-        [Required]
+        public int SystemSettingId { get; set; }
+
+        // Branding
+        [Required, StringLength(100)]
         public string PlatformName { get; set; } = "";
-        public string? ContactEmail { get; set; }
-        public string? SmtpServer { get; set; }
+
+        public string? LogoPath { get; set; }
+
+        [Required]
+        public string PrimaryColor { get; set; } = "#0d6efd";
+
+        // Email / SMTP
+        public string? SmtpHost { get; set; }
+        public int SmtpPort { get; set; } 
+        public string? SenderEmail { get; set; }
         public string? SmtpPassword { get; set; }
-        public string? FooterText { get; set; }
+        public bool EnableEmailNotification { get; set; }
+
+        // Storage
+        [Required]
+        public string StorageType { get; set; } = "Local";
+
+        public int MaxUploadSizeMB { get; set; } = 50;
+
+        public string AllowedFileTypes { get; set; } = ".pdf,.jpg,.png";
+
+        // Certificate
+        public string? CertificateTemplatePath { get; set; }
     }
+
 
     // ===============================
     // Auto Grading View Models

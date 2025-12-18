@@ -1,0 +1,119 @@
+﻿@model SystemSettingsVm
+
+@{
+    ViewData["Title"] = "System Settings";
+}
+
+<h2 class="mb-4">System Settings</h2>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+<form method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="SystemSettingId" />
+
+    <!-- ================= PLATFORM SETTINGS ================= -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="mb-3">Platform Settings</h5>
+
+            <div class="mb-3">
+                <label class="form-label">Platform Name</label>
+                <input asp-for="PlatformName" class="form-control" />
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= EMAIL SETTINGS ================= -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="mb-3">Email Settings</h5>
+
+            <div class="mb-3">
+                <label class="form-label">SMTP Server Host</label>
+                <input asp-for="SmtpHost"
+                       class="form-control"
+                       placeholder="smtp.gmail.com" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">SMTP Port</label>
+                <input asp-for="SmtpPort"
+                       class="form-control"
+                       placeholder="587" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Sender Email Address</label>
+                <input asp-for="SenderEmail"
+                       class="form-control"
+                       placeholder="noreply@elearning.com" />
+                <small class="text-muted">
+                    Email address used to send system notifications
+                </small>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">SMTP App Password</label>
+                <input asp-for="SmtpPassword"
+                       type="password"
+                       class="form-control" />
+                <small class="text-muted">
+                    Application-specific password (not your email login password)
+                </small>
+            </div>
+
+            <div class="form-check mt-2">
+                <input asp-for="EnableEmailNotification"
+                       class="form-check-input" />
+                <label class="form-check-label">
+                    Enable Email Notifications
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= CERTIFICATE SETTINGS ================= -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="mb-3">Certificate Template</h5>
+
+            <div class="mb-3">
+                <label class="form-label">Certificate Template Style</label>
+                <select asp-for="CertificateTemplatePath"
+                        class="form-select">
+                    <option value="Templates/Certificate/Default.pdf">
+                        Default
+                    </option>
+                    <option value="Templates/Certificate/ModernBlue.pdf">
+                        Modern Blue
+                    </option>
+                    <option value="Templates/Certificate/ClassicGold.pdf">
+                        Classic Gold
+                    </option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex align-items-center gap-3 mb-4 justify-content-start">
+        <button type="submit"
+                class="btn btn-primary px-4 py-2">
+            Save Settings
+        </button>
+
+        <a asp-controller="AdminDashboard"
+           asp-action="Index"
+           class="btn btn-secondary px-4 py-2">
+            ← Back to Dashboard
+        </a>
+    </div>
+
+
+
+</form>
+
+
