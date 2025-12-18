@@ -17,7 +17,19 @@ namespace RSD_E_Learning.Controllers
         [HttpPost]
         public IActionResult SubmitAssessment([FromBody] AssessmentSubmissionVM model)
         {
-            // 1️⃣ Get all questions for the assessment
+            // 1️⃣ Validate submission
+            if (model.Answers == null || !model.Answers.Any())
+                return BadRequest("No answers submitted.");
+
+            // 2️⃣ Prevent duplicate attempts
+            bool attempted = _context.AssessmentAttempts
+                .Any(a => a.StudentId == model.StudentId
+                       && a.AssessmentId == model.AssessmentId);
+
+            if (attempted)
+                return BadRequest("Assessment already attempted.");
+
+            // 3️⃣ Get all questions for the assessment
             var questions = _context.AssessmentQuestions
                 .Where(q => q.AssessmentId == model.AssessmentId)
                 .ToList();
@@ -25,7 +37,7 @@ namespace RSD_E_Learning.Controllers
             if (!questions.Any())
                 return BadRequest("Assessment not found.");
 
-            // 2️⃣ Create attempt
+            // 4️⃣ Create assessment attempt
             var attempt = new AssessmentAttempt
             {
                 StudentId = model.StudentId,
@@ -38,13 +50,18 @@ namespace RSD_E_Learning.Controllers
 
             int correctCount = 0;
 
-            // 3️⃣ Grade each answer
+            // 5️⃣ Grade each answer
             foreach (var answer in model.Answers)
             {
                 var question = questions.FirstOrDefault(q => q.QuestionId == answer.QuestionId);
                 if (question == null) continue;
 
-                bool isCorrect = question.CorrectAnswer == answer.SelectedAnswer;
+                bool isCorrect =
+                question.CorrectAnswer.Trim().Equals(
+                answer.SelectedAnswer.Trim(),
+                StringComparison.OrdinalIgnoreCase
+                );
+
                 if (isCorrect) correctCount++;
 
                 _context.StudentAnswers.Add(new StudentAnswer
@@ -56,7 +73,7 @@ namespace RSD_E_Learning.Controllers
                 });
             }
 
-            // 4️⃣ Calculate score
+            // 6️⃣ Calculate score and pass/fail
             double score = (double)correctCount / questions.Count * 100;
 
             attempt.Score = score;

@@ -403,10 +403,16 @@ public class DB : DbContext
         };
 
         modelBuilder.Entity<StudentAnswer>()
-    .HasOne(sa => sa.Question)
-    .WithMany()
-    .HasForeignKey(sa => sa.QuestionId)
-    .OnDelete(DeleteBehavior.Restrict);
+        .HasOne(sa => sa.AssessmentAttempt)
+        .WithMany(a => a.StudentAnswers)
+        .HasForeignKey(sa => sa.AttemptId)
+        .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<StudentAnswer>()
+        .HasOne(sa => sa.Question)
+        .WithMany()
+        .HasForeignKey(sa => sa.QuestionId)
+        .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<User>().HasData(adminUser);
 
