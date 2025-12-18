@@ -158,6 +158,17 @@ namespace RSD_E_Learning.Models
         public string Status { get; set; } = "";
     }
 
+    // Course Statistics View Models //
+    public class CourseStatisticsVm
+    {
+        public int TotalCourses { get; set; }
+        public int PendingCourses { get; set; }
+        public int ApprovedCourses { get; set; }
+        public int RejectedCourses { get; set; }
+        public int PublishedCourses { get; set; }
+        public int UnpublishedCourses { get; set; }
+    }
+
     // Course File View Models //
     public class CourseFileVm
     {

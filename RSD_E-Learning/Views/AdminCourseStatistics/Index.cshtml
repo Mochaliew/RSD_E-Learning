@@ -1,0 +1,110 @@
+﻿@model CourseStatisticsVm
+
+@{
+    ViewData["Title"] = "Course Statistics";
+}
+
+<h2 class="mb-4">Course Statistics</h2>
+
+<!-- STAT CARDS -->
+<div class="row g-4 mb-4">
+
+    <div class="col-md-3">
+        <div class="card border-primary shadow-sm">
+            <div class="card-body">
+                <h6 class="text-primary">Total Courses</h6>
+                <h2>@Model.TotalCourses</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card border-warning shadow-sm">
+            <div class="card-body">
+                <h6 class="text-warning">Pending</h6>
+                <h2>@Model.PendingCourses</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card border-success shadow-sm">
+            <div class="card-body">
+                <h6 class="text-success">Approved</h6>
+                <h2>@Model.ApprovedCourses</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card border-danger shadow-sm">
+            <div class="card-body">
+                <h6 class="text-danger">Rejected</h6>
+                <h2>@Model.RejectedCourses</h2>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- PUBLISH STATUS -->
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h6>Published Courses</h6>
+                <h3 class="text-success">@Model.PublishedCourses</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h6>Unpublished Courses</h6>
+                <h3 class="text-secondary">@Model.UnpublishedCourses</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CHART -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <h5 class="mb-3">Course Status Overview</h5>
+        <canvas id="courseChart"></canvas>
+    </div>
+</div>
+
+<a asp-controller="AdminDashboard"
+   asp-action="Index"
+   class="btn btn-secondary">
+    ← Back to Dashboard
+</a>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    new Chart(document.getElementById('courseChart'), {
+        type: 'bar',
+        data: {
+            labels: ['Pending', 'Approved', 'Rejected'],
+            datasets: [{
+                data: [
+                    @Model.PendingCourses,
+                    @Model.ApprovedCourses,
+                    @Model.RejectedCourses
+                ],
+                backgroundColor: [
+                    '#0d6efd',
+                    '#198754',
+                    '#dc3545'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            plugins: { legend: { display: false } }
+        }
+    });
+</script>
