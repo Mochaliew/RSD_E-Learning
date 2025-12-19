@@ -124,7 +124,7 @@ public class AdminPromoCodeController : Controller
     // ===================== AJAX =====================
     [HttpPost]
 [ValidateAntiForgeryToken]
-public async Task<IActionResult> ToggleAjax([FromBody] TogglePromoVm vm)
+public async Task<IActionResult> ToggleAjax([FromBody] ToggleVm vm)
 {
     var promo = await _db.PromoCodes.FindAsync(vm.Id);
     if (promo == null)

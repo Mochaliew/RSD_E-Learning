@@ -72,7 +72,7 @@
                         'RequestVerificationToken':
                             document.querySelector('input[name="__RequestVerificationToken"]').value
                     },
-                    body: JSON.stringify({ studentId: parseInt(id) })
+                    body: JSON.stringify({ id: parseInt(id) })
                 })
                 .then(res => res.json())
                 .then(data => {

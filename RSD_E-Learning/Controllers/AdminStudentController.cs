@@ -63,11 +63,11 @@ namespace RSD_E_Learning.Controllers
         // ================= AJAX TOGGLE =================
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ToggleStatusAjax([FromBody] ToggleStudentVm vm)
+        public async Task<IActionResult> ToggleStatusAjax([FromBody] ToggleVm vm)
         {
             var student = await _db.Students
                 .Include(s => s.User)
-                .FirstOrDefaultAsync(s => s.StudentId == vm.StudentId);
+                .FirstOrDefaultAsync(s => s.StudentId == vm.Id);
 
             if (student == null || student.User == null)
                 return Json(new { success = false });

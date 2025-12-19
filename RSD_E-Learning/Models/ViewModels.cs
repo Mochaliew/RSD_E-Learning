@@ -336,19 +336,9 @@ namespace RSD_E_Learning.Models
         public int UsedCount { get; set; }
     }
 
-    public class TogglePromoVm
+    public class ToggleVm
     {
         public int Id { get; set; }
-    }
-
-    public class ToggleTeacherVm
-    {
-        public int TeacherId { get; set; }
-    }
-
-    public class ToggleStudentVm
-    {
-        public int StudentId { get; set; }  
     }
 
     // ===============================

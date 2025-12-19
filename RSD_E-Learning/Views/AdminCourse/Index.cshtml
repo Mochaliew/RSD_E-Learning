@@ -1,99 +1,57 @@
-﻿@model List<RSD_E_Learning.Models.DB.Course>
+﻿@model IEnumerable<RSD_E_Learning.Models.DB.Course>
 
-@{
-    ViewData["Title"] = "Manage Courses";
-    string filter = ViewBag.Filter ?? "all";
-}
+@Html.AntiForgeryToken()
 
-<h2 class="mb-4">Manage Courses</h2>
-
-<!-- FILTER TABS -->
-<form method="get" asp-action="Index" class="mb-4">
-    <div class="d-flex align-items-center gap-3">
-        <label class="fw-semibold mb-0">Filter by Module:</label>
-
-        <select name="filter" class="form-select w-auto">
-            <option value="all" selected="@((string)ViewBag.Filter == "all")">
-                All
-            </option>
-            <option value="pending" selected="@((string)ViewBag.Filter == "pending")">
-                Pending
-            </option>
-            <option value="approved" selected="@((string)ViewBag.Filter == "approved")">
-                Approved
-            </option>
-            <option value="rejected" selected="@((string)ViewBag.Filter == "rejected")">
-                Rejected
-            </option>
-        </select>
-
-        <button type="submit" class="btn btn-primary px-4">
-            Apply
-        </button>
-    </div>
-</form>
-
+<h2 class="mb-3">Manage Courses</h2>
 
 <table class="table table-bordered align-middle">
     <thead class="table-light">
         <tr>
-            <th>Course</th>
+            <th>Title</th>
             <th>Teacher</th>
             <th>Category</th>
             <th>Status</th>
-            <th>Published</th>
-            <th style="width:140px">Action</th>
+            <th>Publish</th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var c in Model)
+        @foreach (var course in Model)
         {
             <tr>
-                <td>@c.Title</td>
-                <td>@c.Teacher?.User?.Email</td>
-                <td>@c.Category?.Name</td>
+                <td>@course.Title</td>
+                <td>@course.Teacher?.User?.FullName</td>
+                <td>@course.Category?.Name</td>
 
                 <!-- STATUS -->
                 <td>
-                    @if (c.IsRejected)
+                    @if (course.IsRejected)
                     {
                         <span class="badge bg-danger">Rejected</span>
                     }
-                    else if (c.IsApproved)
+                    else if (!course.IsApproved)
+                    {
+                        <span class="badge bg-warning">Pending</span>
+                    }
+                    else
                     {
                         <span class="badge bg-success">Approved</span>
                     }
-                    else
-                    {
-                        <span class="badge bg-primary">Pending</span>
-                    }
                 </td>
 
-                <!-- PUBLISHED -->
+                <!-- PUBLISH -->
                 <td>
-                    <span class="badge @(c.IsPublished ? "bg-success" : "bg-secondary")">
-                        @(c.IsPublished ? "Yes" : "No")
-                    </span>
-                </td>
-
-                <!-- ACTION -->
-                <td>
-                    @if (c.IsApproved && !c.IsRejected)
+                    @if (course.IsApproved && !course.IsRejected)
                     {
-                        <form asp-action="TogglePublish"
-                              asp-route-id="@c.CourseId"
-                              method="post" class="d-inline">
-                            @Html.AntiForgeryToken()
-
-                            <button class="btn btn-sm
-                                @(c.IsPublished ? "btn-outline-warning" : "btn-outline-success")">
-                                @(c.IsPublished ? "Unpublish" : "Publish")
-                            </button>
-                        </form>
+                        <button type="button"
+                                class="btn btn-sm toggle-btn fixed-btn
+                                        @(course.IsPublished ? "btn-outline-danger" : "btn-outline-success")"
+                                data-id="@course.CourseId">
+                            @(course.IsPublished ? "Unpublish" : "Publish")
+                        </button>
                     }
                     else
                     {
-                        <span class="text-muted">—</span>
+                        <span class="text-muted">N/A</span>
                     }
                 </td>
             </tr>
@@ -106,3 +64,40 @@
    class="btn btn-secondary mt-3">
     ← Back to Dashboard
 </a>
+
+@section Scripts {
+    <script>
+        document.querySelectorAll('.toggle-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+
+                const id = this.dataset.id;
+                const button = this;
+
+                fetch('/AdminCourse/TogglePublishAjax', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken':
+                            document.querySelector('input[name="__RequestVerificationToken"]').value
+                    },
+                    body: JSON.stringify({ id: parseInt(id) })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.success) {
+                        alert(data.message ?? 'Action failed');
+                        return;
+                    }
+
+                    if (data.isPublished) {
+                        button.innerText = 'Unpublish';
+                        button.className = 'btn btn-sm btn-outline-danger toggle-btn fixed-btn';
+                    } else {
+                        button.innerText = 'Publish';
+                        button.className = 'btn btn-sm btn-outline-success toggle-btn fixed-btn';
+                    }
+                });
+            });
+        });
+    </script>
+}
