@@ -341,9 +341,14 @@ namespace RSD_E_Learning.Models
         public int Id { get; set; }
     }
 
-    public class ToggleVm
+    public class ToggleTeacherVm
     {
         public int TeacherId { get; set; }
+    }
+
+    public class ToggleStudentVm
+    {
+        public int StudentId { get; set; }  
     }
 
     // ===============================

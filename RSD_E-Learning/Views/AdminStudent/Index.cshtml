@@ -2,97 +2,95 @@
 
 @{
     ViewData["Title"] = "Manage Students";
-    Layout = "_Layout";
 }
+
+@Html.AntiForgeryToken()
 
 <h2 class="mb-3">Manage Students</h2>
 
-<table class="table table-bordered table-hover align-middle">
+<table class="table table-bordered align-middle">
     <thead class="table-light">
         <tr>
-            <th>Student Name</th>
+            <th>Name</th>
             <th>Email</th>
-            <th>Enrolled Courses</th>
-            <th>Payment Status</th>
-            <th>Account Status</th>
-            <th style="width:170px;">Action</th>
+            <th>Class</th>
+            <th>Status</th>
+            <th style="width:220px;">Action</th>
         </tr>
     </thead>
-
     <tbody>
-        @foreach (var s in Model)
+        @foreach (var student in Model)
         {
-            bool isAccountActive =
-            s.User!.LockoutEnd == null ||
-            s.User.LockoutEnd < DateTime.UtcNow;
-
-            bool hasUnpaid = s.Enrollments.Any(e => !e.PaymentStatus);
+            var isActive = student.User?.LockoutEnd == null;
 
             <tr>
+                <td>@student.User?.FullName</td>
+                <td>@student.User?.Email</td>
+                <td>@student.ClassName</td>
+
+                <!-- STATUS -->
                 <td>
-                    <strong>@s.User.FullName</strong>
+                    <span class="badge status-badge @(isActive ? "bg-success" : "bg-secondary")">
+                        @(isActive ? "Active" : "Inactive")
+                    </span>
                 </td>
 
-                <td>@s.User.Email</td>
-
+                <!-- ACTION -->
                 <td>
-                    @if (s.Enrollments.Any())
-                    {
-                        <ul class="mb-0 ps-3">
-                            @foreach (var e in s.Enrollments)
-                            {
-                                <li>@e.Course!.Title</li>
-                            }
-                        </ul>
-                    }
-                    else
-                    {
-                        <span class="text-muted">No courses</span>
-                    }
-                </td>
-
-                <td>
-                    @if (hasUnpaid)
-                    {
-                        <span class="badge bg-danger">Unpaid</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-success">Paid</span>
-                    }
-                </td>
-
-                <td>
-                    @if (isAccountActive)
-                    {
-                        <span class="badge bg-success">Active</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-secondary">Deactivated</span>
-                    }
-                </td>
-
-                <td>
-                    <form asp-action="ToggleAccountStatus" method="post" class="d-inline">
-                        @Html.AntiForgeryToken()
-                        <input type="hidden" name="studentId" value="@s.StudentId" />
-
-                        <button type="submit"
-                                class="btn btn-sm @(isAccountActive ? "btn-outline-warning" : "btn-outline-success")">
-                            @(isAccountActive ? "Deactivate" : "Activate")
-                        </button>
-                    </form>
+                    <button type="button"
+                            class="btn btn-sm toggle-btn fixed-btn
+                                       @(isActive ? "btn-outline-danger" : "btn-outline-success")"
+                            data-id="@student.StudentId">
+                        @(isActive ? "Deactivate" : "Activate")
+                    </button>
                 </td>
             </tr>
         }
     </tbody>
 </table>
 
-<div class="mt-4">
-    <a asp-controller="AdminDashboard"
-       asp-action="Index"
-       class="btn btn-secondary">
-        ← Back to Dashboard
-    </a>
-</div>
+<a asp-controller="AdminDashboard"
+   asp-action="Index"
+   class="btn btn-secondary mt-3">
+    ← Back to Dashboard
+</a>
+
+@section Scripts {
+    <script>
+        document.querySelectorAll('.toggle-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+
+                const id = this.dataset.id;
+                const row = this.closest('tr');
+                const badge = row.querySelector('.status-badge');
+                const button = this;
+
+                fetch('/AdminStudent/ToggleStatusAjax', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken':
+                            document.querySelector('input[name="__RequestVerificationToken"]').value
+                    },
+                    body: JSON.stringify({ studentId: parseInt(id) })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.success) return;
+
+                    if (data.isActive) {
+                        badge.className = 'badge bg-success status-badge';
+                        badge.innerText = 'Active';
+                        button.innerText = 'Deactivate';
+                        button.className = 'btn btn-sm btn-outline-danger toggle-btn fixed-btn';
+                    } else {
+                        badge.className = 'badge bg-secondary status-badge';
+                        badge.innerText = 'Inactive';
+                        button.innerText = 'Activate';
+                        button.className = 'btn btn-sm btn-outline-success toggle-btn fixed-btn';
+                    }
+                });
+            });
+        });
+    </script>
+}

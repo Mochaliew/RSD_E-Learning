@@ -59,5 +59,40 @@ namespace RSD_E_Learning.Controllers
             await _db.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
+
+        // ================= AJAX TOGGLE =================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ToggleStatusAjax([FromBody] ToggleStudentVm vm)
+        {
+            var student = await _db.Students
+                .Include(s => s.User)
+                .FirstOrDefaultAsync(s => s.StudentId == vm.StudentId);
+
+            if (student == null || student.User == null)
+                return Json(new { success = false });
+
+            student.User.LockoutEnd =
+                student.User.LockoutEnd == null
+                    ? DateTime.UtcNow.AddYears(100)   // deactivate
+                    : null;                           // activate
+
+            _db.AuditLogs.Add(new DB.AuditLog
+            {
+                UserId = student.UserId,
+                Action = student.User.LockoutEnd == null
+                    ? $"Activated student account: {student.User.Email}"
+                    : $"Deactivated student account: {student.User.Email}",
+                Timestamp = DateTime.UtcNow
+            });
+
+            await _db.SaveChangesAsync();
+
+            return Json(new
+            {
+                success = true,
+                isActive = student.User.LockoutEnd == null
+            });
+        }
     }
 }

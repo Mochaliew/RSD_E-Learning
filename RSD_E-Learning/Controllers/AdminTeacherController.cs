@@ -114,7 +114,7 @@ namespace RSD_E_Learning.Controllers
         // ================== ACTIVATE / DEACTIVATE (AJAX) ==================
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ToggleStatusAjax([FromBody] ToggleVm vm)
+        public async Task<IActionResult> ToggleStatusAjax([FromBody] ToggleTeacherVm vm)
         {
             var teacher = await _db.Teachers
                 .Include(t => t.User)
