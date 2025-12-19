@@ -398,8 +398,10 @@ namespace RSD_E_Learning.Controllers
             return RedirectToAction("CourseDetail", new { id = CourseId });
         }
 
-        public IActionResult CreateAssessment()
+        [HttpGet]
+        public IActionResult CreateAssessment(int courseId)
         {
+            ViewBag.CourseId = courseId;
             return View();
         }
 
@@ -414,21 +416,28 @@ namespace RSD_E_Learning.Controllers
         public async Task<IActionResult> CreateAssessmentApi(
     [FromBody] CreateAssessmentVm model)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             var teacherIdClaim = User.FindFirst("TeacherId");
             if (teacherIdClaim == null)
                 return Unauthorized();
 
             int teacherId = int.Parse(teacherIdClaim.Value);
 
+            // 🔑 FIX: ensure CourseId is valid
+            if (model.CourseId <= 0)
+                return BadRequest("CourseId is required.");
+
             var course = await _context.Courses
                 .FirstOrDefaultAsync(c =>
                     c.CourseId == model.CourseId &&
-                    c.TeacherId == teacherId &&
-                    c.IsApproved);
+                    c.TeacherId == teacherId);
 
             if (course == null)
-                return BadRequest("Invalid course.");
+                return BadRequest("Invalid or unauthorized course.");
 
+            // 1️⃣ Save Assessment
             var assessment = new DB.Assessment
             {
                 CourseId = model.CourseId,
@@ -440,6 +449,7 @@ namespace RSD_E_Learning.Controllers
             _context.Assessments.Add(assessment);
             await _context.SaveChangesAsync();
 
+            // 2️⃣ Save Questions
             foreach (var q in model.Questions)
             {
                 _context.AssessmentQuestions.Add(new DB.AssessmentQuestion
@@ -456,7 +466,12 @@ namespace RSD_E_Learning.Controllers
 
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Assessment created successfully" });
+            return Ok(new
+            {
+                message = "Assessment and questions saved successfully",
+                assessmentId = assessment.AssessmentId
+            });
         }
+
     }
 }

@@ -222,12 +222,73 @@ function populatePreview() {
     });
 }
 
-function publishAssessment() {
-    // Here you would send the data to the server
-    document.getElementById('successMessage').style.display = 'block';
+async function publishAssessment() {
 
-    setTimeout(() => {
-        //window.location.href = '/Teacher/ViewAssessment';
-        window.location.href = '/Teacher/TeacherIndex';
-    }, 2000);
+    const courseId = document.getElementById("courseId").value;
+    const title = document.getElementById("assessmentTitle").value;
+    const deadlineHours = parseInt(document.getElementById("deadline").value);
+
+    if (!deadlineHours || deadlineHours < 1) {
+        alert("Please enter a valid deadline (at least 1 hour).");
+        return;
+    }
+
+    // Convert hours to DateTime
+    const deadlineDate = new Date();
+    deadlineDate.setHours(deadlineDate.getHours() + deadlineHours);
+
+    const questions = [];
+
+    document.querySelectorAll(".question-container").forEach(q => {
+        const questionText = q.querySelector(".question-text").value;
+        const options = q.querySelectorAll(".option-text");
+        const correct = q.querySelector("input[type='radio']:checked")?.value;
+
+        questions.push({
+            QuestionDetail: questionText,
+            AnswerA: options[0].value,
+            AnswerB: options[1].value,
+            AnswerC: options[2].value,
+            AnswerD: options[3].value,
+            CorrectAnswer: correct
+        });
+    });
+
+    if (questions.length === 0) {
+        alert("Please add at least one question.");
+        return;
+    }
+
+    const payload = {
+        CourseId: parseInt(courseId),
+        Title: title,
+        DeadLine: deadlineDate.toISOString(),
+        Questions: questions
+    };
+
+    try {
+        const response = await fetch("/api/teacher/create-assessment", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+            const error = await response.text();
+            alert("Failed to save assessment: " + error);
+            return;
+        }
+
+        document.getElementById("successMessage").style.display = "block";
+
+        setTimeout(() => {
+            window.location.href = "/Teacher/TeacherIndex";
+        }, 1500);
+
+    } catch (err) {
+        console.error(err);
+        alert("Server error while saving assessment.");
+    }
 }
