@@ -1,0 +1,51 @@
+﻿@model List<PromoCodeListVm>
+
+<h2>Promo Codes</h2>
+
+<a asp-action="Create" class="btn btn-primary mb-3">
+    + Create Promo Code
+</a>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Code</th>
+            <th>Discount</th>
+            <th>Expiry</th>
+            <th>Used</th>
+            <th>Status</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var p in Model)
+        {
+            <tr>
+                <td>@p.Code</td>
+                <td>@p.DiscountPercent %</td>
+                <td>@p.ExpiryDate.ToShortDateString()</td>
+                <td>@p.UsedCount</td>
+                <td>
+                    <span class="badge @(p.IsActive ? "bg-success" : "bg-danger")">
+                        @(p.IsActive ? "Active" : "Disabled")
+                    </span>
+                </td>
+                <td>
+                    <form asp-action="Toggle" method="post">
+                        <input type="hidden" name="id" value="@p.PromoCodeId" />
+                        <button class="btn btn-sm btn-warning">
+                            Toggle
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<div class="mt-4">
+    <a asp-controller="AdminDashboard"
+       asp-action="Index"
+       class="btn btn-secondary">
+        ← Back to Dashboard
+    </a>
+</div>

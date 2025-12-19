@@ -1,0 +1,57 @@
+﻿@model PromoCodeCreateVm
+
+@{
+    ViewData["Title"] = "Create Promo Code";
+}
+
+<h2 class="mb-4">Create Promo Code</h2>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+
+        <form method="post">
+            @Html.AntiForgeryToken()
+
+            <div class="mb-3">
+                <label asp-for="Code" class="form-label">Promo Code</label>
+                <input asp-for="Code" class="form-control" />
+                <span asp-validation-for="Code" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="DiscountPercent" class="form-label">
+                    Discount Percentage (%)
+                </label>
+                <input asp-for="DiscountPercent" class="form-control" />
+                <span asp-validation-for="DiscountPercent" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="ExpiryDate" class="form-label">Expiry Date</label>
+                <input asp-for="ExpiryDate" type="date" class="form-control" />
+                <span asp-validation-for="ExpiryDate" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="MaxUsage" class="form-label">Maximum Usage</label>
+                <input asp-for="MaxUsage" class="form-control" />
+                <small class="text-muted">
+                    Leave empty or 0 for unlimited usage
+                </small>
+            </div>
+
+            <!-- ACTION BUTTONS -->
+            <div class="d-flex gap-3 mt-4">
+                <button type="submit" class="btn btn-success px-4">
+                    Create
+                </button>
+
+                <a asp-action="Index" class="btn btn-outline-secondary ms-2">
+                    Cancel
+                </a>
+            </div>
+
+        </form>
+
+    </div>
+</div>

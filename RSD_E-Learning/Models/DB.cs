@@ -24,6 +24,7 @@ public class DB : DbContext
     public DbSet<SystemSetting> SystemSettings { get; set; }
     public DbSet<Course> Courses { get; set; }
     public DbSet<Enrollment> Enrollments { get; set; }
+    public DbSet<PromoCode> PromoCodes { get; set; }
     public DbSet<CourseFile> CourseFiles { get; set; }
     public DbSet<Lesson> Lessons { get; set; }
     public DbSet<Certificate> Certificates { get; set; }
@@ -200,6 +201,28 @@ public class DB : DbContext
 
         public Student Student { get; set; }
         public Course Course { get; set; }
+    }
+
+    // ----------------------------------- PROMOCODE ------------------------------------ //
+    public class PromoCode
+    {
+        [Key]
+        public int PromoCodeId { get; set; }
+
+        [Required, StringLength(50)]
+        public string Code { get; set; } = "";
+
+        [Range(0, 100)]
+        public int DiscountPercent { get; set; }
+
+        public DateTime ExpiryDate { get; set; }
+
+        public bool IsActive { get; set; } = true;
+
+        public int MaxUsage { get; set; } = 100;
+        public int UsedCount { get; set; } = 0;
+
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 
     // ----------------------------------- ENROLLMENT ------------------------------------ //
