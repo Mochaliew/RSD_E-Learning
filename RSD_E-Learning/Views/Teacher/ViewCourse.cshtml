@@ -349,9 +349,9 @@
                         <div class="vc-actions-row">
                             @if (course.IsApproved)
                             {
-                                <a href="@Url.Action("UploadMaterial", "Teacher", new { courseId = course.CourseId })" class="vc-btn-small vc-btn-primary">Upload Material</a>
-                                <a href="@Url.Action("CreateAssessment", "Teacher", new { courseId = course.CourseId })" class="vc-btn-small vc-btn-primary">Create Assessment</a>
-                                <a href="@Url.Action("CourseDetail", "Teacher", new { id = course.CourseId })" class="vc-btn-small vc-btn-primary">View Details</a>
+                                <a href="@Url.Action("UploadMaterial", "Teacher", new { courseId = course.CourseId })" class="vc-btn-small vc-btn-primary">+Material</a>
+                                <a href="@Url.Action("CreateAssessment", "Teacher", new { courseId = course.CourseId })" class="vc-btn-small vc-btn-primary">+Assessment</a>
+                                <a href="@Url.Action("CourseDetail", "Teacher", new { id = course.CourseId })" class="vc-btn-small vc-btn-primary">Info</a>
                             }
                             else if (!course.IsApproved && course.IsRejected)
                             {
