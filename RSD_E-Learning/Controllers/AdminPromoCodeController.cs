@@ -14,7 +14,7 @@ public class AdminPromoCodeController : Controller
         _db = db;
     }
 
-    // LIST
+    // ===================== LIST =====================
     public async Task<IActionResult> Index()
     {
         var promos = await _db.PromoCodes
@@ -33,13 +33,13 @@ public class AdminPromoCodeController : Controller
         return View(promos);
     }
 
-    // CREATE (GET)
+    // ===================== CREATE (GET) =====================
     public IActionResult Create()
     {
         return View();
     }
 
-    // CREATE (POST)
+    // ===================== CREATE (POST) =====================
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(PromoCodeCreateVm vm)
@@ -47,28 +47,50 @@ public class AdminPromoCodeController : Controller
         if (!ModelState.IsValid)
             return View(vm);
 
-        _db.PromoCodes.Add(new PromoCode
+        var promo = new PromoCode
         {
             Code = vm.Code.ToUpper(),
             DiscountPercent = vm.DiscountPercent,
             ExpiryDate = vm.ExpiryDate,
-            MaxUsage = vm.MaxUsage
+            MaxUsage = vm.MaxUsage,
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        _db.PromoCodes.Add(promo);
+
+        //AUDIT LOG
+        _db.AuditLogs.Add(new AuditLog
+        {
+            Action = $"Created promo code: {promo.Code}",
+            Timestamp = DateTime.UtcNow
         });
 
         await _db.SaveChangesAsync();
         return RedirectToAction(nameof(Index));
     }
 
-    // TOGGLE ACTIVE
+    // ===================== TOGGLE ACTIVE =====================
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Toggle(int id)
     {
         var promo = await _db.PromoCodes.FindAsync(id);
-        if (promo == null) return NotFound();
+        if (promo == null)
+            return NotFound();
 
         promo.IsActive = !promo.IsActive;
-        await _db.SaveChangesAsync();
 
+        //AUDIT LOG
+        _db.AuditLogs.Add(new AuditLog
+        {
+            Action = promo.IsActive
+                ? $"Activated promo code: {promo.Code}"
+                : $"Deactivated promo code: {promo.Code}",
+            Timestamp = DateTime.UtcNow
+        });
+
+        await _db.SaveChangesAsync();
         return RedirectToAction(nameof(Index));
     }
 }

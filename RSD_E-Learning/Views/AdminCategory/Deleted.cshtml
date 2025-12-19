@@ -1,0 +1,33 @@
+﻿@model IEnumerable<RSD_E_Learning.Models.DB.Category>
+
+<h2>Deleted Categories</h2>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th style="width:150px">Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Name</td>
+                <td>
+                    <form asp-action="Restore" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@item.CategoryId" />
+                        <button class="btn btn-success btn-sm">
+                            Restore
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a asp-action="Index" class="btn btn-secondary">
+    ← Back to Categories
+</a>

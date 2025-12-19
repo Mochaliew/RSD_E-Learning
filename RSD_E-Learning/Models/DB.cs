@@ -134,6 +134,7 @@ public class DB : DbContext
 
         [StringLength(250)]
         public string? Description { get; set; }
+        public bool IsDeleted { get; set; }
 
         // Navigation Properties
         public ICollection<Course> Courses { get; set; } = new List<Course>();

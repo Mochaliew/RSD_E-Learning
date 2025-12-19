@@ -18,7 +18,9 @@ namespace RSD_E_Learning.Controllers
         // -------------------- LIST --------------------
         public async Task<IActionResult> Index()
         {
-            var categories = await _db.Categories.ToListAsync();
+            var categories = await _db.Categories
+                .Where(c => !c.IsDeleted)
+                .ToListAsync();
             return View(categories);
         }
 
@@ -97,22 +99,54 @@ namespace RSD_E_Learning.Controllers
 
         // -------------------- DELETE --------------------
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
             var category = await _db.Categories.FindAsync(id);
             if (category == null) return NotFound();
 
-            _db.Categories.Remove(category);
+            category.IsDeleted = true;
 
-            //auditlog
             _db.AuditLogs.Add(new DB.AuditLog
             {
-                Action = $"Deleted category: {category.Name}",
+                Action = $"Soft deleted category: {category.Name}",
                 Timestamp = DateTime.UtcNow
             });
-            await _db.SaveChangesAsync();
 
+            await _db.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
+
+        // -------------------- VIEW DELETED --------------------
+        public async Task<IActionResult> Deleted()
+        {
+            var deleted = await _db.Categories
+                .Where(c => c.IsDeleted)
+                .ToListAsync();
+
+            return View(deleted);
+        }
+
+
+        // -------------------- RESTORE --------------------
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Restore(int id)
+        {
+            var category = await _db.Categories.FindAsync(id);
+            if (category == null) return NotFound();
+
+            category.IsDeleted = false;
+
+            _db.AuditLogs.Add(new DB.AuditLog
+            {
+                Action = $"Restored category: {category.Name}",
+                Timestamp = DateTime.UtcNow
+            });
+
+            await _db.SaveChangesAsync();
+            return RedirectToAction(nameof(Deleted));
+        }
+
     }
 }
