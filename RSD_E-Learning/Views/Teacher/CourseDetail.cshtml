@@ -242,6 +242,49 @@
         </div>
     </div>
 
+    <!-- Lessons Section -->
+    <div class="section-card">
+        <div class="section-title">
+            <span>Lessons (@Model.Lessons.Count)</span>
+            <a href="@Url.Action("CreateLesson", "Teacher", new { courseId = Model.Course.CourseId })" class="btn-edit-section">+ Add Lesson</a>
+        </div>
+
+        @if (Model.Lessons.Any())
+        {
+            <ul class="lesson-list">
+                @foreach (var lesson in Model.Lessons)
+                {
+                    <li class="lesson-item">
+                        <div class="lesson-info">
+                            <div class="lesson-name">📖 @lesson.Title</div>
+                            <div class="lesson-meta">
+                                @if (!string.IsNullOrEmpty(lesson.Description))
+                                {
+                                    <span>@lesson.Description</span>
+                                }
+                                @if (!string.IsNullOrEmpty(lesson.MeetLink))
+                                {
+                                    <span> | 🔗 <a href="@lesson.MeetLink" target="_blank" style="color: #5b6ff5;">Meeting Link</a></span>
+                                }
+                                @if (lesson.ScheduleDate.HasValue)
+                                {
+                                    <span> | 📅 @lesson.ScheduleDate.Value.ToString("MMM dd, yyyy hh:mm tt")</span>
+                                }
+                            </div>
+                        </div>
+                        <div class="item-actions">
+                            <a href="@Url.Action("EditLesson", "Teacher", new { id = lesson.LessonId })" class="btn-icon btn-view">Edit</a>
+                        </div>
+                    </li>
+                }
+            </ul>
+        }
+        else
+        {
+            <div class="empty-message">No lessons created yet</div>
+        }
+    </div>
+
     <!-- Course Materials -->
     <div class="section-card">
         <div class="section-title">

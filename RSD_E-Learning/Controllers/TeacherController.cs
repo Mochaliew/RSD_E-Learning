@@ -14,6 +14,8 @@ namespace RSD_E_Learning.Controllers
 {
     public class TeacherController : Controller
     {
+        // ------------------------- SETUP DB ------------------------- // 
+
         private readonly DB _context;
         private readonly IWebHostEnvironment _environment;
         private readonly ILogger<TeacherController> _logger;
@@ -28,12 +30,15 @@ namespace RSD_E_Learning.Controllers
             _logger = logger;
         }
 
-        // -------------------- LOGIN --------------------
+        // ------------------------- LOGIN [GET] ------------------------- // 
+
         [HttpGet]
         public IActionResult TeacherLogin()
         {
             return View();
         }
+
+        // ------------------------- LOGIN [POST] ------------------------- // 
 
         [HttpPost]
         public async Task<IActionResult> TeacherLogin(string email, string password)
@@ -82,9 +87,8 @@ namespace RSD_E_Learning.Controllers
             return RedirectToAction("TeacherIndex", "Teacher");
         }
 
+        // -------------------- PASSWORD HASHING -------------------- // 
 
-
-        // -------------------- PASSWORD HASHING --------------------
         private string HashPassword(string password)
         {
             byte[] salt = Encoding.UTF8.GetBytes("STATIC-SALT-CHANGE-LATER");
@@ -100,19 +104,23 @@ namespace RSD_E_Learning.Controllers
             );
         }
 
+        // ------------------------- VERIFY PASSWORD ------------------------- // 
+
         private bool VerifyPassword(string password, string hash)
         {
             return HashPassword(password) == hash;
         }
 
+        // ------------------------- TEACHERINDEX ------------------------- // 
 
         public IActionResult TeacherIndex()
         {
             return View();
         }
 
-        [HttpGet]
+        // ------------------------- CREATECOURSE [GET] ------------------------- // 
 
+        [HttpGet]
         public async Task<IActionResult> CreateCourse()
         {
             var model = new CreateCourseVm
@@ -129,6 +137,8 @@ namespace RSD_E_Learning.Controllers
 
             return View(model);
         }
+
+        // ------------------------- CREATECOURSE [POST] ------------------------- // 
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -148,7 +158,6 @@ namespace RSD_E_Learning.Controllers
                 return View(model);
             }
 
-            // Get current logged-in user id from claims
             var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "UserId");
             if (userIdClaim == null)
             {
@@ -157,8 +166,6 @@ namespace RSD_E_Learning.Controllers
             }
 
             int userId = int.Parse(userIdClaim.Value);
-
-            // Get teacher profile
             var teacher = await _context.Teachers.FirstOrDefaultAsync(t => t.UserId == userId);
             if (teacher == null)
             {
@@ -177,9 +184,8 @@ namespace RSD_E_Learning.Controllers
                 IsPublished = false
             };
 
-
             _context.Courses.Add(course);
-            await _context.SaveChangesAsync();   // ✅ COURSE SAVED SUCCESSFULLY
+            await _context.SaveChangesAsync();   
 
             TempData["SuccessMessage"] =
                 "Course submitted successfully and pending admin approval.";
@@ -187,6 +193,7 @@ namespace RSD_E_Learning.Controllers
             return RedirectToAction("CreateCourse");
         }
 
+        // ------------------------- UPLOADMATERIAL [GET] ------------------------- // 
         [HttpGet]
         public async Task<IActionResult> UploadMaterial(int courseId)
         {
@@ -205,6 +212,8 @@ namespace RSD_E_Learning.Controllers
             ViewBag.CourseTitle = course.Title;
             return View(vm);
         }
+
+        // ------------------------- UPLOADMATERIAL [POST] ------------------------- //
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -225,8 +234,6 @@ namespace RSD_E_Learning.Controllers
                 return Unauthorized();
 
             int teacherId = int.Parse(teacherIdClaim.Value);
-
-            // Ensure course belongs to this teacher
             var courseCheck = await _context.Courses
                 .FirstOrDefaultAsync(c => c.CourseId == model.CourseId &&
                                           c.TeacherId == teacherId &&
@@ -235,7 +242,6 @@ namespace RSD_E_Learning.Controllers
             if (courseCheck == null)
                 return Unauthorized();
 
-            // FILE SAVE
             string uploadsFolder = Path.Combine(_environment.WebRootPath, "coursefiles");
             Directory.CreateDirectory(uploadsFolder);
 
@@ -247,7 +253,6 @@ namespace RSD_E_Learning.Controllers
                 await model.materialFile.CopyToAsync(stream);
             }
 
-            // DATABASE SAVE
             var courseFile = new DB.CourseFile
             {
                 CourseId = model.CourseId,
@@ -265,6 +270,7 @@ namespace RSD_E_Learning.Controllers
             return RedirectToAction("ViewCourse", "Teacher"); // Fixed: removed the id parameter
         }
 
+        // ------------------------- VIEWCOURSE [GET] ------------------------- // 
 
         [HttpGet]
         public async Task<IActionResult> ViewCourse()
@@ -281,7 +287,6 @@ namespace RSD_E_Learning.Controllers
 
             try
             {
-                // Load all courses for this teacher with related data
                 var courses = await _context.Courses
                     .Include(c => c.Category)
                     .Include(c => c.Enrollments)
@@ -300,7 +305,6 @@ namespace RSD_E_Learning.Controllers
                 return View(new List<DB.Course>());
             }
         }
-
 
         // GET: View Course Detail
         [HttpGet]
@@ -335,13 +339,18 @@ namespace RSD_E_Learning.Controllers
                 .OrderByDescending(a => a.AssessmentId)
                 .ToListAsync();
 
+            var lessons = await _context.Lessons
+                .Where(l => l.CourseId == id)
+                .OrderBy(l => l.ScheduleDate)
+                .ThenBy(l => l.Title)
+                .ToListAsync();
+
             // Get question counts for each assessment
             foreach (var assessment in assessments)
             {
                 var questionCount = await _context.AssessmentQuestions
                     .CountAsync(q => q.AssessmentId == assessment.AssessmentId);
 
-                // Store count in ViewBag or add a property if needed
                 ViewBag.QuestionCounts = ViewBag.QuestionCounts ?? new Dictionary<int, int>();
                 ((Dictionary<int, int>)ViewBag.QuestionCounts)[assessment.AssessmentId] = questionCount;
             }
@@ -360,13 +369,15 @@ namespace RSD_E_Learning.Controllers
                 Course = course,
                 CourseFiles = courseFiles,
                 Assessments = assessments,
+                Lessons = lessons,
                 Categories = categories
             };
 
             return View(viewModel);
         }
 
-        // POST: Update Course Info
+        // ------------------------- UPDATECOURSE [POST] ------------------------- // 
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateCourseInfo(int CourseId, string Title, int CategoryId, string Description)
@@ -398,6 +409,193 @@ namespace RSD_E_Learning.Controllers
             return RedirectToAction("CourseDetail", new { id = CourseId });
         }
 
+        // ------------------------- VIEWLESSON [GET] ------------------------- // 
+
+        [HttpGet]
+        public async Task<IActionResult> ViewLesson()
+        {
+            var teacherIdClaim = User.FindFirst("TeacherId");
+            if (teacherIdClaim == null)
+            {
+                return RedirectToAction("TeacherLogin");
+            }
+
+            int teacherId = int.Parse(teacherIdClaim.Value);
+
+            var courses = await _context.Courses
+                .Include(c => c.Category)
+                .Where(c => c.TeacherId == teacherId && c.IsApproved)
+                .OrderBy(c => c.Title)
+                .ToListAsync();
+
+            var courseLessonList = new List<CourseLessonVm>();
+
+            foreach (var course in courses)
+            {
+                var lessons = await _context.Lessons
+                    .Where(l => l.CourseId == course.CourseId)
+                    .OrderBy(l => l.ScheduleDate)
+                    .ThenBy(l => l.Title)
+                    .ToListAsync();
+
+                courseLessonList.Add(new CourseLessonVm
+                {
+                    Course = course,
+                    Lessons = lessons
+                });
+            }
+
+            return View(courseLessonList);
+        }
+
+        // ------------------------- CREATELESSON [GET] ------------------------- // 
+
+        [HttpGet]
+        public async Task<IActionResult> CreateLesson(int courseId)
+        {
+            var teacherIdClaim = User.FindFirst("TeacherId");
+            if (teacherIdClaim == null)
+            {
+                return RedirectToAction("TeacherLogin");
+            }
+
+            int teacherId = int.Parse(teacherIdClaim.Value);
+
+            var course = await _context.Courses
+                .FirstOrDefaultAsync(c => c.CourseId == courseId && c.TeacherId == teacherId);
+
+            if (course == null)
+            {
+                TempData["ErrorMessage"] = "Course not found or unauthorized.";
+                return RedirectToAction("ViewLesson");
+            }
+
+            ViewBag.CourseName = course.Title;
+
+            var model = new CreateLessonVm
+            {
+                CourseId = courseId
+            };
+
+            return View(model);
+        }
+
+        // ------------------------- CREATELESSON [POST] ------------------------- // 
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateLesson(CreateLessonVm model, string LessonDate, string LessonTime)
+        {
+            if (!ModelState.IsValid)
+            {
+                var course = await _context.Courses.FindAsync(model.CourseId);
+                if (course != null)
+                {
+                    ViewBag.CourseName = course.Title;
+                }
+                return View(model);
+            }
+
+            var teacherIdClaim = User.FindFirst("TeacherId");
+            if (teacherIdClaim == null)
+            {
+                return Unauthorized();
+            }
+
+            int teacherId = int.Parse(teacherIdClaim.Value);
+
+            var courseCheck = await _context.Courses
+                .FirstOrDefaultAsync(c => c.CourseId == model.CourseId && c.TeacherId == teacherId);
+
+            if (courseCheck == null)
+            {
+                TempData["ErrorMessage"] = "Course not found or unauthorized.";
+                return RedirectToAction("ViewLesson");
+            }
+
+            DateTime? scheduledDateTime = null;
+            if (!string.IsNullOrEmpty(LessonDate) && !string.IsNullOrEmpty(LessonTime))
+            {
+                var datePart = DateTime.Parse(LessonDate);
+                var timePart = TimeSpan.Parse(LessonTime);
+                scheduledDateTime = datePart.Add(timePart);
+            }
+
+            var lesson = new DB.Lesson
+            {
+                CourseId = model.CourseId,
+                Title = model.Title,
+                MeetLink = model.MeetLink,
+                Description = model.Description ?? "",
+                ScheduleDate = scheduledDateTime
+            };
+
+            _context.Lessons.Add(lesson);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Lesson created successfully.";
+            return RedirectToAction("ViewLesson");
+        }
+
+        // ------------------------- EDITLESSON [GET] ------------------------- // 
+
+        [HttpGet]
+        public async Task<IActionResult> EditLesson(int id)
+        {
+            var teacherIdClaim = User.FindFirst("TeacherId");
+            if (teacherIdClaim == null)
+            {
+                return RedirectToAction("TeacherLogin");
+            }
+
+            int teacherId = int.Parse(teacherIdClaim.Value);
+
+            var lesson = await _context.Lessons
+                .Include(l => l.Course)
+                .FirstOrDefaultAsync(l => l.LessonId == id);
+
+            if (lesson == null || lesson.Course.TeacherId != teacherId)
+            {
+                TempData["ErrorMessage"] = "Lesson not found or unauthorized.";
+                return RedirectToAction("ViewLesson");
+            }
+
+            ViewBag.CourseName = lesson.Course.Title;
+
+            var model = new EditLessonVm
+            {
+                LessonId = lesson.LessonId,
+                CourseId = lesson.CourseId,
+                Title = lesson.Title,
+                MeetLink = lesson.MeetLink,
+                Description = lesson.Description,
+                ScheduleDate = lesson.ScheduleDate
+            };
+
+            return View(model);
+        }
+
+        // ------------------------- EDITLESSON [POST] ------------------------- // 
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditLesson(EditLessonVm model, string LessonDate, string LessonTime)
+        {
+            if (!ModelState.IsValid)
+            {
+                var course = await _context.Courses.FindAsync(model.CourseId);
+                if (course != null)
+                {
+                    ViewBag.CourseName = course.Title;
+                }
+                return View(model);
+            }
+
+            var teacherIdClaim = User.FindFirst("TeacherId");
+            if (teacherIdClaim == null)
+            {
+                return Unauthorized();
+            }
         [HttpGet]
         public IActionResult CreateAssessment(int courseId)
         {
@@ -405,11 +603,38 @@ namespace RSD_E_Learning.Controllers
             return View();
         }
 
+            int teacherId = int.Parse(teacherIdClaim.Value);
 
-        public IActionResult TeacherDashboard()
-        {
-            return View();
+            var lesson = await _context.Lessons
+                .Include(l => l.Course)
+                .FirstOrDefaultAsync(l => l.LessonId == model.LessonId);
+
+            if (lesson == null || lesson.Course.TeacherId != teacherId)
+            {
+                TempData["ErrorMessage"] = "Lesson not found or unauthorized.";
+                return RedirectToAction("ViewLesson");
+            }
+
+            DateTime? scheduledDateTime = null;
+            if (!string.IsNullOrEmpty(LessonDate) && !string.IsNullOrEmpty(LessonTime))
+            {
+                var datePart = DateTime.Parse(LessonDate);
+                var timePart = TimeSpan.Parse(LessonTime);
+                scheduledDateTime = datePart.Add(timePart);
+            }
+
+            lesson.Title = model.Title;
+            lesson.MeetLink = model.MeetLink;
+            lesson.Description = model.Description ?? "";
+            lesson.ScheduleDate = scheduledDateTime;
+
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Lesson updated successfully.";
+            return RedirectToAction("ViewLesson");
         }
+
+        // ------------------------- CREATEASSESSMENT [POST] ------------------------- // 
 
         [HttpPost]
         [Route("api/teacher/create-assessment")]

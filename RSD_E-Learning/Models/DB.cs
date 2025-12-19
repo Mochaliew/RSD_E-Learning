@@ -318,15 +318,17 @@ public class DB : DbContext
 
         [Required, StringLength(100)]
         public string Title { get; set; } = "";
-
+        
         [Required, StringLength(200)]
-        public string FilePath { get; set; } = "";
+        public string MeetLink { get; set; } = "";
 
-        public string? Content { get; set; }
+        public string Description { get; set; } = "";
+
+        public DateTime? ScheduleDate { get; set; }
 
         // Navigation Properties
         public Course? Course { get; set; }
-        public ICollection<AssessmentSubmission> AssessmentSubmissions { get; set; } = new List<AssessmentSubmission>();
+        
     }
 
     // ----------------------------------- CERTIFICATE ------------------------------------ //

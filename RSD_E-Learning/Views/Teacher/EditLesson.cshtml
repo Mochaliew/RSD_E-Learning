@@ -1,0 +1,60 @@
+﻿@model RSD_E_Learning.Models.EditLessonVm
+
+@{
+    ViewData["Title"] = "Edit Lesson";
+}
+
+<link rel="stylesheet" href="~/css/Teacher.css" />
+
+<div class="container" style="max-width: 800px; margin: 50px auto;">
+    <div class="header">
+        <h1>Edit Lesson</h1>
+        <p>Course: <strong>@ViewBag.CourseName</strong></p>
+    </div>
+
+    <form asp-action="EditLesson" asp-controller="Teacher" method="post" onsubmit="console.log('Form submitting...');">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="LessonId" />
+        <input type="hidden" asp-for="CourseId" />
+
+        <div class="form-group">
+            <label asp-for="Title">Lesson Title</label>
+            <input type="text" asp-for="Title" placeholder="e.g., Introduction to Variables" required />
+            <span asp-validation-for="Title" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Description">Description</label>
+            <textarea asp-for="Description" rows="4" placeholder="Brief description of what will be covered in this lesson"></textarea>
+            <span asp-validation-for="Description" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="MeetLink">Meeting Link</label>
+            <input type="text" asp-for="MeetLink" placeholder="e.g., https://meet.google.com/xxx-xxxx-xxx" required />
+            <span asp-validation-for="MeetLink" class="text-danger"></span>
+            <small style="color:#666; display: block; margin-top: 5px;">Provide the online meeting link (Google Meet, Zoom, etc.)</small>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Date</label>
+                <input type="date" name="LessonDate" value="@(Model.ScheduleDate.HasValue? Model.ScheduleDate.Value.ToString("yyyy-MM-dd") : "")" />
+            </div>
+
+            <div class="form-group">
+                <label>Time</label>
+                <input type="time" name="LessonTime" value="@(Model.ScheduleDate.HasValue? Model.ScheduleDate.Value.ToString("HH:mm") : "")" />
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <a href="@Url.Action("ViewLesson", "Teacher")" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

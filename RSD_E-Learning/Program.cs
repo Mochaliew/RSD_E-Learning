@@ -42,9 +42,7 @@ builder.Services.AddControllers()
             System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
     });
 
-
-
-var app = builder.Build(); // ✅ now in the correct place
+var app = builder.Build(); 
 
 using (var scope = app.Services.CreateScope())
 {
@@ -59,6 +57,8 @@ using (var scope = app.Services.CreateScope())
     {
         Console.WriteLine("Migration error: " + ex.Message);
     }
+
+    // ----------------------------------- SEED DATA ----------------------------------- //
 
     // Seed admin
     if (!db.Users.Any(u => u.Email == "admin@elearning.com"))
@@ -89,7 +89,7 @@ using (var scope = app.Services.CreateScope())
         db.SaveChanges();
     }
 
-    // Seed teacher if not exists
+    // Seed teacher 
     if (!db.Users.Any(u => u.Email == "teacher@elearning.com"))
     {
         var teacherUser = new DB.User
@@ -108,19 +108,16 @@ using (var scope = app.Services.CreateScope())
         };
 
         db.Users.Add(teacherUser);
-        db.SaveChanges(); // needed to generate UserId
+        db.SaveChanges(); 
 
         db.Teachers.Add(new DB.Teacher
         {
             UserId = teacherUser.Id,
-            // add more fields if Teacher has them
-            // e.g. Department = "IT",
-            // Phone = "0123456789"
         });
 
         db.SaveChanges();
     }
-    // Seed IT categories if none exist
+    // Seed IT categories
     if (!db.Categories.Any())
     {
         var categories = new List<DB.Category>
@@ -165,7 +162,6 @@ using (var scope = app.Services.CreateScope())
     }
 
 }
-
 
 // Enable API Controllers
 app.MapControllers();

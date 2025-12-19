@@ -91,27 +91,27 @@
                         'RequestVerificationToken':
                             document.querySelector('input[name="__RequestVerificationToken"]').value
                     },
-                    body: JSON.stringify({ teacherId: parseInt(id) })
+                    body: JSON.stringify({ id: parseInt(id) }) 
                 })
                 .then(res => res.json())
                 .then(data => {
                     if (!data.success) return;
 
                     if (data.isActive) {
-                        badge.className = 'badge bg-success status-badge';
-                        badge.innerText = 'Active';
-                        button.innerText = 'Deactivate';
+                        badge.textContent = 'Active';
+                        badge.className = 'badge status-badge bg-success';
+
+                        button.textContent = 'Deactivate';
                         button.className = 'btn btn-sm btn-outline-danger toggle-btn fixed-btn';
                     } else {
-                        badge.className = 'badge bg-secondary status-badge';
-                        badge.innerText = 'Inactive';
-                        button.innerText = 'Activate';
+                        badge.textContent = 'Inactive';
+                        badge.className = 'badge status-badge bg-secondary';
+
+                        button.textContent = 'Activate';
                         button.className = 'btn btn-sm btn-outline-success toggle-btn fixed-btn';
                     }
                 });
             });
         });
     </script>
-}
-
 }
