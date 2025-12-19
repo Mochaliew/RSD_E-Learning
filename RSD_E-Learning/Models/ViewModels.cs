@@ -3,7 +3,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace RSD_E_Learning.Models
 {
-    // Teacher View Models //
+    // -------------------------------- Teacher View Models --------------------------------------------- //
+
+        // Teacher Create View Models //
     public class TeacherCreateVm
     {
         [Required, StringLength(100)]
@@ -19,9 +21,9 @@ namespace RSD_E_Learning.Models
         [Required, StringLength(100)]
         [Display(Name = "Subject Area")]
         public string SubjectArea { get; set; } = "";
-
     }
 
+        // Course View Models //
     public class CreateCourseVm
     {
         [Required, StringLength(150)]
@@ -34,11 +36,9 @@ namespace RSD_E_Learning.Models
         public string? Description { get; set; }
 
         public IEnumerable<SelectListItem>? CategoryList { get; set; }
-
-
-
     }
 
+        // Course Detail View Models //
     public class CourseDetailVm
     {
         public DB.Course Course { get; set; } = new();
@@ -47,6 +47,57 @@ namespace RSD_E_Learning.Models
         public IEnumerable<SelectListItem> Categories { get; set; } = new List<SelectListItem>();
     }
 
+        // Lesson View Models //
+    public class CourseLessonVm
+    {
+        public DB.Course Course { get; set; } = new();
+        public List<DB.Lesson> Lessons { get; set; } = new();
+    }
+
+        // Lesson Create View Models //
+    public class CreateLessonVm
+    {
+        public int CourseId { get; set; }
+
+        [Required, StringLength(100)]
+        [Display(Name = "Lesson Title")]
+        public string Title { get; set; } = "";
+
+        [Required, StringLength(200)]
+        [Display(Name = "Meeting Link")]
+        public string MeetLink { get; set; } = "";
+
+        [StringLength(500)]
+        [Display(Name = "Description")]
+        public string? Description { get; set; }
+
+        [Display(Name = "Scheduled Date & Time")]
+        public DateTime? ScheduleDate { get; set; }
+    }
+
+        // Lesson Edit View Models //
+    public class EditLessonVm
+    {
+        public int LessonId { get; set; }
+        public int CourseId { get; set; }
+
+        [Required, StringLength(100)]
+        [Display(Name = "Lesson Title")]
+        public string Title { get; set; } = "";
+
+        [Required, StringLength(200)]
+        [Display(Name = "Meeting Link")]
+        public string MeetLink { get; set; } = "";
+
+        [StringLength(500)]
+        [Display(Name = "Description")]
+        public string? Description { get; set; }
+
+        [Display(Name = "Scheduled Date & Time")]
+        public DateTime? ScheduleDate { get; set; }
+    }
+
+        // Teacher Edit View Models //
     public class TeacherEditVM
     {
         public int TeacherId { get; set; }
@@ -68,7 +119,7 @@ namespace RSD_E_Learning.Models
         public string SubjectArea { get; set; } = "";
     }
 
-    // Teacher Reset Password View Models //
+        // Teacher Reset Password View Models //
     public class ResetTeacherPasswordVm
     {
         [Required]
@@ -85,7 +136,46 @@ namespace RSD_E_Learning.Models
         public string ConfirmPassword { get; set; } = "";
     }
 
-    // Student View Models //
+        // Course File View Models //
+    public class CourseFileVm
+    {
+        public int FileId { get; set; }
+        public int CourseId { get; set; }
+
+        [Required]
+        public string FileName { get; set; } = "";
+
+        public string FileType { get; set; } = "";
+
+        public string? Description { get; set; }
+
+        public long Filesize { get; set; }
+
+        public string FileUrl { get; set; } = "";
+
+        public DateTime UploadedAt { get; set; }
+
+        public string UploadedBy { get; set; } = "";
+    }
+
+        // Upload Course File View Models //
+    public class UploadCourseFileVm
+    {
+        public int CourseId { get; set; }
+
+        [Required(ErrorMessage = "Material title is required")]
+        [Display(Name = "Material Title")]
+        public string materialTitle { get; set; } = "";
+
+        [Required(ErrorMessage = "Please select a file to upload")]
+        [Display(Name = "Upload File")]
+        public IFormFile materialFile { get; set; } = null!;
+
+        [Display(Name = "Material Type")]
+        public string materialType { get; set; } = "pdf"; // Default value
+    }
+
+        // Student View Models //
     public class StudentRegisterVm
     {
         [Required, StringLength(100)]
@@ -177,44 +267,7 @@ namespace RSD_E_Learning.Models
         public int UnpublishedCourses { get; set; }
     }
 
-    // Course File View Models //
-    public class CourseFileVm
-    {
-        public int FileId { get; set; }
-        public int CourseId { get; set; }
-
-        [Required]
-        public string FileName { get; set; } = "";
-
-        public string FileType { get; set; } = "";
-
-        public string? Description { get; set; }
-
-        public long Filesize { get; set; }
-
-        public string FileUrl { get; set; } = "";
-
-        public DateTime UploadedAt { get; set; }
-
-        public string UploadedBy { get; set; } = "";
-    }
-
-    // Upload Course File View Models //
-    public class UploadCourseFileVm
-    {
-        public int CourseId { get; set; }
-
-        [Required(ErrorMessage = "Material title is required")]
-        [Display(Name = "Material Title")]
-        public string materialTitle { get; set; } = "";
-
-        [Required(ErrorMessage = "Please select a file to upload")]
-        [Display(Name = "Upload File")]
-        public IFormFile materialFile { get; set; } = null!;
-
-        [Display(Name = "Material Type")]
-        public string materialType { get; set; } = "pdf"; // Default value
-    }
+    
 
     // Login View Models //
     public class LoginViewModel
