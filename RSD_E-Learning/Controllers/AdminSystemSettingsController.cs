@@ -61,6 +61,13 @@ public class AdminSystemSettingsController : Controller
         s.AllowedFileTypes = vm.AllowedFileTypes;
         s.CertificateTemplatePath = vm.CertificateTemplatePath;
 
+        //auditlog
+        _db.AuditLogs.Add(new DB.AuditLog
+        {
+            Action = "Update system settings",
+            Timestamp = DateTime.UtcNow
+        });
+
         await _db.SaveChangesAsync();
 
         TempData["Success"] = "System settings updated successfully.";

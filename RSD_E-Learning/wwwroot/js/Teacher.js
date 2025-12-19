@@ -44,10 +44,10 @@ function removeMaterial(button) {
 const courseForm = document.getElementById('courseForm');
 if (courseForm) {
     courseForm.addEventListener('submit', function (e) {
-        const title = document.getElementById('courseTitle')?.value;
-        const category = document.getElementById('category')?.value;
-        const description = document.getElementById('description')?.value;
-        const difficulty = document.getElementById('difficulty')?.value;
+        const title = document.getElementById('courseTitle').value;
+        const category = document.getElementById('category').value;
+        const description = document.getElementById('description').value;
+        const difficulty = document.getElementById('difficulty').value;
 
         if (!title || !category || !description || !difficulty) {
             e.preventDefault();
@@ -105,9 +105,8 @@ function prevStep(step) {
 
 function validateStep1() {
     const title = document.getElementById('assessmentTitle').value;
-    const course = document.getElementById('courseSelect').value;
     const passing = document.getElementById('passingMark').value;
-    return title && course && passing;
+    return title && passing;
 }
 
 function validateStep2() {
@@ -193,8 +192,6 @@ function updateQuestionNumbers() {
 function populatePreview() {
     // Basic info
     document.getElementById('previewTitle').textContent = document.getElementById('assessmentTitle').value;
-    const courseSelect = document.getElementById('courseSelect');
-    document.getElementById('previewCourse').textContent = courseSelect.options[courseSelect.selectedIndex].text;
     document.getElementById('previewPassing').textContent = document.getElementById('passingMark').value + '%';
 
     // Questions

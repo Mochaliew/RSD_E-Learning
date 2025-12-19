@@ -307,6 +307,39 @@ namespace RSD_E_Learning.Models
         public List<string> Permissions { get; set; } = new();
     }
 
+    // PromoCode View Models //
+    public class PromoCodeCreateVm
+    {
+        [Required]
+        public string Code { get; set; } = "";
+
+        [Range(1, 100)]
+        public int DiscountPercent { get; set; }
+
+        [Required]
+        public DateTime StartDate { get; set; }
+        [Required]
+        public DateTime ExpiryDate { get; set; }
+
+        [Range(1, 1000)]
+        public int MaxUsage { get; set; }
+    }
+
+    public class PromoCodeListVm
+    {
+        public int PromoCodeId { get; set; }
+        public string Code { get; set; } = "";
+        public int DiscountPercent { get; set; }
+        public DateTime StartDate { get; set; }
+        public DateTime ExpiryDate { get; set; }
+        public bool IsActive { get; set; }
+        public int UsedCount { get; set; }
+    }
+
+    public class TogglePromoVm
+    {
+        public int Id { get; set; }
+    }
 
     // ===============================
     // Auto Grading View Models

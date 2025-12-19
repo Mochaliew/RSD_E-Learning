@@ -1,0 +1,161 @@
+﻿@model IEnumerable<RSD_E_Learning.Models.PromoCodeListVm>
+@Html.AntiForgeryToken()
+
+@{
+    ViewData["Title"] = "Promo Codes";
+}
+
+<h2 class="mb-4">Promo Codes</h2>
+
+<!-- ================= FILTER + SEARCH ROW ================= -->
+<form method="get" class="mb-4">
+    <div class="row align-items-end">
+
+        <!-- LEFT: FILTER -->
+        <div class="col-md-6 d-flex align-items-end gap-3">
+            <div>
+                <label class="form-label fw-semibold">Filter by Status:</label>
+                <select name="status" class="form-select">
+                    <option value="">All</option>
+                    <option value="Active">Active</option>
+                    <option value="Upcoming">Upcoming</option>
+                    <option value="Expired">Expired</option>
+                </select>
+            </div>
+
+            <div>
+                <button type="submit" class="btn btn-primary mt-4">
+                    Apply
+                </button>
+            </div>
+        </div>
+
+        <!-- RIGHT: SEARCH -->
+        <div class="col-md-6 d-flex justify-content-end align-items-end gap-2">
+            <input type="text"
+                   name="search"
+                   class="form-control w-50"
+                   placeholder="Search promo code..." />
+            <button type="submit" class="btn btn-outline-secondary">
+                Search
+            </button>
+        </div>
+    </div>
+</form>
+
+<!-- CREATE BUTTON -->
+<div class="mt-4 mb-4 d-flex gap-2">
+    <a asp-action="Create" class="btn btn-success">
+        + Create Promo Code
+    </a>
+</div>
+
+<!-- ================= TABLE ================= -->
+<table class="table table-bordered shadow-sm">
+    <thead class="table-light">
+        <tr>
+            <th>Code</th>
+            <th>Discount (%)</th>
+            <th>Start Date</th>
+            <th>Expiry Date</th>
+            <th>Status</th>
+            <th>Used</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var promo in Model)
+        {
+            var today = DateTime.UtcNow.Date;
+            <tr>
+                <td>@promo.Code</td>
+                <td>@promo.DiscountPercent %</td>
+                <td>@promo.StartDate.ToString("dd MMM yyyy")</td>
+                <td>@promo.ExpiryDate.ToString("dd MMM yyyy")</td>
+
+                <!-- STATUS -->
+                <td>
+                    @if (promo.ExpiryDate < today)
+                    {
+                        <span class="badge bg-danger status-badge">Expired</span>
+                    }
+                    else if (promo.StartDate > today)
+                    {
+                        <span class="badge bg-info status-badge">Upcoming</span>
+                    }
+                    else if (promo.IsActive)
+                    {
+                        <span class="badge bg-success status-badge">Active</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary status-badge">Inactive</span>
+                    }
+                </td>
+
+                <td>@promo.UsedCount</td>
+
+                <!-- ACTION -->
+                <td>
+                    @if (promo.ExpiryDate < today)
+                    {
+                        <span class="badge bg-danger">Expired</span>
+                    }
+                    else
+                    {
+                        <button type="button"
+                                class="btn btn-sm @(promo.IsActive ? "btn-outline-danger" : "btn-outline-success") toggle-btn"
+                                data-id="@promo.PromoCodeId">
+                            @(promo.IsActive ? "Deactivate" : "Activate")
+                        </button>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a asp-controller="AdminDashboard"
+   asp-action="Index"
+   class="btn btn-secondary">
+    ← Back to Dashboard
+</a>
+
+@section Scripts {
+    <script>
+        document.querySelectorAll('.toggle-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+
+                const id = this.dataset.id;
+                const row = this.closest('tr');
+                const badge = row.querySelector('.status-badge');
+
+                fetch('/AdminPromoCode/ToggleAjax', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken':
+                            document.querySelector('input[name="__RequestVerificationToken"]').value
+                    },
+                    body: JSON.stringify({ id: parseInt(id) })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.success) return;
+
+                    if (data.isActive) {
+                        badge.className = 'badge bg-success status-badge';
+                        badge.innerText = 'Active';
+                        this.className = 'btn btn-sm btn-outline-danger toggle-btn';
+                        this.innerText = 'Deactivate';
+                    } else {
+                        badge.className = 'badge bg-secondary status-badge';
+                        badge.innerText = 'Inactive';
+                        this.className = 'btn btn-sm btn-outline-success toggle-btn';
+                        this.innerText = 'Activate';
+                    }
+                });
+            });
+        });
+    </script>
+}
