@@ -596,12 +596,7 @@ namespace RSD_E_Learning.Controllers
             {
                 return Unauthorized();
             }
-        [HttpGet]
-        public IActionResult CreateAssessment(int courseId)
-        {
-            ViewBag.CourseId = courseId;
-            return View();
-        }
+        
 
             int teacherId = int.Parse(teacherIdClaim.Value);
 
@@ -697,6 +692,11 @@ namespace RSD_E_Learning.Controllers
                 assessmentId = assessment.AssessmentId
             });
         }
-
+        [HttpGet]
+        public IActionResult CreateAssessment(int courseId)
+        {
+            ViewBag.CourseId = courseId;
+            return View();
+        }
     }
 }
