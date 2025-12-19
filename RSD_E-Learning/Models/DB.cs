@@ -215,7 +215,7 @@ public class DB : DbContext
 
         [Range(0, 100)]
         public int DiscountPercent { get; set; }
-
+        public DateTime StartDate { get; set; }
         public DateTime ExpiryDate { get; set; }
 
         public bool IsActive { get; set; } = true;

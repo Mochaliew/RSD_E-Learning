@@ -43,3 +43,9 @@
     transition: transform 0.15s ease;
 }
 
+.fixed-btn {
+    min-width: 90px;
+    text-align: center;
+}
+
+

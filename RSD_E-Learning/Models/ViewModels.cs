@@ -308,6 +308,8 @@ namespace RSD_E_Learning.Models
         public int DiscountPercent { get; set; }
 
         [Required]
+        public DateTime StartDate { get; set; }
+        [Required]
         public DateTime ExpiryDate { get; set; }
 
         [Range(1, 1000)]
@@ -319,9 +321,15 @@ namespace RSD_E_Learning.Models
         public int PromoCodeId { get; set; }
         public string Code { get; set; } = "";
         public int DiscountPercent { get; set; }
+        public DateTime StartDate { get; set; }
         public DateTime ExpiryDate { get; set; }
         public bool IsActive { get; set; }
         public int UsedCount { get; set; }
+    }
+
+    public class TogglePromoVm
+    {
+        public int Id { get; set; }
     }
 
     // ===============================

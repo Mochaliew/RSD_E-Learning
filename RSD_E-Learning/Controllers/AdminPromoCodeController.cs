@@ -15,15 +15,45 @@ public class AdminPromoCodeController : Controller
     }
 
     // ===================== LIST =====================
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(string search, string status)
     {
-        var promos = await _db.PromoCodes
+        var today = DateTime.UtcNow.Date;
+
+        var query = _db.PromoCodes.AsQueryable();
+
+        // SEARCH
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            query = query.Where(p => p.Code.Contains(search));
+        }
+
+        // FILTER
+        switch (status)
+        {
+            case "Active":
+                query = query.Where(p =>
+                    p.IsActive &&
+                    p.StartDate <= today &&
+                    p.ExpiryDate >= today);
+                break;
+
+            case "Expired":
+                query = query.Where(p => p.ExpiryDate < today);
+                break;
+
+            case "Upcoming":
+                query = query.Where(p => p.StartDate > today);
+                break;
+        }
+
+        var promos = await query
             .OrderByDescending(p => p.CreatedAt)
             .Select(p => new PromoCodeListVm
             {
                 PromoCodeId = p.PromoCodeId,
                 Code = p.Code,
                 DiscountPercent = p.DiscountPercent,
+                StartDate = p.StartDate,
                 ExpiryDate = p.ExpiryDate,
                 IsActive = p.IsActive,
                 UsedCount = p.UsedCount
@@ -33,13 +63,12 @@ public class AdminPromoCodeController : Controller
         return View(promos);
     }
 
-    // ===================== CREATE (GET) =====================
+    // ===================== CREATE =====================
     public IActionResult Create()
     {
         return View();
     }
 
-    // ===================== CREATE (POST) =====================
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(PromoCodeCreateVm vm)
@@ -51,6 +80,7 @@ public class AdminPromoCodeController : Controller
         {
             Code = vm.Code.ToUpper(),
             DiscountPercent = vm.DiscountPercent,
+            StartDate = vm.StartDate,
             ExpiryDate = vm.ExpiryDate,
             MaxUsage = vm.MaxUsage,
             IsActive = true,
@@ -59,7 +89,6 @@ public class AdminPromoCodeController : Controller
 
         _db.PromoCodes.Add(promo);
 
-        //AUDIT LOG
         _db.AuditLogs.Add(new AuditLog
         {
             Action = $"Created promo code: {promo.Code}",
@@ -70,18 +99,16 @@ public class AdminPromoCodeController : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    // ===================== TOGGLE ACTIVE =====================
+    // ===================== TOGGLE =====================
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Toggle(int id)
     {
         var promo = await _db.PromoCodes.FindAsync(id);
-        if (promo == null)
-            return NotFound();
+        if (promo == null) return NotFound();
 
         promo.IsActive = !promo.IsActive;
 
-        //AUDIT LOG
         _db.AuditLogs.Add(new AuditLog
         {
             Action = promo.IsActive
@@ -93,4 +120,34 @@ public class AdminPromoCodeController : Controller
         await _db.SaveChangesAsync();
         return RedirectToAction(nameof(Index));
     }
+
+    // ===================== AJAX =====================
+    [HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> ToggleAjax([FromBody] TogglePromoVm vm)
+{
+    var promo = await _db.PromoCodes.FindAsync(vm.Id);
+    if (promo == null)
+        return Json(new { success = false });
+
+    promo.IsActive = !promo.IsActive;
+
+    _db.AuditLogs.Add(new AuditLog
+    {
+        Action = promo.IsActive
+            ? $"Activated promo code: {promo.Code}"
+            : $"Deactivated promo code: {promo.Code}",
+        Timestamp = DateTime.UtcNow
+    });
+
+    await _db.SaveChangesAsync();
+
+    return Json(new
+    {
+        success = true,
+        isActive = promo.IsActive
+    });
+}
+
+
 }
