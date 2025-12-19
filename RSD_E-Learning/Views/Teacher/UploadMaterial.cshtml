@@ -4,87 +4,56 @@
     ViewData["Title"] = "Upload Course Material";
 }
 
-<h2 class="mb-3">Upload Course Material</h2>
+<link rel="stylesheet" href="~/css/Teacher.css" />
 
-@if (TempData["SuccessMessage"] != null)
-{
-    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
-}
-
-<form asp-action="UploadMaterial"
-      method="post"
-      enctype="multipart/form-data">
-
-    @Html.AntiForgeryToken()
-    <input type="hidden" asp-for="CourseId" />
-
-    <div class="mb-3">
-        <label asp-for="materialTitle" class="form-label"></label>
-        <input asp-for="materialTitle" class="form-control" />
-        <span asp-validation-for="materialTitle" class="text-danger"></span>
+<div class="container" style="max-width: 800px; margin: 50px auto;">
+    <div class="header">
+        <h1>Upload Course Material</h1>
+        <p>Course: <strong>@ViewBag.CourseTitle</strong></p>
     </div>
 
-    <div class="mb-3">
-        <label asp-for="materialFile" class="form-label"></label>
-        <input asp-for="materialFile" type="file" class="form-control" />
-        <span asp-validation-for="materialFile" class="text-danger"></span>
-    </div>
+    <form asp-action="UploadMaterial"
+          asp-controller="Teacher"
+          method="post"
+          enctype="multipart/form-data">
 
-    <div class="mb-3">
-        <label>Material Type</label>
-        <select name="materialType" class="material-type">
-            <option value="pdf">PDF Document</option>
-            <option value="video">Video</option>
-            <option value="text">Text Lesson</option>
-            <option value="code">Code Demo</option>
-        </select>
-    </div>
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="CourseId" />
 
-    <div class="mt-4">
-        <button type="submit" class="btn btn-primary">
-            Upload Material
-        </button>
+        <div class="materials-section">
+            <h3>Upload Material</h3>
 
-        <a asp-action="TeacherIndex"
-           class="btn btn-secondary ms-2">
-            Cancel
-        </a>
-    </div>
-</form>
+            <div class="form-group">
+                <label asp-for="materialType">Material Type</label>
+                <select asp-for="materialType" class="material-type">
+                    <option value="pdf">PDF Document</option>
+                    <option value="video">Video</option>
+                    <option value="document">Document</option>
+                    <option value="presentation">Presentation</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="materialTitle">Material Title</label>
+                <input type="text" asp-for="materialTitle" placeholder="Enter material title" />
+                <span asp-validation-for="materialTitle" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="materialFile">Upload File</label>
+                <input type="file" asp-for="materialFile" accept=".pdf,.doc,.docx,.txt,.mp4,.avi,.mov,.ppt,.pptx" />
+                <span asp-validation-for="materialFile" class="text-danger"></span>
+                <small style="color:#666; display: block; margin-top: 5px;">Supported formats: PDF, DOC, DOCX, TXT, MP4, AVI, MOV, PPT, PPTX (Max: 100MB)</small>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button type="submit" class="btn btn-primary">Upload Material</button>
+            <a href="@Url.Action("ViewCourse", "Teacher")" class="btn btn-cancel">Cancel</a>
+        </div>
+    </form>
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }
-
-@*<div class="materials-section">
-            <h3>Course Materials</h3>
-            <p style="color:#666; margin-bottom:20px;">Upload course materials (PDF, video, docs)</p>
-
-            <div id="materialsContainer">
-                <div class="material-item">
-                    <div class="form-group">
-                        <label>Material Type</label>
-                        <select name="materialType" class="material-type">
-                            <option value="pdf">PDF Document</option>
-                            <option value="video">Video</option>
-                            <option value="text">Text Lesson</option>
-                            <option value="code">Code Demo</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Material Title</label>
-                        <input type="text" name="materialTitle" placeholder="Enter material title">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Upload File</label>
-                        <input type="file" name="materialFile"
-                               accept=".pdf,.doc,.docx,.txt,.mp4,.avi,.mov">
-                        <small style="color:#666;">Max size: 100MB</small>
-                    </div>
-                </div>
-            </div>
-
-            <button type="button" class="add-material-btn" onclick="addMaterial()">+ Add More Material</button>
-        </div>*@

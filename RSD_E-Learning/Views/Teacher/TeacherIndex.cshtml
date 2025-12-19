@@ -1,6 +1,11 @@
-﻿
+﻿@using RSD_E_Learning.Models
+@model IEnumerable<RSD_E_Learning.Models.DB.Course>
 @{
     ViewData["Title"] = "Teacher Zone";
+
+    var courses = Model?.ToList() ?? new List<RSD_E_Learning.Models.DB.Course>();
+
+    var approvedCourses = courses.Where(c => c.IsApproved && !c.IsRejected).ToList();
 }
 
 <!DOCTYPE html>
@@ -44,7 +49,7 @@
                 <div class="preview-stats">
                     <div class="preview-stat-card">
                         <div class="stat-number"></div>
-                        <div class="stat-title">Show number of course</div>
+                    <div class="stat-title">(@approvedCourses.Count)</div>
                     </div>
                     <div class="preview-stat-card">
                         <div class="stat-number"></div>

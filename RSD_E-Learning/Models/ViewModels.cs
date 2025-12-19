@@ -39,6 +39,14 @@ namespace RSD_E_Learning.Models
 
     }
 
+    public class CourseDetailVm
+    {
+        public DB.Course Course { get; set; } = new();
+        public List<DB.CourseFile> CourseFiles { get; set; } = new();
+        public List<DB.Assessment> Assessments { get; set; } = new();
+        public IEnumerable<SelectListItem> Categories { get; set; } = new List<SelectListItem>();
+    }
+
     public class TeacherEditVM
     {
         public int TeacherId { get; set; }
@@ -196,15 +204,16 @@ namespace RSD_E_Learning.Models
     {
         public int CourseId { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Material title is required")]
         [Display(Name = "Material Title")]
         public string materialTitle { get; set; } = "";
 
-        [Required]
+        [Required(ErrorMessage = "Please select a file to upload")]
         [Display(Name = "Upload File")]
         public IFormFile materialFile { get; set; } = null!;
 
-        public string materialType { get; set; } = "";
+        [Display(Name = "Material Type")]
+        public string materialType { get; set; } = "pdf"; // Default value
     }
 
     // Login View Models //

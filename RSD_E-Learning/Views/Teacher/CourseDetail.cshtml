@@ -1,0 +1,332 @@
+﻿@model RSD_E_Learning.Models.CourseDetailVm
+
+@{
+    ViewData["Title"] = "Course Details";
+}
+
+<link rel="stylesheet" href="~/css/Teacher.css" />
+
+<style>
+    .detail-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 20px;
+    }
+
+    .detail-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #e0e0e0;
+    }
+
+        .detail-header h1 {
+            font-size: 2rem;
+            color: #333;
+            margin: 0;
+        }
+
+    .section-card {
+        background: white;
+        border: 2px solid #e0e0e0;
+        border-radius: 12px;
+        padding: 25px;
+        margin-bottom: 25px;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+        color: #333;
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: 200px 1fr;
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+
+    .info-label {
+        font-weight: 600;
+        color: #666;
+    }
+
+    .info-value {
+        color: #333;
+    }
+
+    .file-list, .assessment-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .file-item, .assessment-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        margin-bottom: 10px;
+    }
+
+    .file-info, .assessment-info {
+        flex: 1;
+    }
+
+    .file-name, .assessment-name {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 5px;
+    }
+
+    .file-meta, .assessment-meta {
+        font-size: 0.9rem;
+        color: #666;
+    }
+
+    .item-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-icon {
+        padding: 8px 15px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-view {
+        background: #5b6ff5;
+        color: white;
+    }
+
+    .btn-delete {
+        background: #e74c3c;
+        color: white;
+    }
+
+    .btn-edit-section {
+        background: #667eea;
+        color: white;
+        padding: 8px 16px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        text-decoration: none;
+    }
+
+    .edit-form {
+        display: none;
+        margin-top: 20px;
+    }
+
+        .edit-form.active {
+            display: block;
+        }
+
+    .empty-message {
+        text-align: center;
+        padding: 30px;
+        color: #999;
+        font-style: italic;
+    }
+
+    .btn-back {
+        background: #f0f0f0;
+        color: #333;
+        padding: 10px 20px;
+        border-radius: 8px;
+        text-decoration: none;
+        display: inline-block;
+    }
+</style>
+
+<div class="detail-container">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="vc-alert vc-alert-success">@TempData["SuccessMessage"]</div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="vc-alert vc-alert-danger">@TempData["ErrorMessage"]</div>
+    }
+
+    <div class="detail-header">
+        <h1>@Model.Course.Title</h1>
+        <a href="@Url.Action("ViewCourse", "Teacher")" class="btn-back">← Back to Courses</a>
+    </div>
+
+    <!-- Course Information -->
+    <div class="section-card">
+        <div class="section-title">
+            <span>Course Information</span>
+            <button type="button" class="btn-edit-section" onclick="toggleEdit('courseInfo')">Edit Course Info</button>
+        </div>
+
+        <div id="courseInfoView">
+            <div class="info-grid">
+                <div class="info-label">Title:</div>
+                <div class="info-value">@Model.Course.Title</div>
+
+                <div class="info-label">Category:</div>
+                <div class="info-value">@(Model.Course.Category?.Name ?? "N/A")</div>
+
+                <div class="info-label">Description:</div>
+                <div class="info-value">@(Model.Course.Description ?? "No description")</div>
+
+                <div class="info-label">Status:</div>
+                <div class="info-value">
+                    @if (Model.Course.IsApproved)
+                    {
+                        <span class="vc-badge vc-badge-approved">Approved</span>
+                    }
+                    else if (Model.Course.IsRejected)
+                    {
+                        <span class="vc-badge vc-badge-rejected">Rejected</span>
+                    }
+                    else
+                    {
+                        <span class="vc-badge vc-badge-pending">Pending</span>
+                    }
+                </div>
+
+                <div class="info-label">Students Enrolled:</div>
+                <div class="info-value">@(Model.Course.Enrollments?.Count ?? 0)</div>
+            </div>
+        </div>
+
+        <div id="courseInfoEdit" class="edit-form">
+            <form asp-action="UpdateCourseInfo" asp-controller="Teacher" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="CourseId" value="@Model.Course.CourseId" />
+
+                <div class="form-group">
+                    <label>Title</label>
+                    <input type="text" name="Title" value="@Model.Course.Title" required />
+                </div>
+
+                <div class="form-group">
+                    <label>Category</label>
+                    <select name="CategoryId" required>
+                        @foreach (var cat in Model.Categories)
+                        {
+                            <option value="@cat.Value" selected="@(cat.Value == Model.Course.CategoryId.ToString())">@cat.Text</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea name="Description" rows="4">@Model.Course.Description</textarea>
+                </div>
+
+                <div class="button-group">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <button type="button" class="btn btn-secondary" onclick="toggleEdit('courseInfo')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Course Materials -->
+    <div class="section-card">
+        <div class="section-title">
+            <span>Course Materials (@Model.CourseFiles.Count)</span>
+            <a href="@Url.Action("UploadMaterial", "Teacher", new { courseId = Model.Course.CourseId })" class="btn-edit-section">+ Add Material</a>
+        </div>
+
+        @if (Model.CourseFiles.Any())
+        {
+            <ul class="file-list">
+                @foreach (var file in Model.CourseFiles)
+                {
+                    <li class="file-item">
+                        <div class="file-info">
+                            <div class="file-name">📄 @file.FileName</div>
+                            <div class="file-meta">
+                                Type: @file.FileType.ToUpper() |
+                                Uploaded: @file.UpdateAt.ToString("MMM dd, yyyy")
+                            </div>
+                        </div>
+                        <div class="item-actions">
+                            <a href="@file.FilePath" target="_blank" class="btn-icon btn-view">View</a>
+                        </div>
+                    </li>
+                }
+            </ul>
+        }
+        else
+        {
+            <div class="empty-message">No materials uploaded yet</div>
+        }
+    </div>
+
+    <!-- Assessments -->
+    <div class="section-card">
+        <div class="section-title">
+            <span>Assessments (@Model.Assessments.Count)</span>
+            <a href="@Url.Action("CreateAssessment", "Teacher", new { courseId = Model.Course.CourseId })" class="btn-edit-section">+ Create Assessment</a>
+        </div>
+
+        @if (Model.Assessments.Any())
+        {
+            <ul class="assessment-list">
+                @foreach (var assessment in Model.Assessments)
+                {
+                    <li class="assessment-item">
+                        <div class="assessment-info">
+                            <div class="assessment-name">📝 @assessment.Title</div>
+                            <div class="assessment-meta">
+                                @{
+                                    var questionCount = ViewBag.QuestionCounts != null &&
+                                    ((Dictionary<int, int>)ViewBag.QuestionCounts).ContainsKey(assessment.AssessmentId)
+                                    ? ((Dictionary<int, int>)ViewBag.QuestionCounts)[assessment.AssessmentId]
+                                    : 0;
+                                }
+                                Questions: @questionCount |
+                                Deadline: @(assessment.DeadLine) min |
+                                Total Marks: @(assessment.TotalMarks ?? 0)
+                            </div>
+                        </div>
+                        <div class="item-actions">
+                            <a href="@Url.Action("ViewAssessment", "Teacher", new { id = assessment.AssessmentId })" class="btn-icon btn-view">View</a>
+                        </div>
+                    </li>
+                }
+            </ul>
+        }
+        else
+        {
+            <div class="empty-message">No assessments created yet</div>
+        }
+    </div>
+</div>
+
+<script>
+    function toggleEdit(section) {
+        const view = document.getElementById(section + 'View');
+        const edit = document.getElementById(section + 'Edit');
+
+        if (edit.classList.contains('active')) {
+            edit.classList.remove('active');
+            view.style.display = 'block';
+        } else {
+            edit.classList.add('active');
+            view.style.display = 'none';
+        }
+    }
+</script>

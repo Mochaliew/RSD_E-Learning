@@ -351,8 +351,7 @@
                             {
                                 <a href="@Url.Action("UploadMaterial", "Teacher", new { courseId = course.CourseId })" class="vc-btn-small vc-btn-primary">Upload Material</a>
                                 <a href="@Url.Action("CreateAssessment", "Teacher", new { courseId = course.CourseId })" class="vc-btn-small vc-btn-primary">Create Assessment</a>
-                                <a href="#" class="vc-btn-small vc-btn-secondary">Edit</a>
-                                <a href="#" class="vc-btn-small vc-btn-secondary">View</a>
+                                <a href="@Url.Action("CourseDetail", "Teacher", new { id = course.CourseId })" class="vc-btn-small vc-btn-primary">View Details</a>
                             }
                             else if (!course.IsApproved && course.IsRejected)
                             {

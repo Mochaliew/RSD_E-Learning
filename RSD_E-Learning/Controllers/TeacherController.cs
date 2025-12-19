@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using RSD_E_Learning.Models;
 using System.Security.Claims;
 using System.Text;
@@ -210,7 +211,14 @@ namespace RSD_E_Learning.Controllers
         public async Task<IActionResult> UploadMaterial(UploadCourseFileVm model)
         {
             if (!ModelState.IsValid)
+            {
+                var course = await _context.Courses.FindAsync(model.CourseId);
+                if (course != null)
+                {
+                    ViewBag.CourseTitle = course.Title;
+                }
                 return View(model);
+            }
 
             var teacherIdClaim = User.FindFirst("TeacherId");
             if (teacherIdClaim == null)
@@ -218,16 +226,16 @@ namespace RSD_E_Learning.Controllers
 
             int teacherId = int.Parse(teacherIdClaim.Value);
 
-            // 🔐 Ensure course belongs to this teacher
-            var course = await _context.Courses
+            // Ensure course belongs to this teacher
+            var courseCheck = await _context.Courses
                 .FirstOrDefaultAsync(c => c.CourseId == model.CourseId &&
                                           c.TeacherId == teacherId &&
                                           c.IsApproved);
 
-            if (course == null)
+            if (courseCheck == null)
                 return Unauthorized();
 
-            // ================= FILE SAVE =================
+            // FILE SAVE
             string uploadsFolder = Path.Combine(_environment.WebRootPath, "coursefiles");
             Directory.CreateDirectory(uploadsFolder);
 
@@ -239,13 +247,13 @@ namespace RSD_E_Learning.Controllers
                 await model.materialFile.CopyToAsync(stream);
             }
 
-            // ================= DATABASE SAVE =================
+            // DATABASE SAVE
             var courseFile = new DB.CourseFile
             {
                 CourseId = model.CourseId,
                 FileName = model.materialTitle,
                 FilePath = "/coursefiles/" + uniqueFileName,
-                FileType = Path.GetExtension(model.materialFile.FileName),
+                FileType = model.materialType, // Use the selected type
                 IsActive = true,
                 UpdateAt = DateTime.UtcNow
             };
@@ -254,7 +262,7 @@ namespace RSD_E_Learning.Controllers
             await _context.SaveChangesAsync();
 
             TempData["SuccessMessage"] = "Material uploaded successfully.";
-            return RedirectToAction("ViewCourse", new { id = model.CourseId });
+            return RedirectToAction("ViewCourse", "Teacher"); // Fixed: removed the id parameter
         }
 
 
@@ -293,15 +301,108 @@ namespace RSD_E_Learning.Controllers
             }
         }
 
+
+        // GET: View Course Detail
+        [HttpGet]
+        public async Task<IActionResult> CourseDetail(int id)
+        {
+            var teacherIdClaim = User.FindFirst("TeacherId");
+            if (teacherIdClaim == null)
+            {
+                return RedirectToAction("TeacherLogin");
+            }
+
+            int teacherId = int.Parse(teacherIdClaim.Value);
+
+            var course = await _context.Courses
+                .Include(c => c.Category)
+                .Include(c => c.Enrollments)
+                .FirstOrDefaultAsync(c => c.CourseId == id && c.TeacherId == teacherId);
+
+            if (course == null)
+            {
+                TempData["ErrorMessage"] = "Course not found or you don't have permission to view it.";
+                return RedirectToAction("ViewCourse");
+            }
+
+            var courseFiles = await _context.CourseFiles
+                .Where(f => f.CourseId == id && f.IsActive)
+                .OrderByDescending(f => f.UpdateAt)
+                .ToListAsync();
+
+            var assessments = await _context.Assessments
+                .Where(a => a.CourseId == id)
+                .OrderByDescending(a => a.AssessmentId)
+                .ToListAsync();
+
+            // Get question counts for each assessment
+            foreach (var assessment in assessments)
+            {
+                var questionCount = await _context.AssessmentQuestions
+                    .CountAsync(q => q.AssessmentId == assessment.AssessmentId);
+
+                // Store count in ViewBag or add a property if needed
+                ViewBag.QuestionCounts = ViewBag.QuestionCounts ?? new Dictionary<int, int>();
+                ((Dictionary<int, int>)ViewBag.QuestionCounts)[assessment.AssessmentId] = questionCount;
+            }
+
+            var categories = await _context.Categories
+                .OrderBy(c => c.Name)
+                .Select(c => new SelectListItem
+                {
+                    Value = c.CategoryId.ToString(),
+                    Text = c.Name
+                })
+                .ToListAsync();
+
+            var viewModel = new CourseDetailVm
+            {
+                Course = course,
+                CourseFiles = courseFiles,
+                Assessments = assessments,
+                Categories = categories
+            };
+
+            return View(viewModel);
+        }
+
+        // POST: Update Course Info
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateCourseInfo(int CourseId, string Title, int CategoryId, string Description)
+        {
+            var teacherIdClaim = User.FindFirst("TeacherId");
+            if (teacherIdClaim == null)
+            {
+                return Unauthorized();
+            }
+
+            int teacherId = int.Parse(teacherIdClaim.Value);
+
+            var course = await _context.Courses
+                .FirstOrDefaultAsync(c => c.CourseId == CourseId && c.TeacherId == teacherId);
+
+            if (course == null)
+            {
+                TempData["ErrorMessage"] = "Course not found.";
+                return RedirectToAction("ViewCourse");
+            }
+
+            course.Title = Title;
+            course.CategoryId = CategoryId;
+            course.Description = Description;
+
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Course information updated successfully.";
+            return RedirectToAction("CourseDetail", new { id = CourseId });
+        }
+
         public IActionResult CreateAssessment()
         {
             return View();
         }
 
-        public IActionResult ViewAssessment()
-        {
-            return View();
-        }
 
         public IActionResult TeacherDashboard()
         {
