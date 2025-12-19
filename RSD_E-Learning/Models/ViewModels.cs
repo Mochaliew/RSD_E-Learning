@@ -138,7 +138,55 @@ public class CourseLessonVm
         public string ConfirmPassword { get; set; } = "";
     }
 
-        // Course File View Models //
+
+    // filter
+    public class TeacherFilterVm
+    {
+        public string? Search { get; set; }
+        public bool? IsActive { get; set; }
+        public string? SubjectArea { get; set; }
+
+        public List<DB.Teacher> Teachers { get; set; } = new();
+        public List<string> SubjectAreas { get; set; } = new();
+    }
+
+    public class StudentFilterVm
+    {
+        public string? Search { get; set; }
+        public bool? IsActive { get; set; }
+        public string? ClassName { get; set; }
+
+        public List<DB.Student> Students { get; set; } = new();
+        public List<string> ClassNames { get; set; } = new();
+    }
+
+    public class CourseFilterVm
+    {
+        public string? Search { get; set; }
+        public string Filter { get; set; } = "all";
+
+        public List<DB.Course> Courses { get; set; } = new();
+    }
+
+    public class CategoryFilterVm
+    {
+        public string? Search { get; set; }
+        public bool ShowDeleted { get; set; }
+
+        public List<DB.Category> Categories { get; set; } = new();
+    }
+
+    public class PromoCodeFilterVm
+    {
+        public string? Search { get; set; }
+        public string? Status { get; set; }
+
+        public List<PromoCodeListVm> PromoCodes { get; set; } = new();
+    }
+
+
+
+    // Course File View Models //
     public class CourseFileVm
     {
         public int FileId { get; set; }

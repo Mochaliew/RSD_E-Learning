@@ -1,33 +1,58 @@
 ﻿@model IEnumerable<RSD_E_Learning.Models.DB.Category>
 
-<h2>Deleted Categories</h2>
+@{
+    ViewData["Title"] = "Deleted Categories";
+}
 
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th style="width:150px">Action</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
+<h2 class="mb-3">Deleted Categories</h2>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        No deleted categories found.
+    </div>
+}
+else
+{
+    <table class="table table-bordered align-middle">
+        <thead class="table-light">
             <tr>
-                <td>@item.Name</td>
-                <td>
-                    <form asp-action="Restore" method="post">
-                        @Html.AntiForgeryToken()
-                        <input type="hidden" name="id" value="@item.CategoryId" />
-                        <button class="btn btn-success btn-sm">
-                            Restore
-                        </button>
-                    </form>
-                </td>
+                <th>Name</th>
+                <th>Description</th>
+                <th style="width:160px">Action</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Name</td>
+                    <td>@item.Description</td>
+                    <td>
+                        <form asp-action="Restore"
+                              method="post"
+                              class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@item.CategoryId" />
+                            <button class="btn btn-sm btn-success">
+                                Restore
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
 
-<a asp-action="Index" class="btn btn-secondary">
-    ← Back to Categories
-</a>
+<div class="mt-4 d-flex gap-2">
+    <a asp-action="Index" class="btn btn-secondary">
+        ← Back to Categories
+    </a>
+
+    <a asp-controller="AdminDashboard"
+       asp-action="Index"
+       class="btn btn-outline-secondary">
+        Back to Dashboard
+    </a>
+</div>

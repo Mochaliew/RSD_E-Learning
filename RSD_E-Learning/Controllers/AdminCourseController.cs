@@ -18,14 +18,23 @@ namespace RSD_E_Learning.Controllers
         // =========================
         // LIST + FILTER COURSES
         // =========================
-        public async Task<IActionResult> Index(string filter = "all")
+        public async Task<IActionResult> Index(string? search, string filter = "all")
         {
             var query = _db.Courses
                 .Include(c => c.Teacher).ThenInclude(t => t.User)
                 .Include(c => c.Category)
                 .AsQueryable();
 
-            switch (filter.ToLower())
+            // SEARCH
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                query = query.Where(c =>
+                    c.Title.Contains(search) ||
+                    c.Teacher!.User!.FullName.Contains(search));
+            }
+
+            // FILTER
+            switch (filter)
             {
                 case "pending":
                     query = query.Where(c => !c.IsApproved && !c.IsRejected);
@@ -38,10 +47,18 @@ namespace RSD_E_Learning.Controllers
                     break;
             }
 
-            ViewBag.Filter = filter;
+            var vm = new CourseFilterVm
+            {
+                Search = search,
+                Filter = filter,
+                Courses = await query
+                    .OrderByDescending(c => c.CourseId)
+                    .ToListAsync()
+            };
 
-            return View(await query.ToListAsync());
+            return View(vm);
         }
+
 
         // =========================
         // PUBLISH / UNPUBLISH

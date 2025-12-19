@@ -1,50 +1,85 @@
-﻿@model IEnumerable<RSD_E_Learning.Models.DB.Category>
+﻿@model RSD_E_Learning.Models.CategoryFilterVm
 
-<h2>Categories</h2>
+@{
+    ViewData["Title"] = "Categories";
+}
 
-<a asp-action="Create" class="btn btn-primary mb-2">+ Add Category</a>
+<h2 class="mb-3">Categories</h2>
 
-<a asp-action="Deleted" class="btn btn-outline-danger mb-2 ms-2">
-    View Deleted Categories
-</a>
+<!-- SEARCH + FILTER -->
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-4">
+        <input name="search"
+               value="@Model.Search"
+               class="form-control"
+               placeholder="Search category" />
+    </div>
 
-<table class="table table-bordered">
-    <thead>
+    <div class="col-md-3">
+        <select name="showDeleted" class="form-select">
+            <option value="false" selected="@(!Model.ShowDeleted)">Active</option>
+            <option value="true" selected="@(Model.ShowDeleted)">Deleted</option>
+        </select>
+    </div>
+
+    <div class="col-md-2 d-grid">
+        <button class="btn btn-primary">Apply</button>
+    </div>
+</form>
+
+<a asp-action="Create" class="btn btn-success mb-3">+ Add Category</a>
+
+<table class="table table-bordered align-middle">
+    <thead class="table-light">
         <tr>
             <th>Name</th>
-            <th style="width:200px">Action</th>
+            <th style="width:220px">Action</th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var item in Model)
+        @foreach (var cat in Model.Categories)
         {
             <tr>
-                <td>@item.Name</td>
+                <td>@cat.Name</td>
                 <td>
-                    <a asp-action="Edit"
-                       asp-route-id="@item.CategoryId"
-                       class="btn btn-sm btn-warning">
-                        Edit
-                    </a>
+                    @if (!cat.IsDeleted)
+                    {
+                        <a asp-action="Edit"
+                           asp-route-id="@cat.CategoryId"
+                           class="btn btn-sm btn-warning me-1">
+                            Edit
+                        </a>
 
-                    <form asp-action="Delete"
-                          method="post"
-                          class="d-inline">
-                        @Html.AntiForgeryToken()
-                        <input type="hidden" name="id" value="@item.CategoryId" />
-                        <button class="btn btn-sm btn-danger">
-                            Delete
-                        </button>
-                    </form>
+                        <form asp-action="Delete"
+                              method="post"
+                              class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@cat.CategoryId" />
+                            <button class="btn btn-sm btn-danger">
+                                Delete
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        <form asp-action="Restore"
+                              method="post"
+                              class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@cat.CategoryId" />
+                            <button class="btn btn-sm btn-success">
+                                Restore
+                            </button>
+                        </form>
+                    }
                 </td>
             </tr>
         }
     </tbody>
 </table>
-<div class="mt-4">
-    <a asp-controller="AdminDashboard"
-       asp-action="Index"
-       class="btn btn-secondary">
-        ← Back to Dashboard
-    </a>
-</div>
+
+<a asp-controller="AdminDashboard"
+   asp-action="Index"
+   class="btn btn-secondary mt-3">
+    ← Back to Dashboard
+</a>

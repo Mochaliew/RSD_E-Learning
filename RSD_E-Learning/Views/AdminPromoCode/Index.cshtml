@@ -1,72 +1,69 @@
-﻿@model IEnumerable<RSD_E_Learning.Models.PromoCodeListVm>
+﻿@model RSD_E_Learning.Models.PromoCodeFilterVm
 @Html.AntiForgeryToken()
 
 @{
     ViewData["Title"] = "Promo Codes";
 }
 
-<h2 class="mb-4">Promo Codes</h2>
+<h2 class="mb-3">Promo Codes</h2>
 
-<!-- ================= FILTER + SEARCH ROW ================= -->
-<form method="get" class="mb-4">
-    <div class="row align-items-end">
+<!-- ================= FILTER + SEARCH ================= -->
+<form method="get" class="row g-2 mb-3 align-items-end">
 
-        <!-- LEFT: FILTER -->
-        <div class="col-md-6 d-flex align-items-end gap-3">
-            <div>
-                <label class="form-label fw-semibold">Filter by Status:</label>
-                <select name="status" class="form-select">
-                    <option value="">All</option>
-                    <option value="Active">Active</option>
-                    <option value="Upcoming">Upcoming</option>
-                    <option value="Expired">Expired</option>
-                </select>
-            </div>
+    <!-- SEARCH -->
+    <div class="col-md-4">
+        <label class="form-label fw-semibold">Search</label>
+        <input type="text"
+               name="search"
+               value="@Model.Search"
+               class="form-control"
+               placeholder="Search promo code..." />
+    </div>
 
-            <div>
-                <button type="submit" class="btn btn-primary mt-4">
-                    Apply
-                </button>
-            </div>
-        </div>
+    <!-- STATUS FILTER -->
+    <div class="col-md-3">
+        <label class="form-label fw-semibold">Status</label>
+        <select name="status" class="form-select">
+            <option value="">All</option>
+            <option value="Active" selected="@(Model.Status == "Active")">Active</option>
+            <option value="Upcoming" selected="@(Model.Status == "Upcoming")">Upcoming</option>
+            <option value="Expired" selected="@(Model.Status == "Expired")">Expired</option>
+        </select>
+    </div>
 
-        <!-- RIGHT: SEARCH -->
-        <div class="col-md-6 d-flex justify-content-end align-items-end gap-2">
-            <input type="text"
-                   name="search"
-                   class="form-control w-50"
-                   placeholder="Search promo code..." />
-            <button type="submit" class="btn btn-outline-secondary">
-                Search
-            </button>
-        </div>
+    <!-- APPLY -->
+    <div class="col-md-2 d-grid">
+        <button class="btn btn-primary">
+            Apply
+        </button>
     </div>
 </form>
 
-<!-- CREATE BUTTON -->
-<div class="mt-4 mb-4 d-flex gap-2">
+<!-- ================= ACTIONS ================= -->
+<div class="mb-3">
     <a asp-action="Create" class="btn btn-success">
         + Create Promo Code
     </a>
 </div>
 
 <!-- ================= TABLE ================= -->
-<table class="table table-bordered shadow-sm">
+<table class="table table-bordered align-middle">
     <thead class="table-light">
         <tr>
             <th>Code</th>
-            <th>Discount (%)</th>
-            <th>Start Date</th>
-            <th>Expiry Date</th>
+            <th>Discount</th>
+            <th>Start</th>
+            <th>Expiry</th>
             <th>Status</th>
             <th>Used</th>
-            <th>Action</th>
+            <th style="width:140px">Action</th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var promo in Model)
+        @foreach (var promo in Model.PromoCodes)
         {
             var today = DateTime.UtcNow.Date;
+
             <tr>
                 <td>@promo.Code</td>
                 <td>@promo.DiscountPercent %</td>
@@ -77,19 +74,19 @@
                 <td>
                     @if (promo.ExpiryDate < today)
                     {
-                        <span class="badge bg-danger status-badge">Expired</span>
+                        <span class="badge bg-danger">Expired</span>
                     }
                     else if (promo.StartDate > today)
                     {
-                        <span class="badge bg-info status-badge">Upcoming</span>
+                        <span class="badge bg-info">Upcoming</span>
                     }
                     else if (promo.IsActive)
                     {
-                        <span class="badge bg-success status-badge">Active</span>
+                        <span class="badge bg-success">Active</span>
                     }
                     else
                     {
-                        <span class="badge bg-secondary status-badge">Inactive</span>
+                        <span class="badge bg-secondary">Inactive</span>
                     }
                 </td>
 
@@ -99,12 +96,13 @@
                 <td>
                     @if (promo.ExpiryDate < today)
                     {
-                        <span class="badge bg-danger">Expired</span>
+                        <span class="text-muted">N/A</span>
                     }
                     else
                     {
                         <button type="button"
-                                class="btn btn-sm @(promo.IsActive ? "btn-outline-danger" : "btn-outline-success") toggle-btn"
+                                class="btn btn-sm toggle-btn
+                                               @(promo.IsActive ? "btn-outline-danger" : "btn-outline-success")"
                                 data-id="@promo.PromoCodeId">
                             @(promo.IsActive ? "Deactivate" : "Activate")
                         </button>
@@ -115,9 +113,10 @@
     </tbody>
 </table>
 
+<!-- ================= BACK ================= -->
 <a asp-controller="AdminDashboard"
    asp-action="Index"
-   class="btn btn-secondary">
+   class="btn btn-secondary mt-3">
     ← Back to Dashboard
 </a>
 
@@ -128,7 +127,8 @@
 
                 const id = this.dataset.id;
                 const row = this.closest('tr');
-                const badge = row.querySelector('.status-badge');
+                const badge = row.querySelector('td:nth-child(5) span');
+                const button = this;
 
                 fetch('/AdminPromoCode/ToggleAjax', {
                     method: 'POST',
@@ -144,15 +144,15 @@
                     if (!data.success) return;
 
                     if (data.isActive) {
-                        badge.className = 'badge bg-success status-badge';
+                        badge.className = 'badge bg-success';
                         badge.innerText = 'Active';
-                        this.className = 'btn btn-sm btn-outline-danger toggle-btn';
-                        this.innerText = 'Deactivate';
+                        button.className = 'btn btn-sm btn-outline-danger toggle-btn';
+                        button.innerText = 'Deactivate';
                     } else {
-                        badge.className = 'badge bg-secondary status-badge';
+                        badge.className = 'badge bg-secondary';
                         badge.innerText = 'Inactive';
-                        this.className = 'btn btn-sm btn-outline-success toggle-btn';
-                        this.innerText = 'Activate';
+                        button.className = 'btn btn-sm btn-outline-success toggle-btn';
+                        button.innerText = 'Activate';
                     }
                 });
             });

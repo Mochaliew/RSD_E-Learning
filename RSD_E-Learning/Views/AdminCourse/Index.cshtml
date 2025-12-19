@@ -1,9 +1,36 @@
-﻿@model IEnumerable<RSD_E_Learning.Models.DB.Course>
-
+﻿@model RSD_E_Learning.Models.CourseFilterVm
 @Html.AntiForgeryToken()
+
+@{
+    ViewData["Title"] = "Manage Courses";
+}
 
 <h2 class="mb-3">Manage Courses</h2>
 
+<!-- SEARCH + FILTER -->
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-4">
+        <input name="search"
+               value="@Model.Search"
+               class="form-control"
+               placeholder="Search course or teacher" />
+    </div>
+
+    <div class="col-md-4">
+        <select name="filter" class="form-select">
+            <option value="all" selected="@(Model.Filter == "all")">All</option>
+            <option value="pending" selected="@(Model.Filter == "pending")">Pending</option>
+            <option value="approved" selected="@(Model.Filter == "approved")">Approved</option>
+            <option value="rejected" selected="@(Model.Filter == "rejected")">Rejected</option>
+        </select>
+    </div>
+
+    <div class="col-md-2 d-grid">
+        <button class="btn btn-primary">Filter</button>
+    </div>
+</form>
+
+<!-- TABLE -->
 <table class="table table-bordered align-middle">
     <thead class="table-light">
         <tr>
@@ -15,14 +42,13 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var course in Model)
+        @foreach (var course in Model.Courses)
         {
             <tr>
                 <td>@course.Title</td>
                 <td>@course.Teacher?.User?.FullName</td>
                 <td>@course.Category?.Name</td>
 
-                <!-- STATUS -->
                 <td>
                     @if (course.IsRejected)
                     {
@@ -38,13 +64,12 @@
                     }
                 </td>
 
-                <!-- PUBLISH -->
                 <td>
                     @if (course.IsApproved && !course.IsRejected)
                     {
                         <button type="button"
                                 class="btn btn-sm toggle-btn fixed-btn
-                                        @(course.IsPublished ? "btn-outline-danger" : "btn-outline-success")"
+                                               @(course.IsPublished ? "btn-outline-danger" : "btn-outline-success")"
                                 data-id="@course.CourseId">
                             @(course.IsPublished ? "Unpublish" : "Publish")
                         </button>

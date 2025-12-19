@@ -15,52 +15,59 @@ namespace RSD_E_Learning.Controllers
             _db = db;
         }
 
-        // -------------------- MANAGE STUDENTS --------------------
-        public async Task<IActionResult> Index()
+        // ================= LIST =================
+        public async Task<IActionResult> Index(string? search, bool? isActive, string? className)
         {
-            var students = await _db.Students
+            var query = _db.Students
                 .Include(s => s.User)
-                .Include(s => s.Enrollments)
-                .ThenInclude(e => e.Course)
-                .OrderBy(s => s.User!.FullName)
-                .ToListAsync();
+                .AsQueryable();
 
-            return View(students);
-        }
-
-        // -------------------- MANUAL DEACTIVATE (ADMIN ONLY) --------------------
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ToggleAccountStatus(int studentId)
-        {
-            var student = await _db.Students
-                .Include(s => s.User)
-                .FirstOrDefaultAsync(s => s.StudentId == studentId);
-
-            if (student == null)
-                return NotFound();
-
-            bool isActive =  student.User!.LockoutEnd == null;
-
-            // Lock or unlock account
-            student.User!.LockoutEnd =
-                student.User.LockoutEnd == null
-                    ? DateTime.UtcNow.AddYears(100)
-                    : null;
-
-            _db.AuditLogs.Add(new DB.AuditLog
+            // SEARCH (Name or Email)
+            if (!string.IsNullOrWhiteSpace(search))
             {
-                Action = isActive
-           ? $"Deactivated student account: {student.User.Email}"
-           : $"Activated student account: {student.User.Email}",
-                Timestamp = DateTime.UtcNow
-            });
+                query = query.Where(s =>
+                    s.User!.FullName.Contains(search) ||
+                    s.User.Email.Contains(search));
+            }
 
-            await _db.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            // FILTER: Active / Inactive
+            if (isActive.HasValue)
+            {
+                if (isActive.Value)
+                    query = query.Where(s => s.User!.LockoutEnd == null);
+                else
+                    query = query.Where(s => s.User!.LockoutEnd != null);
+            }
+
+            // FILTER: Class
+            if (!string.IsNullOrWhiteSpace(className))
+            {
+                query = query.Where(s => s.ClassName == className);
+            }
+
+            var vm = new StudentFilterVm
+            {
+                Search = search,
+                IsActive = isActive,
+                ClassName = className,
+                Students = await query
+                    .OrderBy(s => s.User!.FullName)
+                    .ToListAsync(),
+
+                ClassNames = await _db.Students
+                    .Where(s => s.ClassName != null)
+                    .Select(s => s.ClassName!)
+                    .Distinct()
+                    .OrderBy(c => c)
+                    .ToListAsync()
+            };
+
+            return View(vm);
         }
 
-        // ================= AJAX TOGGLE =================
+
+
+        // ================= SINGLE TOGGLE (AJAX) =================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ToggleStatusAjax([FromBody] ToggleVm vm)
@@ -72,17 +79,18 @@ namespace RSD_E_Learning.Controllers
             if (student == null || student.User == null)
                 return Json(new { success = false });
 
-            student.User.LockoutEnd =
-                student.User.LockoutEnd == null
-                    ? DateTime.UtcNow.AddYears(100)   // deactivate
-                    : null;                           // activate
+            bool isActive = student.User.LockoutEnd == null;
+
+            student.User.LockoutEnd = isActive
+                ? DateTime.UtcNow.AddYears(100)
+                : null;
 
             _db.AuditLogs.Add(new DB.AuditLog
             {
                 UserId = student.UserId,
-                Action = student.User.LockoutEnd == null
-                    ? $"Activated student account: {student.User.Email}"
-                    : $"Deactivated student account: {student.User.Email}",
+                Action = isActive
+                    ? $"Deactivated student account: {student.User.Email}"
+                    : $"Activated student account: {student.User.Email}",
                 Timestamp = DateTime.UtcNow
             });
 
@@ -94,5 +102,51 @@ namespace RSD_E_Learning.Controllers
                 isActive = student.User.LockoutEnd == null
             });
         }
+
+        // ================= BULK ACTIVATE / DEACTIVATE =================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> BulkUpdateStatus(int[] selectedIds, string actionType)
+        {
+            if (selectedIds == null || selectedIds.Length == 0)
+                return RedirectToAction(nameof(Index));
+
+            var students = await _db.Students
+                .Include(s => s.User)
+                .Where(s => selectedIds.Contains(s.StudentId))
+                .ToListAsync();
+
+            foreach (var student in students)
+            {
+                if (student.User == null) continue;
+
+                if (actionType == "activate")
+                {
+                    student.User.LockoutEnd = null;
+
+                    _db.AuditLogs.Add(new DB.AuditLog
+                    {
+                        UserId = student.UserId,
+                        Action = $"Bulk activated student account: {student.User.Email}",
+                        Timestamp = DateTime.UtcNow
+                    });
+                }
+                else if (actionType == "deactivate")
+                {
+                    student.User.LockoutEnd = DateTime.UtcNow.AddYears(100);
+
+                    _db.AuditLogs.Add(new DB.AuditLog
+                    {
+                        UserId = student.UserId,
+                        Action = $"Bulk deactivated student account: {student.User.Email}",
+                        Timestamp = DateTime.UtcNow
+                    });
+                }
+            }
+
+            await _db.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
+
     }
 }

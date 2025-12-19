@@ -15,19 +15,16 @@ public class AdminPromoCodeController : Controller
     }
 
     // ===================== LIST =====================
-    public async Task<IActionResult> Index(string search, string status)
+    public async Task<IActionResult> Index(string? search, string? status)
     {
         var today = DateTime.UtcNow.Date;
-
         var query = _db.PromoCodes.AsQueryable();
 
-        // SEARCH
         if (!string.IsNullOrWhiteSpace(search))
         {
             query = query.Where(p => p.Code.Contains(search));
         }
 
-        // FILTER
         switch (status)
         {
             case "Active":
@@ -46,22 +43,28 @@ public class AdminPromoCodeController : Controller
                 break;
         }
 
-        var promos = await query
-            .OrderByDescending(p => p.CreatedAt)
-            .Select(p => new PromoCodeListVm
-            {
-                PromoCodeId = p.PromoCodeId,
-                Code = p.Code,
-                DiscountPercent = p.DiscountPercent,
-                StartDate = p.StartDate,
-                ExpiryDate = p.ExpiryDate,
-                IsActive = p.IsActive,
-                UsedCount = p.UsedCount
-            })
-            .ToListAsync();
+        var vm = new PromoCodeFilterVm
+        {
+            Search = search,
+            Status = status,
+            PromoCodes = await query
+                .OrderByDescending(p => p.CreatedAt)
+                .Select(p => new PromoCodeListVm
+                {
+                    PromoCodeId = p.PromoCodeId,
+                    Code = p.Code,
+                    DiscountPercent = p.DiscountPercent,
+                    StartDate = p.StartDate,
+                    ExpiryDate = p.ExpiryDate,
+                    IsActive = p.IsActive,
+                    UsedCount = p.UsedCount
+                })
+                .ToListAsync()
+        };
 
-        return View(promos);
+        return View(vm);
     }
+
 
     // ===================== CREATE =====================
     public IActionResult Create()
