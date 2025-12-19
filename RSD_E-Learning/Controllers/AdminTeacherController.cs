@@ -118,9 +118,9 @@ namespace RSD_E_Learning.Controllers
         {
             var teacher = await _db.Teachers
                 .Include(t => t.User)
-                .FirstOrDefaultAsync(t => t.TeacherId == vm.TeacherId);
+                .FirstOrDefaultAsync(t => t.TeacherId == vm.Id);
 
-            if (teacher == null || teacher.User == null)
+            if (teacher == null)
                 return Json(new { success = false });
 
             teacher.IsActive = !teacher.IsActive;
@@ -142,6 +142,7 @@ namespace RSD_E_Learning.Controllers
                 isActive = teacher.IsActive
             });
         }
+
 
 
 

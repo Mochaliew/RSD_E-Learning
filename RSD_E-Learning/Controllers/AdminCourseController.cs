@@ -73,5 +73,46 @@ namespace RSD_E_Learning.Controllers
             await _db.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
+
+        // ================= TOGGLE PUBLISH (AJAX) =================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> TogglePublishAjax([FromBody] ToggleVm vm)
+        {
+            var course = await _db.Courses
+                .Include(c => c.Teacher).ThenInclude(t => t.User)
+                .FirstOrDefaultAsync(c => c.CourseId == vm.Id);
+
+            if (course == null)
+                return Json(new { success = false });
+
+            // ❌ Cannot publish rejected course
+            if (course.IsRejected)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "Rejected courses cannot be published."
+                });
+            }
+
+            course.IsPublished = !course.IsPublished;
+
+            _db.AuditLogs.Add(new DB.AuditLog
+            {
+                Action = course.IsPublished
+                    ? $"Published course: {course.Title}"
+                    : $"Unpublished course: {course.Title}",
+                Timestamp = DateTime.UtcNow
+            });
+
+            await _db.SaveChangesAsync();
+
+            return Json(new
+            {
+                success = true,
+                isPublished = course.IsPublished
+            });
+        }
     }
 }
