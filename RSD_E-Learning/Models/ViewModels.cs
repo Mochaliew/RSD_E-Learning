@@ -38,17 +38,19 @@ namespace RSD_E_Learning.Models
         public IEnumerable<SelectListItem>? CategoryList { get; set; }
     }
 
-        // Course Detail View Models //
+    // Course Detail View Models //
     public class CourseDetailVm
     {
         public DB.Course Course { get; set; } = new();
         public List<DB.CourseFile> CourseFiles { get; set; } = new();
         public List<DB.Assessment> Assessments { get; set; } = new();
+        public List<DB.Lesson> Lessons { get; set; } = new();
         public IEnumerable<SelectListItem> Categories { get; set; } = new List<SelectListItem>();
     }
 
-        // Lesson View Models //
-    public class CourseLessonVm
+
+// Lesson View Models //
+public class CourseLessonVm
     {
         public DB.Course Course { get; set; } = new();
         public List<DB.Lesson> Lessons { get; set; } = new();

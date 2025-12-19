@@ -306,7 +306,7 @@ namespace RSD_E_Learning.Controllers
             }
         }
 
-        // ------------------------- COURSEDETAIL [GET] ------------------------- // 
+        // GET: View Course Detail
         [HttpGet]
         public async Task<IActionResult> CourseDetail(int id)
         {
@@ -339,6 +339,13 @@ namespace RSD_E_Learning.Controllers
                 .OrderByDescending(a => a.AssessmentId)
                 .ToListAsync();
 
+            var lessons = await _context.Lessons
+                .Where(l => l.CourseId == id)
+                .OrderBy(l => l.ScheduleDate)
+                .ThenBy(l => l.Title)
+                .ToListAsync();
+
+            // Get question counts for each assessment
             foreach (var assessment in assessments)
             {
                 var questionCount = await _context.AssessmentQuestions
@@ -362,6 +369,7 @@ namespace RSD_E_Learning.Controllers
                 Course = course,
                 CourseFiles = courseFiles,
                 Assessments = assessments,
+                Lessons = lessons,
                 Categories = categories
             };
 
