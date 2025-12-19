@@ -1,33 +1,74 @@
 ﻿@model IEnumerable<RSD_E_Learning.Models.DB.Enrollment>
 
-@{
-    ViewData["Title"] = "Transaction History";
-    Layout = "_Layout";
-}
+<h2 class="mb-3">Transactions</h2>
 
-<h2>Transaction History</h2>
+<!-- ================= FILTER ================= -->
+<form method="get" class="row g-3 mb-4">
+    <div class="col-md-4">
+        <label class="form-label">Filter by Course</label>
+        <select name="courseId" class="form-select">
+            <option value="">All Courses</option>
+            @foreach (var c in ViewBag.Courses)
+            {
+                <option value="@c.CourseId">@c.Title</option>
+            }
+        </select>
+    </div>
 
-<table class="table table-bordered table-striped">
-    <thead>
+    <div class="col-md-3">
+        <label class="form-label">Start Date</label>
+        <input type="date" name="startDate" class="form-control" />
+    </div>
+
+    <div class="col-md-3">
+        <label class="form-label">End Date</label>
+        <input type="date" name="endDate" class="form-control" />
+    </div>
+
+    <div class="col-md-2 d-flex align-items-end">
+        <button class="btn btn-primary w-100">Apply</button>
+    </div>
+</form>
+
+<!-- ================= TRANSACTION TABLE ================= -->
+<table class="table table-bordered">
+    <thead class="table-light">
         <tr>
             <th>Student</th>
+            <th>Email</th>
             <th>Course</th>
-            <th>Payment Date</th>
+            <th>Amount (RM)</th>
+            <th>Method</th>
             <th>Status</th>
+            <th>Paid At</th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var t in Model)
+    @if (!Model.Any())
+    {
+        <tr>
+            <td colspan="7" class="text-center text-muted">
+                No transactions found
+            </td>
+        </tr>
+    }
+    else
+    {
+        foreach (var t in Model)
         {
             <tr>
-                <td>@t.Student!.User!.FullName</td>
-                <td>@t.Course!.Title</td>
-                <td>@t.EnrolledAt.ToString("dd MMM yyyy")</td>
+                <td>@t.Student.User.FullName</td>
+                <td>@t.Student.User.Email</td>
+                <td>@t.Course.Title</td>
+                <td>@t.AmountPaid.ToString("0.00")</td>
+                <td>@t.PaymentMethod</td>
                 <td>
                     <span class="badge bg-success">Paid</span>
                 </td>
+                <td>@t.EnrolledAt.ToString("dd MMM yyyy")</td>
             </tr>
         }
+    }
     </tbody>
 </table>
 

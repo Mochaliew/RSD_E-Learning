@@ -184,6 +184,23 @@ public class DB : DbContext
         public string? CertificateTemplatePath { get; set; }
     }
 
+    // ----------------------------------- TRANSACTION ------------------------------------ //
+    public class Transaction
+    {
+        public int TransactionId { get; set; }
+
+        public int StudentId { get; set; }
+        public int CourseId { get; set; }
+
+        public decimal Amount { get; set; }
+        public DateTime PaidAt { get; set; }
+
+        public string PaymentMethod { get; set; } = "Manual";
+        public string Status { get; set; } = "Paid"; // Paid / Pending / Failed
+
+        public Student Student { get; set; }
+        public Course Course { get; set; }
+    }
 
     // ----------------------------------- ENROLLMENT ------------------------------------ //
     public class Enrollment
@@ -199,6 +216,8 @@ public class DB : DbContext
 
         public DateTime EnrolledAt { get; set; } = DateTime.UtcNow;
         public bool PaymentStatus { get; set; }
+        public string PaymentMethod { get; set; } = "";
+        public decimal AmountPaid { get; set; }
     }
 
 
