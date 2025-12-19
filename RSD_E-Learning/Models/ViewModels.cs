@@ -341,6 +341,11 @@ namespace RSD_E_Learning.Models
         public int Id { get; set; }
     }
 
+    public class ToggleVm
+    {
+        public int TeacherId { get; set; }
+    }
+
     // ===============================
     // Auto Grading View Models
     // ===============================

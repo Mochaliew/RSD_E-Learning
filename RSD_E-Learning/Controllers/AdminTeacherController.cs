@@ -111,6 +111,40 @@ namespace RSD_E_Learning.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        // ================== ACTIVATE / DEACTIVATE (AJAX) ==================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ToggleStatusAjax([FromBody] ToggleVm vm)
+        {
+            var teacher = await _db.Teachers
+                .Include(t => t.User)
+                .FirstOrDefaultAsync(t => t.TeacherId == vm.TeacherId);
+
+            if (teacher == null || teacher.User == null)
+                return Json(new { success = false });
+
+            teacher.IsActive = !teacher.IsActive;
+
+            _db.AuditLogs.Add(new DB.AuditLog
+            {
+                UserId = teacher.UserId,
+                Action = teacher.IsActive
+                    ? $"Activated teacher account: {teacher.User.Email}"
+                    : $"Deactivated teacher account: {teacher.User.Email}",
+                Timestamp = DateTime.UtcNow
+            });
+
+            await _db.SaveChangesAsync();
+
+            return Json(new
+            {
+                success = true,
+                isActive = teacher.IsActive
+            });
+        }
+
+
+
         // ================== RESET PASSWORD (GET) ==================
         [HttpGet]
         public async Task<IActionResult> ResetTeacherPassword(int teacherId)

@@ -4,7 +4,9 @@
     ViewData["Title"] = "Manage Teachers";
 }
 
-<h2>Manage Teachers</h2>
+@Html.AntiForgeryToken()
+
+<h2 class="mb-3">Manage Teachers</h2>
 
 <div class="mb-3">
     <a asp-action="Create" class="btn btn-primary">
@@ -36,46 +38,28 @@
                 <td>@teacher.User?.FullName</td>
                 <td>@teacher.User?.Email</td>
                 <td>@teacher.SubjectArea</td>
-                <td>
-                    @if (teacher.IsActive)
-                    {
-                        <span class="badge bg-success">Active</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-secondary">Inactive</span>
-                    }
-                </td>
-                <td>
 
-                    <!-- RESET PASSWORD (GET PAGE) -->
+                <!--STATUS (AJAX READY) -->
+                <td>
+                    <span class="badge status-badge @(teacher.IsActive ? "bg-success" : "bg-secondary")">
+                        @(teacher.IsActive ? "Active" : "Inactive")
+                    </span>
+                </td>
+
+                <!--ACTIONS -->
+                <td>
                     <a asp-action="ResetTeacherPassword"
                        asp-route-teacherId="@teacher.TeacherId"
                        class="btn btn-sm btn-outline-warning me-1">
                         Reset Password
                     </a>
 
-                    <!-- ACTIVATE / DEACTIVATE (POST) -->
-                    <form asp-action="ToggleStatus"
-                          method="post"
-                          class="d-inline">
-                        @Html.AntiForgeryToken()
-                        <input type="hidden" name="teacherId" value="@teacher.TeacherId" />
-
-                        @if (teacher.IsActive)
-                        {
-                            <button type="submit" class="btn btn-sm btn-outline-danger">
-                                Deactivate
-                            </button>
-                        }
-                        else
-                        {
-                            <button type="submit" class="btn btn-sm btn-outline-success">
-                                Activate
-                            </button>
-                        }
-                    </form>
-
+                    <button type="button"
+                            class="btn btn-sm toggle-btn fixed-btn
+                                       @(teacher.IsActive ? "btn-outline-danger" : "btn-outline-success")"
+                            data-id="@teacher.TeacherId">
+                        @(teacher.IsActive ? "Deactivate" : "Activate")
+                    </button>
                 </td>
             </tr>
         }
@@ -89,3 +73,45 @@
         ← Back to Dashboard
     </a>
 </div>
+
+@section Scripts {
+    <script>
+        document.querySelectorAll('.toggle-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+
+                const id = this.dataset.id;
+                const row = this.closest('tr');
+                const badge = row.querySelector('.status-badge');
+                const button = this;
+
+                fetch('/AdminTeacher/ToggleStatusAjax', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken':
+                            document.querySelector('input[name="__RequestVerificationToken"]').value
+                    },
+                    body: JSON.stringify({ teacherId: parseInt(id) })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.success) return;
+
+                    if (data.isActive) {
+                        badge.className = 'badge bg-success status-badge';
+                        badge.innerText = 'Active';
+                        button.innerText = 'Deactivate';
+                        button.className = 'btn btn-sm btn-outline-danger toggle-btn fixed-btn';
+                    } else {
+                        badge.className = 'badge bg-secondary status-badge';
+                        badge.innerText = 'Inactive';
+                        button.innerText = 'Activate';
+                        button.className = 'btn btn-sm btn-outline-success toggle-btn fixed-btn';
+                    }
+                });
+            });
+        });
+    </script>
+}
+
+}
