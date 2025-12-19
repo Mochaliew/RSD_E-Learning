@@ -1,53 +1,46 @@
-﻿@model List<RSD_E_Learning.Models.DB.Course>
-
-@{
-    ViewData["Title"] = "My Courses";
-}
+﻿@model List<RSD_E_Learning.ViewModels.StudentMyCourseVm>
 
 <h2>My Enrolled Courses</h2>
 
-@if (Model == null || !Model.Any())
-{
-    <div class="alert alert-warning">
-        You are not enrolled in any courses yet.
-    </div>
-}
-else
-{
-    <table class="table table-bordered">
-        <thead>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Course</th>
+            <th>Category</th>
+            <th>Instructor</th>
+            <th>Progress</th>
+            <th></th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var item in Model)
+        {
             <tr>
-                <th>Course</th>
-                <th>Category</th>
-                <th>Instructor</th>
-                <th></th>
+                <td>@item.Title</td>
+                <td>@item.Category</td>
+                <td>@item.Instructor</td>
+
+                <td>
+                    <div class="progress" style="height:20px;">
+                        <div class="progress-bar"
+                             role="progressbar"
+                             style="width:@item.ProgressPercentage%">
+                            @item.ProgressPercentage%
+                        </div>
+                    </div>
+                </td>
+
+                <td>
+                    <a asp-controller="StudentCourse"
+                       asp-action="EnterCourse"
+                       asp-route-courseId="@item.CourseId"
+                       class="btn btn-primary">
+                        Enter Course
+                    </a>
+
+                </td>
             </tr>
-        </thead>
-        <tbody>
-            @foreach (var course in Model)
-            {
-                <tr>
-                    <td>@course.Title</td>
-
-                    <td>
-                        @(course.Category != null ? course.Category.Name : "—")
-                    </td>
-
-                    <td>
-                        @(course.Teacher?.User != null
-                                        ? course.Teacher.User.FullName
-                                        : "—")
-            </td>
-
-                    <td>
-                        <a asp-action="Details"
-                           asp-route-id="@course.CourseId"
-                           class="btn btn-primary btn-sm">
-                            Enter Course
-                        </a>
-                    </td>
-                </tr>
-                }
-        </tbody>
-    </table>
-}
+        }
+    </tbody>
+</table>

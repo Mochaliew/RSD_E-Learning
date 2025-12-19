@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RSD_E_Learning.Models;
 
@@ -11,9 +12,11 @@ using RSD_E_Learning.Models;
 namespace RSD_E_Learning.Migrations
 {
     [DbContext(typeof(DB))]
-    partial class DBModelSnapshot : ModelSnapshot
+    [Migration("20251219111722_AddStudentCourseProgress")]
+    partial class AddStudentCourseProgress
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -510,67 +513,6 @@ namespace RSD_E_Learning.Migrations
                     b.ToTable("StudentAnswers");
                 });
 
-            modelBuilder.Entity("RSD_E_Learning.Models.DB+StudentCourseProgress", b =>
-                {
-                    b.Property<int>("StudentCourseProgressId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("StudentCourseProgressId"));
-
-                    b.Property<int>("CourseId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ProgressPercentage")
-                        .HasColumnType("int");
-
-                    b.Property<int>("StudentId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("StudentCourseProgressId");
-
-                    b.HasIndex("CourseId");
-
-                    b.HasIndex("StudentId");
-
-                    b.ToTable("StudentCourseProgresses");
-                });
-
-            modelBuilder.Entity("RSD_E_Learning.Models.DB+StudentMaterialProgress", b =>
-                {
-                    b.Property<int>("StudentMaterialProgressId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("StudentMaterialProgressId"));
-
-                    b.Property<int>("CourseFileId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsCompleted")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("StudentId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("ViewedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("StudentMaterialProgressId");
-
-                    b.HasIndex("CourseFileId");
-
-                    b.HasIndex("StudentId");
-
-                    b.ToTable("StudentMaterialProgresses");
-                });
-
             modelBuilder.Entity("RSD_E_Learning.Models.DB+SystemSetting", b =>
                 {
                     b.Property<int>("SystemSettingId")
@@ -877,44 +819,6 @@ namespace RSD_E_Learning.Migrations
                     b.Navigation("AssessmentAttempt");
 
                     b.Navigation("Question");
-                });
-
-            modelBuilder.Entity("RSD_E_Learning.Models.DB+StudentCourseProgress", b =>
-                {
-                    b.HasOne("RSD_E_Learning.Models.DB+Course", "Course")
-                        .WithMany()
-                        .HasForeignKey("CourseId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("RSD_E_Learning.Models.DB+Student", "Student")
-                        .WithMany()
-                        .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Course");
-
-                    b.Navigation("Student");
-                });
-
-            modelBuilder.Entity("RSD_E_Learning.Models.DB+StudentMaterialProgress", b =>
-                {
-                    b.HasOne("RSD_E_Learning.Models.DB+CourseFile", "CourseFile")
-                        .WithMany()
-                        .HasForeignKey("CourseFileId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("RSD_E_Learning.Models.DB+Student", "Student")
-                        .WithMany()
-                        .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("CourseFile");
-
-                    b.Navigation("Student");
                 });
 
             modelBuilder.Entity("RSD_E_Learning.Models.DB+Teacher", b =>

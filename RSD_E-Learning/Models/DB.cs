@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
+using RSD_E_Learning.Models;
+
 
 namespace RSD_E_Learning.Models;
 
@@ -11,7 +13,9 @@ public class DB : DbContext
     public DB(DbContextOptions<DB> options) : base(options)
     {
     }
-      
+
+    
+
 
 
 
@@ -35,6 +39,10 @@ public class DB : DbContext
 
     public DbSet<AssessmentAttempt> AssessmentAttempts { get; set; }
     public DbSet<StudentAnswer> StudentAnswers { get; set; }
+
+    public DbSet<StudentCourseProgress> StudentCourseProgresses { get; set; }
+    public DbSet<StudentMaterialProgress> StudentMaterialProgresses { get; set; }
+
 
     // ----------------------------------- ROLE ENUM ------------------------------------ //
     public enum UserRole { Admin, Teacher, Student }
@@ -456,6 +464,52 @@ public class DB : DbContext
         public AssessmentAttempt? AssessmentAttempt { get; set; }
         public AssessmentQuestion? Question { get; set; }
     }
+
+    // ----------------------------------- STUDENT COURSE PROGRESS ------------------------------------ //
+    public class StudentCourseProgress
+    {
+        [Key]
+        public int StudentCourseProgressId { get; set; }
+
+        [Required]
+        public int StudentId { get; set; }
+
+        [Required]
+        public int CourseId { get; set; }
+
+        [Range(0, 100)]
+        public int ProgressPercentage { get; set; } = 0;
+
+        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
+
+        // Navigation properties
+        public Student? Student { get; set; }
+        public Course? Course { get; set; }
+    }
+
+    public class StudentMaterialProgress
+    {
+        [Key]
+        public int StudentMaterialProgressId { get; set; }
+
+        public int StudentId { get; set; }
+        public int CourseFileId { get; set; }
+
+        public bool IsCompleted { get; set; } = true;
+
+        public DateTime ViewedAt { get; set; } = DateTime.UtcNow;
+
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public Student? Student { get; set; }
+        public CourseFile? CourseFile { get; set; }
+    }
+
+
+
+
+
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -16,6 +16,7 @@
         <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
 
+                <!-- BRAND -->
                 <a class="navbar-brand" asp-controller="Home" asp-action="Index">
                     RSD_E_Learning
                 </a>
@@ -31,16 +32,29 @@
                     <!-- LEFT NAVBAR -->
                     <ul class="navbar-nav flex-grow-1">
 
-                        <!-- HOME (VISIBLE TO ALL) -->
+                        <!-- HOME (ROLE AWARE) -->
                         <li class="nav-item">
-                            <a class="nav-link text-dark"
-                               asp-controller="Home"
-                               asp-action="Index">
-                                Home
-                            </a>
+                            @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Student"))
+                            {
+                                <!-- STUDENT HOME → DASHBOARD -->
+                                <a class="nav-link text-dark"
+                                   asp-controller="Student"
+                                   asp-action="Dashboard">
+                                    Home
+                                </a>
+                            }
+                            else
+                            {
+                                <!-- NORMAL HOME -->
+                                <a class="nav-link text-dark"
+                                   asp-controller="Home"
+                                   asp-action="Index">
+                                    Home
+                                </a>
+                            }
                         </li>
 
-                        <!-- ❌ HIDE EVERYTHING ELSE FOR STUDENT -->
+                        <!-- EVERYTHING ELSE (HIDDEN FOR STUDENT) -->
                         @if (!(User.Identity?.IsAuthenticated == true && User.IsInRole("Student")))
                         {
                             <li class="nav-item">
@@ -71,7 +85,6 @@
 
                     <!-- RIGHT NAVBAR -->
                     <ul class="navbar-nav ms-auto">
-
                         @if (User.Identity?.IsAuthenticated == true)
                         {
                             <li class="nav-item">

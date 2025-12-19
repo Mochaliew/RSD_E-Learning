@@ -1,0 +1,42 @@
+﻿@model RSD_E_Learning.Models.DB.Course
+
+<h2>@Model.Title</h2>
+
+<p class="text-muted">
+    Category: @Model.Category?.Name <br />
+    Instructor: @Model.Teacher?.User?.FullName
+</p>
+
+<hr />
+
+<h4>Course Materials</h4>
+
+@if (Model.CourseFiles == null || !Model.CourseFiles.Any())
+{
+    <div class="alert alert-info">
+        No materials uploaded yet.
+    </div>
+}
+else
+{
+    <ul class="list-group">
+        @foreach (var file in Model.CourseFiles.Where(f => f.IsActive))
+        {
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>@file.FileName</strong><br />
+                    <small class="text-muted">
+                        Type: @file.FileType |
+                        Updated: @file.UpdateAt.ToLocalTime().ToString("dd MMM yyyy")
+                    </small>
+                </div>
+
+                <a class="btn btn-sm btn-primary"
+                   href="@Url.Content(file.FilePath)"
+                   target="_blank">
+                    View
+                </a>
+            </li>
+        }
+    </ul>
+}

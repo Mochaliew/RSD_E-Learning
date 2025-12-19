@@ -1,0 +1,38 @@
+﻿@model RSD_E_Learning.Models.DB.Course
+
+
+<h2>@Model.Title</h2>
+
+<p>
+    <strong>Category:</strong> @Model.Category?.Name <br />
+    <strong>Instructor:</strong> @Model.Teacher?.User?.FullName
+</p>
+
+<hr />
+
+<h4>Course Materials (@Model.CourseFiles.Count)</h4>
+
+@if (!Model.CourseFiles.Any())
+{
+    <p>No materials available.</p>
+}
+else
+{
+    <ul class="list-group">
+        @foreach (var file in Model.CourseFiles.Where(f => f.IsActive))
+        {
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>@file.FileName</strong><br />
+                    <small>@file.FileType</small>
+                </div>
+
+                <a asp-action="ViewMaterial"
+                   asp-route-id="@file.CourseFileId"
+                   class="btn btn-sm btn-primary">
+                    View
+                </a>
+            </li>
+        }
+    </ul>
+}

@@ -1,0 +1,30 @@
+﻿@model RSD_E_Learning.Models.DB.CourseFile
+
+@{
+    ViewData["Title"] = "View Material";
+}
+
+<h2>@Model.FileName</h2>
+
+<p>
+    <strong>Type:</strong> @Model.FileType <br />
+</p>
+
+<hr />
+
+@if (Model.FileType.ToLower().Contains("pdf"))
+{
+    <iframe src="@Url.Content(Model.FilePath)"
+            width="100%"
+            height="600px"
+            style="border:1px solid #ccc;">
+    </iframe>
+}
+else
+{
+    <a href="@Url.Content(Model.FilePath)"
+       target="_blank"
+       class="btn btn-primary">
+        Download File
+    </a>
+}

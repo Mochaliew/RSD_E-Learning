@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RSD_E_Learning.Models;
+using RSD_E_Learning.ViewModels;
+using static RSD_E_Learning.Models.DB;
 
 namespace RSD_E_Learning.Controllers
 {
@@ -49,15 +51,18 @@ namespace RSD_E_Learning.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Enroll(int courseId)
         {
-            var studentIdClaim = User.FindFirst("StudentId")?.Value;
+            var userEmail = User.Identity!.Name;
 
-            if (studentIdClaim == null)
+            var student = await _db.Students
+                .Include(s => s.User)
+                .FirstOrDefaultAsync(s => s.User!.Email == userEmail);
+
+            if (student == null)
                 return Unauthorized();
 
-            int studentId = int.Parse(studentIdClaim);
-
+            // 1️⃣ Prevent duplicate enrollment
             var alreadyEnrolled = await _db.Enrollments.AnyAsync(e =>
-                e.StudentId == studentId &&
+                e.StudentId == student.StudentId &&
                 e.CourseId == courseId);
 
             if (alreadyEnrolled)
@@ -66,15 +71,27 @@ namespace RSD_E_Learning.Controllers
                 return RedirectToAction("Details", new { id = courseId });
             }
 
+            // 2️⃣ Create enrollment
             var enrollment = new DB.Enrollment
             {
-                StudentId = studentId,
+                StudentId = student.StudentId,
                 CourseId = courseId,
                 PaymentStatus = false
             };
 
             _db.Enrollments.Add(enrollment);
-            System.Diagnostics.Debug.WriteLine($"ENROLL → StudentId = {studentId}, CourseId = {courseId}");
+
+            // 3️⃣ CREATE PROGRESS ROW (🔥 THIS IS NEW)
+            var progress = new DB.StudentCourseProgress
+            {
+                StudentId = student.StudentId,
+                CourseId = courseId,
+                ProgressPercentage = 0,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            _db.StudentCourseProgresses.Add(progress);
+
             await _db.SaveChangesAsync();
 
             TempData["Message"] = "Enrollment successful!";
@@ -82,30 +99,174 @@ namespace RSD_E_Learning.Controllers
         }
 
 
+
         // ================== MY COURSES ==================
         public async Task<IActionResult> MyCourses()
         {
-            var studentIdClaim = User.FindFirst("StudentId")?.Value;
+            var userEmail = User.Identity!.Name;
 
-            if (studentIdClaim == null)
+            var student = await _db.Students
+                .Include(s => s.User)
+                .FirstOrDefaultAsync(s => s.User!.Email == userEmail);
+
+            if (student == null)
                 return Unauthorized();
 
-            int studentId = int.Parse(studentIdClaim);
-            System.Diagnostics.Debug.WriteLine($"MYCOURSES → StudentId = {studentId}");
-
             var courses = await _db.Enrollments
-                .Where(e => e.StudentId == studentId)
+                .Where(e => e.StudentId == student.StudentId)
                 .Include(e => e.Course)
                     .ThenInclude(c => c.Category)
                 .Include(e => e.Course)
                     .ThenInclude(c => c.Teacher)
                         .ThenInclude(t => t.User)
-                .Where(e => e.Course != null)
-                .Select(e => e.Course!)
+                .Select(e => new StudentMyCourseVm
+                {
+                    CourseId = e.Course!.CourseId,
+                    Title = e.Course.Title,
+                    Category = e.Course.Category!.Name,
+                    Instructor = e.Course.Teacher!.User!.FullName,
+
+                    ProgressPercentage = _db.StudentCourseProgresses
+                        .Where(p => p.StudentId == student.StudentId && p.CourseId == e.Course.CourseId)
+                        .Select(p => p.ProgressPercentage)
+                        .FirstOrDefault()
+                })
                 .ToListAsync();
 
             return View(courses);
         }
+
+
+        // ==================TO VIEW MATERIAL ==================
+
+        [Authorize(Roles = "Student")]
+        public async Task<IActionResult> ViewMaterial(int id)
+        {
+            var userEmail = User.Identity!.Name;
+
+            var student = await _db.Students
+                .Include(s => s.User)
+                .FirstOrDefaultAsync(s => s.User!.Email == userEmail);
+
+            if (student == null)
+                return Unauthorized();
+
+            var material = await _db.CourseFiles
+                .FirstOrDefaultAsync(f => f.CourseFileId == id && f.IsActive);
+
+            if (material == null)
+                return NotFound();
+
+            var existingProgress = await _db.StudentMaterialProgresses
+                .FirstOrDefaultAsync(p =>
+                    p.StudentId == student.StudentId &&
+                    p.CourseFileId == material.CourseFileId);
+
+            if (existingProgress == null)
+            {
+                var progress = new StudentMaterialProgress
+                {
+                    StudentId = student.StudentId,
+                    CourseFileId = material.CourseFileId,
+                    IsCompleted = true,
+                    ViewedAt = DateTime.UtcNow
+                };
+
+                _db.StudentMaterialProgresses.Add(progress);
+                await _db.SaveChangesAsync();
+
+                await UpdateCourseProgress(student.StudentId, material.CourseId);
+            }
+
+            return View(material);
+        }
+
+
+        private async Task UpdateCourseProgress(int studentId, int courseId)
+        {
+            var totalMaterials = await _db.CourseFiles
+                .CountAsync(f => f.CourseId == courseId && f.IsActive);
+
+            if (totalMaterials == 0)
+                return;
+
+            var completedMaterials = await _db.StudentMaterialProgresses
+                .CountAsync(p =>
+                    p.StudentId == studentId &&
+                    p.IsCompleted &&
+                    _db.CourseFiles.Any(f =>
+                        f.CourseFileId == p.CourseFileId &&
+                        f.CourseId == courseId));
+
+            var percentage = (int)Math.Round(
+                (double)completedMaterials / totalMaterials * 100
+            );
+
+            var courseProgress = await _db.StudentCourseProgresses
+                .FirstOrDefaultAsync(p =>
+                    p.StudentId == studentId &&
+                    p.CourseId == courseId);
+
+            if (courseProgress == null)
+            {
+                courseProgress = new StudentCourseProgress
+                {
+                    StudentId = studentId,
+                    CourseId = courseId,
+                    ProgressPercentage = percentage,
+                    UpdatedAt = DateTime.UtcNow
+                };
+
+                _db.StudentCourseProgresses.Add(courseProgress);
+            }
+            else
+            {
+                courseProgress.ProgressPercentage = percentage;
+                courseProgress.UpdatedAt = DateTime.UtcNow;
+            }
+
+            await _db.SaveChangesAsync();
+        }
+
+
+        [Authorize(Roles = "Student")]
+        public async Task<IActionResult> EnterCourse(int courseId)
+        {
+            var userEmail = User.Identity!.Name;
+
+            var student = await _db.Students
+                .Include(s => s.User)
+                .FirstOrDefaultAsync(s => s.User!.Email == userEmail);
+
+            if (student == null)
+                return Unauthorized();
+
+            // 🔐 Ensure student is enrolled
+            var isEnrolled = await _db.Enrollments.AnyAsync(e =>
+                e.StudentId == student.StudentId &&
+                e.CourseId == courseId);
+
+            if (!isEnrolled)
+                return Forbid();
+
+            // 📦 Load course + materials
+            var course = await _db.Courses
+                .Include(c => c.Category)
+                .Include(c => c.Teacher)
+                    .ThenInclude(t => t.User)
+                .Include(c => c.CourseFiles)
+                .FirstOrDefaultAsync(c => c.CourseId == courseId);
+
+            if (course == null)
+                return NotFound();
+
+            return View(course);
+        }
+
+
+
+
+
 
 
 
