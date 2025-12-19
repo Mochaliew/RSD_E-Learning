@@ -41,18 +41,20 @@ function removeMaterial(button) {
 }
 
 // Form validation
-document.getElementById('courseForm').addEventListener('submit', function (e) {
-    const title = document.getElementById('courseTitle').value;
-    const category = document.getElementById('category').value;
-    const description = document.getElementById('description').value;
-    const difficulty = document.getElementById('difficulty').value;
+const courseForm = document.getElementById('courseForm');
+if (courseForm) {
+    courseForm.addEventListener('submit', function (e) {
+        const title = document.getElementById('courseTitle')?.value;
+        const category = document.getElementById('category')?.value;
+        const description = document.getElementById('description')?.value;
+        const difficulty = document.getElementById('difficulty')?.value;
 
-    if (!title || !category || !description || !difficulty) {
-        e.preventDefault();
-        alert('Please fill in all required fields marked with *');
-        return false;
-    }
-});
+        if (!title || !category || !description || !difficulty) {
+            e.preventDefault();
+            alert('Please fill in all required fields marked with *');
+        }
+    });
+}
 
 /* ----------------------------- Assessment Script ----------------------------- */
 
@@ -228,6 +230,7 @@ function publishAssessment() {
     document.getElementById('successMessage').style.display = 'block';
 
     setTimeout(() => {
-        window.location.href = '/Teacher/ViewAssessment';
+        //window.location.href = '/Teacher/ViewAssessment';
+        window.location.href = '/Teacher/TeacherIndex';
     }, 2000);
 }

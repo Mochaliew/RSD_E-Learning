@@ -274,7 +274,7 @@ namespace RSD_E_Learning.Models
 
         // Email / SMTP
         public string? SmtpHost { get; set; }
-        public int SmtpPort { get; set; } 
+        public int SmtpPort { get; set; }
         public string? SenderEmail { get; set; }
         public string? SmtpPassword { get; set; }
         public bool EnableEmailNotification { get; set; }
@@ -316,6 +316,26 @@ namespace RSD_E_Learning.Models
         public int QuestionId { get; set; }
         public string SelectedAnswer { get; set; } = "";
     }
+
+    public class CreateAssessmentVm
+    {
+        public int CourseId { get; set; }
+        public string Title { get; set; } = "";
+        public int PassingMark { get; set; }
+        public DateTime DeadLine { get; set; }
+        public List<CreateAssessmentQuestionVm> Questions { get; set; } = new();
+    }
+
+    public class CreateAssessmentQuestionVm
+    {
+        public string QuestionDetail { get; set; } = "";
+        public string AnswerA { get; set; } = "";
+        public string AnswerB { get; set; } = "";
+        public string AnswerC { get; set; } = "";
+        public string AnswerD { get; set; } = "";
+        public string CorrectAnswer { get; set; } = "";
+    }
+
 
 }
 

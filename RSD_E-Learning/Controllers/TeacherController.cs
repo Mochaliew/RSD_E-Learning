@@ -308,5 +308,54 @@ namespace RSD_E_Learning.Controllers
             return View();
         }
 
+        [HttpPost]
+        [Route("api/teacher/create-assessment")]
+        public async Task<IActionResult> CreateAssessmentApi(
+    [FromBody] CreateAssessmentVm model)
+        {
+            var teacherIdClaim = User.FindFirst("TeacherId");
+            if (teacherIdClaim == null)
+                return Unauthorized();
+
+            int teacherId = int.Parse(teacherIdClaim.Value);
+
+            var course = await _context.Courses
+                .FirstOrDefaultAsync(c =>
+                    c.CourseId == model.CourseId &&
+                    c.TeacherId == teacherId &&
+                    c.IsApproved);
+
+            if (course == null)
+                return BadRequest("Invalid course.");
+
+            var assessment = new DB.Assessment
+            {
+                CourseId = model.CourseId,
+                Title = model.Title,
+                TotalMarks = model.Questions.Count,
+                DeadLine = model.DeadLine
+            };
+
+            _context.Assessments.Add(assessment);
+            await _context.SaveChangesAsync();
+
+            foreach (var q in model.Questions)
+            {
+                _context.AssessmentQuestions.Add(new DB.AssessmentQuestion
+                {
+                    AssessmentId = assessment.AssessmentId,
+                    QuestionDetail = q.QuestionDetail,
+                    AnswerA = q.AnswerA,
+                    AnswerB = q.AnswerB,
+                    AnswerC = q.AnswerC,
+                    AnswerD = q.AnswerD,
+                    CorrectAnswer = q.CorrectAnswer
+                });
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Assessment created successfully" });
+        }
     }
 }
