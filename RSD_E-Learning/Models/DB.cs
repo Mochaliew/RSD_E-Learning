@@ -286,6 +286,7 @@ public class DB : DbContext
         [Key]
         public int CourseFileId { get; set; }
 
+        [ForeignKey(nameof(Lesson))]
         public int LessonId { get; set; }
 
         public string FileType { get; set; } = "";
