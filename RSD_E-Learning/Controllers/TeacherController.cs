@@ -178,6 +178,7 @@ namespace RSD_E_Learning.Controllers
                 Title = model.Title,
                 CategoryId = model.CategoryId,
                 Description = model.Description,
+                Price = model.Price,
                 TeacherId = teacher.TeacherId,
 
                 IsApproved = false,
@@ -191,83 +192,6 @@ namespace RSD_E_Learning.Controllers
                 "Course submitted successfully and pending admin approval.";
 
             return RedirectToAction("CreateCourse");
-        }
-
-        // ------------------------- UPLOADMATERIAL [GET] ------------------------- // 
-        [HttpGet]
-        public async Task<IActionResult> UploadMaterial(int courseId)
-        {
-            var course = await _context.Courses.FindAsync(courseId);
-
-            if (course == null || !course.IsApproved)
-            {
-                return Unauthorized();
-            }
-
-            var vm = new UploadCourseFileVm
-            {
-                CourseId = courseId
-            };
-
-            ViewBag.CourseTitle = course.Title;
-            return View(vm);
-        }
-
-        // ------------------------- UPLOADMATERIAL [POST] ------------------------- //
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UploadMaterial(UploadCourseFileVm model)
-        {
-            if (!ModelState.IsValid)
-            {
-                var course = await _context.Courses.FindAsync(model.CourseId);
-                if (course != null)
-                {
-                    ViewBag.CourseTitle = course.Title;
-                }
-                return View(model);
-            }
-
-            var teacherIdClaim = User.FindFirst("TeacherId");
-            if (teacherIdClaim == null)
-                return Unauthorized();
-
-            int teacherId = int.Parse(teacherIdClaim.Value);
-            var courseCheck = await _context.Courses
-                .FirstOrDefaultAsync(c => c.CourseId == model.CourseId &&
-                                          c.TeacherId == teacherId &&
-                                          c.IsApproved);
-
-            if (courseCheck == null)
-                return Unauthorized();
-
-            string uploadsFolder = Path.Combine(_environment.WebRootPath, "coursefiles");
-            Directory.CreateDirectory(uploadsFolder);
-
-            string uniqueFileName = Guid.NewGuid() + Path.GetExtension(model.materialFile.FileName);
-            string physicalPath = Path.Combine(uploadsFolder, uniqueFileName);
-
-            using (var stream = new FileStream(physicalPath, FileMode.Create))
-            {
-                await model.materialFile.CopyToAsync(stream);
-            }
-
-            var courseFile = new DB.CourseFile
-            {
-                CourseId = model.CourseId,
-                FileName = model.materialTitle,
-                FilePath = "/coursefiles/" + uniqueFileName,
-                FileType = model.materialType, // Use the selected type
-                IsActive = true,
-                UpdateAt = DateTime.UtcNow
-            };
-
-            _context.CourseFiles.Add(courseFile);
-            await _context.SaveChangesAsync();
-
-            TempData["SuccessMessage"] = "Material uploaded successfully.";
-            return RedirectToAction("ViewCourse", "Teacher"); // Fixed: removed the id parameter
         }
 
         // ------------------------- VIEWCOURSE [GET] ------------------------- // 
@@ -306,7 +230,8 @@ namespace RSD_E_Learning.Controllers
             }
         }
 
-        // GET: View Course Detail
+        // ------------------------- COURSEDETAIL [GET] ------------------------- //
+
         [HttpGet]
         public async Task<IActionResult> CourseDetail(int id)
         {
@@ -329,20 +254,30 @@ namespace RSD_E_Learning.Controllers
                 return RedirectToAction("ViewCourse");
             }
 
-            var courseFiles = await _context.CourseFiles
-                .Where(f => f.CourseId == id && f.IsActive)
-                .OrderByDescending(f => f.UpdateAt)
-                .ToListAsync();
-
-            var assessments = await _context.Assessments
-                .Where(a => a.CourseId == id)
-                .OrderByDescending(a => a.AssessmentId)
-                .ToListAsync();
-
+            // Get lessons with their files
             var lessons = await _context.Lessons
                 .Where(l => l.CourseId == id)
                 .OrderBy(l => l.ScheduleDate)
                 .ThenBy(l => l.Title)
+                .ToListAsync();
+
+            var lessonsWithFiles = new List<LessonWithFilesVm>();
+            foreach (var lesson in lessons)
+            {
+                var files = await _context.CourseFiles
+                    .Where(f => f.LessonId == lesson.LessonId)
+                    .ToListAsync();
+
+                lessonsWithFiles.Add(new LessonWithFilesVm
+                {
+                    Lesson = lesson,
+                    Files = files
+                });
+            }
+
+            var assessments = await _context.Assessments
+                .Where(a => a.CourseId == id)
+                .OrderByDescending(a => a.AssessmentId)
                 .ToListAsync();
 
             // Get question counts for each assessment
@@ -367,9 +302,8 @@ namespace RSD_E_Learning.Controllers
             var viewModel = new CourseDetailVm
             {
                 Course = course,
-                CourseFiles = courseFiles,
+                LessonsWithFiles = lessonsWithFiles,
                 Assessments = assessments,
-                Lessons = lessons,
                 Categories = categories
             };
 
@@ -422,6 +356,7 @@ namespace RSD_E_Learning.Controllers
 
             int teacherId = int.Parse(teacherIdClaim.Value);
 
+            // Get all courses for this teacher
             var courses = await _context.Courses
                 .Include(c => c.Category)
                 .Where(c => c.TeacherId == teacherId && c.IsApproved)
@@ -438,10 +373,24 @@ namespace RSD_E_Learning.Controllers
                     .ThenBy(l => l.Title)
                     .ToListAsync();
 
+                var lessonsWithFiles = new List<LessonWithFilesVm>();
+                foreach (var lesson in lessons)
+                {
+                    var files = await _context.CourseFiles
+                        .Where(f => f.LessonId == lesson.LessonId)
+                        .ToListAsync();
+
+                    lessonsWithFiles.Add(new LessonWithFilesVm
+                    {
+                        Lesson = lesson,
+                        Files = files
+                    });
+                }
+
                 courseLessonList.Add(new CourseLessonVm
                 {
                     Course = course,
-                    Lessons = lessons
+                    LessonsWithFiles = lessonsWithFiles
                 });
             }
 
@@ -484,7 +433,7 @@ namespace RSD_E_Learning.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateLesson(CreateLessonVm model, string LessonDate, string LessonTime)
+        public async Task<IActionResult> CreateLesson(CreateLessonVm model, string LessonDate, string LessonTime, string LessonType, IFormFile MaterialFile)
         {
             if (!ModelState.IsValid)
             {
@@ -504,6 +453,7 @@ namespace RSD_E_Learning.Controllers
 
             int teacherId = int.Parse(teacherIdClaim.Value);
 
+            // Verify course belongs to teacher
             var courseCheck = await _context.Courses
                 .FirstOrDefaultAsync(c => c.CourseId == model.CourseId && c.TeacherId == teacherId);
 
@@ -513,6 +463,7 @@ namespace RSD_E_Learning.Controllers
                 return RedirectToAction("ViewLesson");
             }
 
+            // Combine date and time
             DateTime? scheduledDateTime = null;
             if (!string.IsNullOrEmpty(LessonDate) && !string.IsNullOrEmpty(LessonTime))
             {
@@ -521,11 +472,12 @@ namespace RSD_E_Learning.Controllers
                 scheduledDateTime = datePart.Add(timePart);
             }
 
+            // Create lesson
             var lesson = new DB.Lesson
             {
                 CourseId = model.CourseId,
                 Title = model.Title,
-                MeetLink = model.MeetLink,
+                MeetLink = model.MeetLink ?? "",
                 Description = model.Description ?? "",
                 ScheduleDate = scheduledDateTime
             };
@@ -533,8 +485,35 @@ namespace RSD_E_Learning.Controllers
             _context.Lessons.Add(lesson);
             await _context.SaveChangesAsync();
 
+            // Handle file upload if provided
+            if (MaterialFile != null && MaterialFile.Length > 0)
+            {
+                string uploadsFolder = Path.Combine(_environment.WebRootPath, "coursefiles");
+                Directory.CreateDirectory(uploadsFolder);
+
+                string uniqueFileName = Guid.NewGuid() + Path.GetExtension(MaterialFile.FileName);
+                string physicalPath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                using (var stream = new FileStream(physicalPath, FileMode.Create))
+                {
+                    await MaterialFile.CopyToAsync(stream);
+                }
+
+                // Save to CourseFile table - now linked to Lesson
+                var courseFile = new DB.CourseFile
+                {
+                    LessonId = lesson.LessonId, // Changed from CourseId
+                    FilePath = "/coursefiles/" + uniqueFileName,
+                    FileType = LessonType ?? "file",
+                    UpdateAt = DateTime.UtcNow
+                };
+
+                _context.CourseFiles.Add(courseFile);
+                await _context.SaveChangesAsync();
+            }
+
             TempData["SuccessMessage"] = "Lesson created successfully.";
-            return RedirectToAction("ViewLesson");
+            return RedirectToAction("CourseDetail", new { id = model.CourseId });
         }
 
         // ------------------------- EDITLESSON [GET] ------------------------- // 
@@ -560,6 +539,11 @@ namespace RSD_E_Learning.Controllers
                 return RedirectToAction("ViewLesson");
             }
 
+            // Get existing files for this lesson
+            var existingFiles = await _context.CourseFiles
+                .Where(f => f.LessonId == lesson.LessonId)
+                .ToListAsync();
+
             ViewBag.CourseName = lesson.Course.Title;
 
             var model = new EditLessonVm
@@ -569,7 +553,8 @@ namespace RSD_E_Learning.Controllers
                 Title = lesson.Title,
                 MeetLink = lesson.MeetLink,
                 Description = lesson.Description,
-                ScheduleDate = lesson.ScheduleDate
+                ScheduledDate = lesson.ScheduleDate,
+                ExistingFiles = existingFiles
             };
 
             return View(model);
@@ -579,7 +564,7 @@ namespace RSD_E_Learning.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditLesson(EditLessonVm model, string LessonDate, string LessonTime)
+        public async Task<IActionResult> EditLesson(EditLessonVm model, string LessonDate, string LessonTime, string LessonType, IFormFile MaterialFile)
         {
             if (!ModelState.IsValid)
             {
@@ -596,7 +581,6 @@ namespace RSD_E_Learning.Controllers
             {
                 return Unauthorized();
             }
-        
 
             int teacherId = int.Parse(teacherIdClaim.Value);
 
@@ -610,6 +594,7 @@ namespace RSD_E_Learning.Controllers
                 return RedirectToAction("ViewLesson");
             }
 
+            // Combine date and time
             DateTime? scheduledDateTime = null;
             if (!string.IsNullOrEmpty(LessonDate) && !string.IsNullOrEmpty(LessonTime))
             {
@@ -619,14 +604,83 @@ namespace RSD_E_Learning.Controllers
             }
 
             lesson.Title = model.Title;
-            lesson.MeetLink = model.MeetLink;
+            lesson.MeetLink = model.MeetLink ?? "";
             lesson.Description = model.Description ?? "";
             lesson.ScheduleDate = scheduledDateTime;
 
             await _context.SaveChangesAsync();
 
+            // Handle new file upload if provided
+            if (MaterialFile != null && MaterialFile.Length > 0)
+            {
+                string uploadsFolder = Path.Combine(_environment.WebRootPath, "coursefiles");
+                Directory.CreateDirectory(uploadsFolder);
+
+                string uniqueFileName = Guid.NewGuid() + Path.GetExtension(MaterialFile.FileName);
+                string physicalPath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                using (var stream = new FileStream(physicalPath, FileMode.Create))
+                {
+                    await MaterialFile.CopyToAsync(stream);
+                }
+
+                // Save to CourseFile table - linked to Lesson
+                var courseFile = new DB.CourseFile
+                {
+                    LessonId = lesson.LessonId,
+                    FilePath = "/coursefiles/" + uniqueFileName,
+                    FileType = LessonType ?? "file",
+                    UpdateAt = DateTime.UtcNow
+                };
+
+                _context.CourseFiles.Add(courseFile);
+                await _context.SaveChangesAsync();
+            }
+
             TempData["SuccessMessage"] = "Lesson updated successfully.";
-            return RedirectToAction("ViewLesson");
+            return RedirectToAction("CourseDetail", new { id = model.CourseId });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteLessonFile(int fileId)
+        {
+            var teacherIdClaim = User.FindFirst("TeacherId");
+            if (teacherIdClaim == null)
+            {
+                return Json(new { success = false, message = "Unauthorized" });
+            }
+
+            int teacherId = int.Parse(teacherIdClaim.Value);
+
+            var file = await _context.CourseFiles
+                .Include(f => f.Lesson)
+                .ThenInclude(l => l.Course)
+                .FirstOrDefaultAsync(f => f.CourseFileId == fileId);
+
+            if (file == null || file.Lesson.Course.TeacherId != teacherId)
+            {
+                return Json(new { success = false, message = "File not found or unauthorized" });
+            }
+
+            // Delete physical file
+            try
+            {
+                var physicalPath = Path.Combine(_environment.WebRootPath, file.FilePath.TrimStart('/'));
+                if (System.IO.File.Exists(physicalPath))
+                {
+                    System.IO.File.Delete(physicalPath);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting physical file");
+            }
+
+            // Remove from database
+            _context.CourseFiles.Remove(file);
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true, message = "File deleted successfully" });
         }
 
         // ------------------------- CREATEASSESSMENT [POST] ------------------------- // 
@@ -634,7 +688,7 @@ namespace RSD_E_Learning.Controllers
         [HttpPost]
         [Route("api/teacher/create-assessment")]
         public async Task<IActionResult> CreateAssessmentApi(
-    [FromBody] CreateAssessmentVm model)
+        [FromBody] CreateAssessmentVm model)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -645,7 +699,6 @@ namespace RSD_E_Learning.Controllers
 
             int teacherId = int.Parse(teacherIdClaim.Value);
 
-            // 🔑 FIX: ensure CourseId is valid
             if (model.CourseId <= 0)
                 return BadRequest("CourseId is required.");
 
@@ -657,7 +710,6 @@ namespace RSD_E_Learning.Controllers
             if (course == null)
                 return BadRequest("Invalid or unauthorized course.");
 
-            // 1️⃣ Save Assessment
             var assessment = new DB.Assessment
             {
                 CourseId = model.CourseId,
@@ -669,7 +721,6 @@ namespace RSD_E_Learning.Controllers
             _context.Assessments.Add(assessment);
             await _context.SaveChangesAsync();
 
-            // 2️⃣ Save Questions
             foreach (var q in model.Questions)
             {
                 _context.AssessmentQuestions.Add(new DB.AssessmentQuestion

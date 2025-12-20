@@ -14,11 +14,6 @@ public class DB : DbContext
     {
     }
 
-    
-
-
-
-
     public DbSet<User> Users { get; set; }
     public DbSet<Teacher> Teachers { get; set; }
     public DbSet<Admin> Admins { get; set; }
@@ -264,6 +259,8 @@ public class DB : DbContext
 
         public string? Description { get; set; }
 
+        public decimal Price { get; set; } = 0.0M;
+
         public int CategoryId { get; set; }
         public int TeacherId { get; set; }
         public bool IsApproved { get; set; } = false;
@@ -289,7 +286,7 @@ public class DB : DbContext
         [Key]
         public int CourseFileId { get; set; }
 
-        public int CourseId { get; set; }
+        public int LessonId { get; set; }
 
         public string FileType { get; set; } = "";
 
@@ -304,7 +301,7 @@ public class DB : DbContext
         public bool IsActive { get; set; } = true;  
 
         // Navigation Properties
-        public Course? Course { get; set; }
+        public Lesson? Lesson { get; set; }
     }
 
     // ----------------------------------- LESSON ------------------------------------ //

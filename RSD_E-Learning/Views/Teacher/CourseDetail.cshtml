@@ -206,6 +206,9 @@
 
                 <div class="info-label">Students Enrolled:</div>
                 <div class="info-value">@(Model.Course.Enrollments?.Count ?? 0)</div>
+
+                <div class="info-label">Total Lessons:</div>
+                <div class="info-value">@Model.LessonsWithFiles.Count</div>
             </div>
         </div>
 
@@ -245,36 +248,71 @@
     <!-- Lessons Section -->
     <div class="section-card">
         <div class="section-title">
-            <span>Lessons (@Model.Lessons.Count)</span>
+            <span>Lessons (@Model.LessonsWithFiles.Count)</span>
             <a href="@Url.Action("CreateLesson", "Teacher", new { courseId = Model.Course.CourseId })" class="btn-edit-section">+ Add Lesson</a>
         </div>
 
-        @if (Model.Lessons.Any())
+        @if (Model.LessonsWithFiles.Any())
         {
             <ul class="lesson-list">
-                @foreach (var lesson in Model.Lessons)
+                @foreach (var lessonItem in Model.LessonsWithFiles)
                 {
-                    <li class="lesson-item">
-                        <div class="lesson-info">
-                            <div class="lesson-name">📖 @lesson.Title</div>
-                            <div class="lesson-meta">
-                                @if (!string.IsNullOrEmpty(lesson.Description))
-                                {
-                                    <span>@lesson.Description</span>
-                                }
-                                @if (!string.IsNullOrEmpty(lesson.MeetLink))
-                                {
-                                    <span> | 🔗 <a href="@lesson.MeetLink" target="_blank" style="color: #5b6ff5;">Meeting Link</a></span>
-                                }
-                                @if (lesson.ScheduleDate.HasValue)
-                                {
-                                    <span> | 📅 @lesson.ScheduleDate.Value.ToString("MMM dd, yyyy hh:mm tt")</span>
-                                }
+                    <li class="lesson-item" style="display: block;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+                            <div class="lesson-info" style="flex: 1;">
+                                <div class="lesson-name">📖 @lessonItem.Lesson.Title</div>
+                                <div class="lesson-meta">
+                                    @if (!string.IsNullOrEmpty(lessonItem.Lesson.Description))
+                                    {
+                                        <span>@lessonItem.Lesson.Description</span>
+                                    }
+                                    @if (!string.IsNullOrEmpty(lessonItem.Lesson.MeetLink))
+                                    {
+                                        <span> | 🔗 <a href="@lessonItem.Lesson.MeetLink" target="_blank" style="color: #5b6ff5;">Meeting Link</a></span>
+                                    }
+                                    @if (lessonItem.Lesson.ScheduleDate.HasValue)
+                                    {
+                                        <span> | 📅 @lessonItem.Lesson.ScheduleDate.Value.ToString("MMM dd, yyyy hh:mm tt")</span>
+                                    }
+                                </div>
+                            </div>
+                            <div class="item-actions">
+                                <a href="@Url.Action("EditLesson", "Teacher", new { id = lessonItem.Lesson.LessonId })" class="btn-icon btn-view">Edit</a>
                             </div>
                         </div>
-                        <div class="item-actions">
-                            <a href="@Url.Action("EditLesson", "Teacher", new { id = lesson.LessonId })" class="btn-icon btn-view">Edit</a>
-                        </div>
+
+                        @if (lessonItem.Files.Any())
+                        {
+                            <div style="margin-top: 10px; padding: 10px; background: white; border-radius: 6px;">
+                                <strong style="font-size: 0.9rem; color: #666;">📎 Attached Files:</strong>
+                                <ul style="list-style: none; padding: 0; margin: 5px 0 0 0;">
+                                    @foreach (var file in lessonItem.Files)
+                                    {
+                                        <li style="padding: 5px 0; display: flex; justify-content: space-between; align-items: center;">
+                                            <span style="font-size: 0.9rem; color: #333;">
+                                                @if (file.FileType == "pdf")
+                                                {
+                                                    <span>📄</span>
+                                                }
+                                                else if (file.FileType == "video")
+                                                {
+                                                    <span>🎥</span>
+                                                }
+                                                else
+                                                {
+                                                    <span>📎</span>
+                                                }
+                                                @file.FileType.ToUpper() -
+                                                <span style="color: #666; font-size: 0.85rem;">Uploaded @file.UpdateAt.ToString("MMM dd, yyyy")</span>
+                                            </span>
+                                            <div>
+                                                <a href="@file.FilePath" target="_blank" style="color: #5b6ff5; text-decoration: none; font-size: 0.85rem; margin-right: 10px;">View</a>
+                                            </div>
+                                        </li>
+                                    }
+                                </ul>
+                            </div>
+                        }
                     </li>
                 }
             </ul>
@@ -282,39 +320,6 @@
         else
         {
             <div class="empty-message">No lessons created yet</div>
-        }
-    </div>
-
-    <!-- Course Materials -->
-    <div class="section-card">
-        <div class="section-title">
-            <span>Course Materials (@Model.CourseFiles.Count)</span>
-            <a href="@Url.Action("UploadMaterial", "Teacher", new { courseId = Model.Course.CourseId })" class="btn-edit-section">+ Add Material</a>
-        </div>
-
-        @if (Model.CourseFiles.Any())
-        {
-            <ul class="file-list">
-                @foreach (var file in Model.CourseFiles)
-                {
-                    <li class="file-item">
-                        <div class="file-info">
-                            <div class="file-name">📄 @file.FileName</div>
-                            <div class="file-meta">
-                                Type: @file.FileType.ToUpper() |
-                                Uploaded: @file.UpdateAt.ToString("MMM dd, yyyy")
-                            </div>
-                        </div>
-                        <div class="item-actions">
-                            <a href="@file.FilePath" target="_blank" class="btn-icon btn-view">View</a>
-                        </div>
-                    </li>
-                }
-            </ul>
-        }
-        else
-        {
-            <div class="empty-message">No materials uploaded yet</div>
         }
     </div>
 
@@ -341,7 +346,6 @@
                                     : 0;
                                 }
                                 Questions: @questionCount |
-                                Deadline: @(assessment.DeadLine) min |
                                 Total Marks: @(assessment.TotalMarks ?? 0)
                             </div>
                         </div>
