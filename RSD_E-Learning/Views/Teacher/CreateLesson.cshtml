@@ -6,6 +6,46 @@
 
 <link rel="stylesheet" href="~/css/Teacher.css" />
 
+<style>
+    .file-upload-item {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+        .file-upload-item input[type="file"] {
+            flex: 1;
+        }
+
+    .remove-file-btn {
+        background: #dc3545;
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+        .remove-file-btn:hover {
+            background: #c82333;
+        }
+
+    .add-file-btn {
+        background: #28a745;
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-top: 10px;
+    }
+
+        .add-file-btn:hover {
+            background: #218838;
+        }
+</style>
+
 <div class="container" style="max-width: 800px; margin: 50px auto;">
     <div class="header">
         <h1>Create New Lesson</h1>
@@ -46,8 +86,7 @@
             <select id="lessonType" name="LessonType" onchange="toggleLessonType()" required>
                 <option value="">-- Select Lesson Type --</option>
                 <option value="online">Online Meeting (Google Meet/Zoom)</option>
-                <option value="pdf">PDF Document</option>
-                <option value="video">Video File</option>
+                <option value="materials">Upload Materials (PDF/Video)</option>
             </select>
         </div>
 
@@ -62,15 +101,19 @@
         <!-- File Upload Section -->
         <div id="fileSection" style="display: none;">
             <div class="materials-section">
-                <h3 id="fileTypeLabel">Upload Material</h3>
+                <h3>Upload Materials</h3>
 
-                <div class="form-group">
-                    <label>File</label>
-                    <input type="file" name="MaterialFile" id="materialFile" accept=".pdf,.mp4,.avi,.mov,.mkv" />
-                    <small style="color:#666; display: block; margin-top: 5px;" id="fileHint">
-                        Supported formats: PDF (Max: 50MB) or Video MP4, AVI, MOV (Max: 500MB)
-                    </small>
+                <div id="fileInputsContainer">
+                    <div class="file-upload-item">
+                        <input type="file" name="MaterialFiles" class="materialFile" accept=".pdf,.mp4,.avi,.mov,.mkv" />
+                    </div>
                 </div>
+
+                <button type="button" class="add-file-btn" onclick="addFileInput()">+ Add More Files</button>
+
+                <small style="color:#666; display: block; margin-top: 10px;">
+                    Supported formats: PDF (Max: 50MB) or Video MP4, AVI, MOV, MKV (Max: 500MB per file)
+                </small>
             </div>
         </div>
 
@@ -82,14 +125,13 @@
 </div>
 
 <script>
+    let fileInputCount = 1;
+
     function toggleLessonType() {
         const lessonType = document.getElementById('lessonType').value;
         const meetingSection = document.getElementById('meetingSection');
         const fileSection = document.getElementById('fileSection');
-        const fileInput = document.getElementById('materialFile');
         const meetLinkInput = document.querySelector('input[name="MeetLink"]');
-        const fileTypeLabel = document.getElementById('fileTypeLabel');
-        const fileHint = document.getElementById('fileHint');
 
         // Hide all sections first
         meetingSection.style.display = 'none';
@@ -97,27 +139,48 @@
 
         // Remove required attributes
         if (meetLinkInput) meetLinkInput.removeAttribute('required');
-        if (fileInput) fileInput.removeAttribute('required');
+        document.querySelectorAll('.materialFile').forEach(input => {
+            input.removeAttribute('required');
+        });
+
+        // Reset file inputs to just one
+        const fileInputsContainer = document.getElementById('fileInputsContainer');
+        fileInputsContainer.innerHTML = `
+            <div class="file-upload-item">
+                <input type="file" name="MaterialFiles" class="materialFile" accept=".pdf,.mp4,.avi,.mov,.mkv" />
+            </div>
+        `;
+        fileInputCount = 1;
 
         // Show relevant section based on type
         if (lessonType === 'online') {
             meetingSection.style.display = 'block';
             if (meetLinkInput) meetLinkInput.setAttribute('required', 'required');
         }
-        else if (lessonType === 'pdf') {
+        else if (lessonType === 'materials') {
             fileSection.style.display = 'block';
-            fileTypeLabel.textContent = 'Upload PDF Document';
-            fileInput.setAttribute('accept', '.pdf');
-            fileInput.setAttribute('required', 'required');
-            fileHint.textContent = 'Upload PDF file (Max: 50MB)';
         }
-        else if (lessonType === 'video') {
-            fileSection.style.display = 'block';
-            fileTypeLabel.textContent = 'Upload Video';
-            fileInput.setAttribute('accept', '.mp4,.avi,.mov,.mkv');
-            fileInput.setAttribute('required', 'required');
-            fileHint.textContent = 'Upload video file: MP4, AVI, MOV, MKV (Max: 500MB)';
-        }
+    }
+
+    function addFileInput() {
+        const fileInputsContainer = document.getElementById('fileInputsContainer');
+
+        fileInputCount++;
+
+        const newFileItem = document.createElement('div');
+        newFileItem.className = 'file-upload-item';
+        newFileItem.innerHTML = `
+            <input type="file" name="MaterialFiles" class="materialFile" accept=".pdf,.mp4,.avi,.mov,.mkv" />
+            <button type="button" class="remove-file-btn" onclick="removeFileInput(this)">Remove</button>
+        `;
+
+        fileInputsContainer.appendChild(newFileItem);
+    }
+
+    function removeFileInput(button) {
+        const fileItem = button.parentElement;
+        fileItem.remove();
+        fileInputCount--;
     }
 </script>
 

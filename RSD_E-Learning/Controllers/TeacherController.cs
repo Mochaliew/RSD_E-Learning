@@ -433,10 +433,15 @@ namespace RSD_E_Learning.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateLesson(CreateLessonVm model, string LessonDate, string LessonTime, string LessonType, IFormFile MaterialFile)
+        public async Task<IActionResult> CreateLesson(
+            CreateLessonVm model,
+            string LessonDate,
+            string LessonTime,
+            string LessonType,
+            List<IFormFile> MaterialFiles)
         {
-            // Remove MaterialFile from ModelState since it's not part of the view model
-            ModelState.Remove(nameof(MaterialFile));
+            // Remove MaterialFiles from ModelState since it's not part of the view model
+            ModelState.Remove(nameof(MaterialFiles));
 
             // Validate based on lesson type
             if (LessonType == "online")
@@ -447,12 +452,12 @@ namespace RSD_E_Learning.Controllers
                     ModelState.AddModelError(nameof(model.MeetLink), "Meeting link is required for online lessons.");
                 }
             }
-            else if (LessonType == "pdf" || LessonType == "video")
+            else if (LessonType == "materials")
             {
-                // For file-based lessons, MaterialFile is required
-                if (MaterialFile == null || MaterialFile.Length == 0)
+                // For materials lessons, at least one file is required
+                if (MaterialFiles == null || !MaterialFiles.Any(f => f != null && f.Length > 0))
                 {
-                    ModelState.AddModelError("MaterialFile", "A file is required for this lesson type.");
+                    ModelState.AddModelError("MaterialFiles", "At least one file is required for materials lesson.");
                 }
             }
             else if (string.IsNullOrEmpty(LessonType))
@@ -523,65 +528,99 @@ namespace RSD_E_Learning.Controllers
             _context.Lessons.Add(lesson);
             await _context.SaveChangesAsync();
 
-            // Handle file upload if provided (for PDF or Video)
-            if (MaterialFile != null && MaterialFile.Length > 0 && (LessonType == "pdf" || LessonType == "video"))
+            // Handle multiple file uploads if provided
+            if (MaterialFiles != null && MaterialFiles.Any() && LessonType == "materials")
             {
-                // Validate file size
-                long maxFileSize = LessonType == "pdf" ? 50 * 1024 * 1024 : 500 * 1024 * 1024; // 50MB for PDF, 500MB for video
-
-                if (MaterialFile.Length > maxFileSize)
-                {
-                    TempData["ErrorMessage"] = $"File size exceeds the maximum limit of {(maxFileSize / 1024 / 1024)}MB.";
-                    return RedirectToAction("CreateLesson", new { courseId = model.CourseId });
-                }
-
-                // Validate file extension
-                string[] allowedExtensions = LessonType == "pdf"
-                    ? new[] { ".pdf" }
-                    : new[] { ".mp4", ".avi", ".mov", ".mkv" };
-
-                string fileExtension = Path.GetExtension(MaterialFile.FileName).ToLowerInvariant();
-
-                if (!allowedExtensions.Contains(fileExtension))
-                {
-                    TempData["ErrorMessage"] = $"Invalid file type. Allowed types: {string.Join(", ", allowedExtensions)}";
-                    return RedirectToAction("CreateLesson", new { courseId = model.CourseId });
-                }
-
                 string uploadsFolder = Path.Combine(_environment.WebRootPath, "coursefiles");
                 Directory.CreateDirectory(uploadsFolder);
 
-                string uniqueFileName = Guid.NewGuid() + fileExtension;
-                string physicalPath = Path.Combine(uploadsFolder, uniqueFileName);
+                int successCount = 0;
+                int failCount = 0;
+                List<string> errorMessages = new List<string>();
 
-                try
+                foreach (var file in MaterialFiles)
                 {
-                    using (var stream = new FileStream(physicalPath, FileMode.Create))
+                    if (file == null || file.Length == 0)
+                        continue;
+
+                    try
                     {
-                        await MaterialFile.CopyToAsync(stream);
+                        // Get file extension to determine type
+                        string fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
+
+                        // Determine if it's PDF or Video
+                        bool isPdf = fileExtension == ".pdf";
+                        bool isVideo = new[] { ".mp4", ".avi", ".mov", ".mkv" }.Contains(fileExtension);
+
+                        if (!isPdf && !isVideo)
+                        {
+                            errorMessages.Add($"{file.FileName}: Unsupported file type");
+                            failCount++;
+                            continue;
+                        }
+
+                        // Validate file size based on type
+                        long maxFileSize = isPdf ? 50 * 1024 * 1024 : 500 * 1024 * 1024;
+
+                        if (file.Length > maxFileSize)
+                        {
+                            errorMessages.Add($"{file.FileName}: File size exceeds {maxFileSize / 1024 / 1024}MB limit");
+                            failCount++;
+                            continue;
+                        }
+
+                        // Generate unique filename
+                        string uniqueFileName = Guid.NewGuid() + fileExtension;
+                        string physicalPath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                        // Save file
+                        using (var stream = new FileStream(physicalPath, FileMode.Create))
+                        {
+                            await file.CopyToAsync(stream);
+                        }
+
+                        // Save to CourseFile table - linked to Lesson
+                        var courseFile = new DB.CourseFile
+                        {
+                            LessonId = lesson.LessonId,
+                            FilePath = "/coursefiles/" + uniqueFileName,
+                            FileType = isPdf ? "pdf" : "video",
+                            UpdateAt = DateTime.UtcNow
+                        };
+
+                        _context.CourseFiles.Add(courseFile);
+                        await _context.SaveChangesAsync();
+
+                        successCount++;
                     }
-
-                    // Save to CourseFile table - linked to Lesson
-                    var courseFile = new DB.CourseFile
+                    catch (Exception ex)
                     {
-                        LessonId = lesson.LessonId,
-                        FilePath = "/coursefiles/" + uniqueFileName,
-                        FileType = LessonType,
-                        UpdateAt = DateTime.UtcNow
-                    };
-
-                    _context.CourseFiles.Add(courseFile);
-                    await _context.SaveChangesAsync();
+                        errorMessages.Add($"{file.FileName}: Upload failed");
+                        failCount++;
+                        // Log the exception here if you have a logging system
+                        // _logger.LogError(ex, $"Error uploading file {file.FileName}");
+                    }
                 }
-                catch (Exception ex)
+
+                // Set appropriate success/error messages
+                if (successCount > 0 && failCount == 0)
                 {
-                    // Log the error
-                    TempData["ErrorMessage"] = "Error uploading file. Please try again.";
-                    return RedirectToAction("CreateLesson", new { courseId = model.CourseId });
+                    TempData["SuccessMessage"] = $"Lesson created successfully with {successCount} file(s).";
+                }
+                else if (successCount > 0 && failCount > 0)
+                {
+                    TempData["WarningMessage"] = $"Lesson created with {successCount} file(s). {failCount} file(s) failed: {string.Join(", ", errorMessages)}";
+                }
+                else if (failCount > 0)
+                {
+                    TempData["ErrorMessage"] = $"Lesson created but all files failed to upload: {string.Join(", ", errorMessages)}";
                 }
             }
+            else
+            {
+                TempData["SuccessMessage"] = "Lesson created successfully.";
+            }
 
-            TempData["SuccessMessage"] = "Lesson created successfully.";
             return RedirectToAction("CourseDetail", new { id = model.CourseId });
         }
 

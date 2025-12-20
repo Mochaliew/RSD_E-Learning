@@ -203,11 +203,11 @@
                                         }
                                         @if (!string.IsNullOrEmpty(lesson.MeetLink))
                                         {
-                                            <span> | 🔗 <a href="@lesson.MeetLink" target="_blank" style="color: #5b6ff5;">Join Meeting</a></span>
+                                            <span> |  <a href="@lesson.MeetLink" target="_blank" style="color: #5b6ff5;">Join Meeting</a></span>
                                         }
                                         @if (lesson.ScheduleDate.HasValue)
                                         {
-                                            <span> | 📅 @lesson.ScheduleDate.Value.ToString("MMM dd, yyyy hh:mm tt")</span>
+                                            <span> |  @lesson.ScheduleDate.Value.ToString("MMM dd, yyyy hh:mm tt")</span>
                                         }
                                     </div>
                                 </div>
@@ -221,7 +221,6 @@
                 else
                 {
                     <div class="empty-lessons">
-                        <div class="empty-lessons-icon">📝</div>
                         <p>No lessons created for this course yet.</p>
                         <a href="@Url.Action("CreateLesson", "Teacher", new { courseId = courseLesson.Course.CourseId })" class="btn-add-lesson">Create First Lesson</a>
                     </div>
