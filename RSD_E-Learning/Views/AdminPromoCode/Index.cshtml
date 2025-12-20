@@ -6,7 +6,6 @@
 
 <h2 class="mb-3">Promo Codes</h2>
 
-<!-- FILTER -->
 <form id="filterForm" class="row g-2 mb-3 align-items-end">
 
     <div class="col-md-4">
@@ -26,13 +25,17 @@
     </div>
 
     <div class="col-md-2 d-grid">
-        <button type="submit" class="btn btn-primary">
-            Apply
-        </button>
+        <button class="btn btn-primary">Apply</button>
     </div>
 </form>
 
-<!-- AJAX TABLE CONTAINER -->
+<!-- ✅ SAME STYLE AS + Add Category -->
+<div class="mb-3">
+    <a asp-action="Create" class="btn btn-success">
+        + Add Promo Code
+    </a>
+</div>
+
 <div id="promoTable">
     <div class="text-muted text-center py-4">
         Loading promo codes...
@@ -48,27 +51,18 @@
 @section Scripts {
     <script>
         function loadPromoCodes() {
-            const search = document.getElementById('search').value;
-            const status = document.getElementById('status').value;
-
-            fetch(`/AdminPromoCode/AjaxList?search=${encodeURIComponent(search)}&status=${status}`)
+            fetch(`/AdminPromoCode/AjaxList?search=${search.value}&status=${status.value}`)
                 .then(res => res.text())
-                .then(html => {
-                    document.getElementById('promoTable').innerHTML = html;
-                });
+                .then(html => promoTable.innerHTML = html);
         }
 
-        // FILTER
-        document.getElementById('filterForm').addEventListener('submit', function (e) {
+        filterForm.addEventListener('submit', e => {
             e.preventDefault();
             loadPromoCodes();
         });
 
-        // ✅ EVENT DELEGATION FOR TOGGLE BUTTON
-        document.getElementById('promoTable').addEventListener('click', function (e) {
+        promoTable.addEventListener('click', e => {
             if (!e.target.classList.contains('toggle-btn')) return;
-
-            const id = e.target.dataset.id;
 
             fetch('/AdminPromoCode/ToggleAjax', {
                 method: 'POST',
@@ -77,21 +71,10 @@
                     'RequestVerificationToken':
                         document.querySelector('input[name="__RequestVerificationToken"]').value
                 },
-                body: JSON.stringify({ id: parseInt(id) })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (!data.success) {
-                    alert(data.message ?? 'Action failed');
-                    return;
-                }
-
-                loadPromoCodes(); // refresh table
-            });
+                body: JSON.stringify({ id: parseInt(e.target.dataset.id) })
+            }).then(() => loadPromoCodes());
         });
 
-        // INITIAL LOAD
         loadPromoCodes();
     </script>
 }
-

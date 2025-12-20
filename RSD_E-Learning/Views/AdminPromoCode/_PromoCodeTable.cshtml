@@ -1,5 +1,4 @@
-﻿@model IEnumerable<RSD_E_Learning.Models.PromoCodeListVm>
-
+﻿@model IEnumerable<PromoCodeListVm>
 @{
     var today = DateTime.UtcNow.Date;
 }
@@ -17,7 +16,7 @@
         </tr>
     </thead>
     <tbody>
-        @if (Model == null || !Model.Any())
+        @if (!Model.Any())
         {
             <tr>
                 <td colspan="7" class="text-center text-muted">
@@ -34,7 +33,6 @@
                     <td>@promo.DiscountPercent %</td>
                     <td>@promo.StartDate.ToString("dd MMM yyyy")</td>
                     <td>@promo.ExpiryDate.ToString("dd MMM yyyy")</td>
-
                     <td>
                         @if (promo.ExpiryDate < today)
                         {
@@ -53,9 +51,7 @@
                             <span class="badge bg-secondary">Inactive</span>
                         }
                     </td>
-
                     <td>@promo.UsedCount</td>
-
                     <td>
                         @if (promo.ExpiryDate < today)
                         {
@@ -65,7 +61,7 @@
                         {
                             <button type="button"
                                     class="btn btn-sm toggle-btn
-                                                       @(promo.IsActive ? "btn-outline-danger" : "btn-outline-success")"
+                                                @(promo.IsActive ? "btn-outline-danger" : "btn-outline-success")"
                                     data-id="@promo.PromoCodeId">
                                 @(promo.IsActive ? "Deactivate" : "Activate")
                             </button>

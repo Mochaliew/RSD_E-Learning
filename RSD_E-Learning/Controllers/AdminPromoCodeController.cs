@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RSD_E_Learning.Models;
-using static RSD_E_Learning.Models.DB;
 
 [Authorize(Roles = "Admin")]
 public class AdminPromoCodeController : Controller
@@ -14,10 +13,48 @@ public class AdminPromoCodeController : Controller
         _db = db;
     }
 
-    // ===================== MAIN PAGE =====================
+    // ===================== INDEX =====================
     public IActionResult Index()
     {
         return View();
+    }
+
+    // ===================== CREATE [GET] =====================
+    [HttpGet]
+    public IActionResult Create()
+    {
+        return View();
+    }
+
+    // ===================== CREATE [POST] =====================
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Create(PromoCodeCreateVm model)
+    {
+        if (!ModelState.IsValid)
+            return View(model);
+
+        var promo = new DB.PromoCode
+        {
+            Code = model.Code,
+            DiscountPercent = model.DiscountPercent,
+            StartDate = model.StartDate,
+            ExpiryDate = model.ExpiryDate,
+            MaxUsage = model.MaxUsage,   // REQUIRED (1–1000)
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        _db.PromoCodes.Add(promo);
+
+        _db.AuditLogs.Add(new DB.AuditLog
+        {
+            Action = $"Created promo code: {promo.Code}",
+            Timestamp = DateTime.UtcNow
+        });
+
+        await _db.SaveChangesAsync();
+        return RedirectToAction(nameof(Index));
     }
 
     // ===================== AJAX LIST =====================
@@ -28,31 +65,21 @@ public class AdminPromoCodeController : Controller
         var query = _db.PromoCodes.AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(search))
-        {
             query = query.Where(p => p.Code.Contains(search));
-        }
 
         switch (status)
         {
             case "Active":
-                query = query.Where(p =>
-                    p.IsActive &&
-                    p.StartDate <= today &&
-                    p.ExpiryDate >= today);
+                query = query.Where(p => p.IsActive && p.StartDate <= today && p.ExpiryDate >= today);
                 break;
-
             case "Inactive":
-                query = query.Where(p =>
-                    !p.IsActive &&
-                    p.ExpiryDate >= today);
+                query = query.Where(p => !p.IsActive && p.ExpiryDate >= today);
                 break;
-
-            case "Expired":
-                query = query.Where(p => p.ExpiryDate < today);
-                break;
-
             case "Upcoming":
                 query = query.Where(p => p.StartDate > today);
+                break;
+            case "Expired":
+                query = query.Where(p => p.ExpiryDate < today);
                 break;
         }
 
@@ -73,7 +100,7 @@ public class AdminPromoCodeController : Controller
         return PartialView("_PromoCodeTable", list);
     }
 
-    // ===================== AJAX TOGGLE =====================
+    // ===================== TOGGLE =====================
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ToggleAjax([FromBody] ToggleVm vm)
@@ -82,17 +109,8 @@ public class AdminPromoCodeController : Controller
         if (promo == null)
             return Json(new { success = false });
 
-        var today = DateTime.UtcNow.Date;
-
-        // Do not allow expired promo to toggle
-        if (promo.ExpiryDate < today)
-        {
-            return Json(new
-            {
-                success = false,
-                message = "Expired promo codes cannot be activated."
-            });
-        }
+        if (promo.ExpiryDate < DateTime.UtcNow.Date)
+            return Json(new { success = false, message = "Expired promo codes cannot be activated." });
 
         promo.IsActive = !promo.IsActive;
 
@@ -105,12 +123,6 @@ public class AdminPromoCodeController : Controller
         });
 
         await _db.SaveChangesAsync();
-
-        return Json(new
-        {
-            success = true,
-            isActive = promo.IsActive
-        });
+        return Json(new { success = true });
     }
-
 }
