@@ -1,97 +1,100 @@
 ﻿@{
-    ViewData["Title"] = "Home";
+    ViewData["Title"] = "Welcome";
 }
 
-<div class="container mt-5">
+<!-- ================= HERO SECTION ================= -->
+<section class="py-5 mb-5">
+    <div class="container">
+        <div class="row align-items-center">
 
-    <!-- HERO -->
-    <div class="text-center mb-5">
-        <h1 class="display-4 fw-bold text-primary">
-            RSD E-Learning Platform
-        </h1>
-        <p class="lead text-muted">
-            A secure online learning management system for students, teachers, and administrators
+            <div class="col-md-6">
+                <h1 class="display-5 fw-bold mb-3">
+                    Learn Skills That Matter
+                </h1>
+
+                <p class="lead text-muted mb-4">
+                    RSD E-Learning is a modern online learning platform designed to help students
+                    gain industry-relevant skills through structured, expert-led courses.
+                </p>
+
+                <a asp-controller="Account"
+                   asp-action="Register"
+                   class="btn btn-primary btn-lg">
+                    Get Started
+                </a>
+            </div>
+
+            <div class="col-md-6 text-center">
+                <img src="https://cdn-icons-png.flaticon.com/512/3135/3135755.png"
+                     alt="E-Learning"
+                     class="img-fluid"
+                     style="max-height:320px;" />
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- ================= FEATURES ================= -->
+<section class="container mb-5">
+    <div class="text-center mb-4">
+        <h2 class="fw-bold">Why Choose RSD E-Learning?</h2>
+        <p class="text-muted">
+            Designed for effective and secure digital learning
         </p>
     </div>
 
-    <!-- FEATURES -->
-    <div class="row text-center mb-5">
-        <div class="col-md-4 mb-3">
-            <div class="card shadow-sm h-100">
-                <div class="card-body">
-                    <h5 class="card-title">📚 Online Learning</h5>
-                    <p class="card-text">
-                        Access structured courses and digital learning materials anytime.
-                    </p>
-                </div>
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="text-center">
+                <div class="fs-1 mb-3">🎓</div>
+                <h5 class="fw-semibold">Certified Courses</h5>
+                <p class="text-muted">
+                    Receive certificates upon successful course completion.
+                </p>
             </div>
         </div>
 
-        <div class="col-md-4 mb-3">
-            <div class="card shadow-sm h-100">
-                <div class="card-body">
-                    <h5 class="card-title">🎓 Certification</h5>
-                    <p class="card-text">
-                        Earn verified digital certificates after completing courses.
-                    </p>
-                </div>
+        <div class="col-md-4">
+            <div class="text-center">
+                <div class="fs-1 mb-3">👨‍🏫</div>
+                <h5 class="fw-semibold">Expert Instructors</h5>
+                <p class="text-muted">
+                    Learn from qualified educators with industry experience.
+                </p>
             </div>
         </div>
 
-        <div class="col-md-4 mb-3">
-            <div class="card shadow-sm h-100">
-                <div class="card-body">
-                    <h5 class="card-title">🔐 Secure System</h5>
-                    <p class="card-text">
-                        Role-based access, session timeout, and account lockout protection.
-                    </p>
-                </div>
+        <div class="col-md-4">
+            <div class="text-center">
+                <div class="fs-1 mb-3">📈</div>
+                <h5 class="fw-semibold">Progress Tracking</h5>
+                <p class="text-muted">
+                    Monitor course progress and performance easily.
+                </p>
             </div>
         </div>
     </div>
+</section>
 
-    <!-- ROLE ACCESS -->
-    <div class="row text-center mb-5">
+<!-- ================= LEARNING AREAS ================= -->
+<section class="container mb-5">
+    <div class="text-center mb-4">
+        <h2 class="fw-bold">Popular Learning Areas</h2>
+        <p class="text-muted">
+            Explore a wide range of disciplines
+        </p>
+    </div>
+
+    <div class="row text-center">
         <div class="col-md-4 mb-3">
-            <div class="card border-primary h-100">
-                <div class="card-body">
-                    <h5 class="card-title">Student</h5>
-                    <p>Enroll in courses and track your learning progress.</p>
-                    <a asp-controller="Account"
-                       asp-action="Login"
-                       class="btn btn-primary">
-                        Student Login
-                    </a>
-                </div>
-            </div>
+            💻 <strong>Software Development</strong>
         </div>
-
         <div class="col-md-4 mb-3">
-            <div class="card border-success h-100">
-                <div class="card-body">
-                    <h5 class="card-title">Teacher</h5>
-                    <p>Create courses, manage lessons, and assess students.</p>
-                    <a asp-controller="Teacher"
-                       asp-action="TeacherLogin"
-                       class="btn btn-success">
-                        Teacher Login
-                    </a>
-                </div>
-            </div>
+            🌐 <strong>Networking & Security</strong>
         </div>
-
         <div class="col-md-4 mb-3">
-            <div class="card border-dark h-100">
-                <div class="card-body">
-                    <h5 class="card-title">Administrator</h5>
-                    <p>Manage users, courses, and system configurations.</p>
-                    <a asp-controller="AdminLogin"
-                       asp-action="Login"
-                       class="btn btn-dark">
-                        Admin Login
-                    </a>
-                </div>
-            </div>
+            🤖 <strong>Data & Artificial Intelligence</strong>
         </div>
     </div>
-</div>
+</section>
