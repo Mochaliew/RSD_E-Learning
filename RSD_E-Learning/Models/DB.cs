@@ -203,8 +203,8 @@ public class DB : DbContext
         public string PaymentMethod { get; set; } = "Manual";
         public string Status { get; set; } = "Paid"; // Paid / Pending / Failed
 
-        public Student Student { get; set; }
-        public Course Course { get; set; }
+        public Student? Student { get; set; } 
+        public Course? Course { get; set; }
     }
 
     // ----------------------------------- PROMOCODE ------------------------------------ //

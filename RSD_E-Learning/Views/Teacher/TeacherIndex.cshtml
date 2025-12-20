@@ -1,86 +1,264 @@
 ﻿@using RSD_E_Learning.Models
-@model IEnumerable<RSD_E_Learning.Models.DB.Course>
+@model RSD_E_Learning.Models.TeacherIndexVm
 @{
-    ViewData["Title"] = "Teacher Zone";
-
-    var courses = Model?.ToList() ?? new List<RSD_E_Learning.Models.DB.Course>();
-
-    var approvedCourses = courses.Where(c => c.IsApproved && !c.IsRejected).ToList();
+    ViewData["Title"] = "Teacher Dashboard";
+    var courses = Model?.Courses ?? new List<RSD_E_Learning.Models.DB.Course>();
+    var approvedCourses = courses
+        .Where(c => c.IsApproved && !c.IsRejected)
+        .ToList();
 }
-
 <!DOCTYPE html>
 <html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/css/Teacher.css" />
+    <style>
+        body {
+            background: #f6f7f9;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            color: #222;
+        }
 
-    <head>
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 32px 20px;
+        }
 
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>@ViewData["Title"]</title>
-        <link rel="stylesheet" href="~/css/Teacher.css" />
+        /* Header */
+        .dashboard-header {
+            margin-bottom: 32px;
+        }
 
-    </head>
+            .dashboard-header h1 {
+                font-size: 2rem;
+                margin: 0 0 6px 0;
+            }
 
-    <body>
+            .dashboard-header p {
+                margin: 0;
+                color: #555;
+            }
 
-        <div>
-            <!-- Header -->
-            <div class="zone-header">
-                <h1>Teacher Zone</h1>
-                <p>Welcome back! <strong>@User.Identity.Name</strong></p>
-            </div>
+        /* Quick Actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 16px;
+            margin-bottom: 40px;
+        }
 
-            <!-- Main Action Buttons -->
-            <div class="action-buttons">
-                <a class="btn btn-primary" asp-controller="Teacher" asp-action="ViewCourse">
-                    <span class="btn-label">View Courses' Detail</span>
-                </a>
-                <a class="btn btn-primary" asp-controller="Teacher" asp-action="ViewLesson">
-                    <span class="btn-label">View Lesson</span>
-                </a>
-            </div>
+        .action-card {
+            background: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 24px;
+            text-decoration: none;
+            color: inherit;
+        }
 
-            <div class="dashboard-preview">
-                <div class="preview-header">
-                    <h2>  Quick DashBoard  </h2>
-                        <a asp-controller="Teacher" asp-action="TeacherDashboard" class="expand-btn">View Full Dashboard</a> 
+        .action-card-icon {
+            font-size: 2rem;
+            margin-bottom: 12px;
+        }
 
+        .action-card-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .action-card-description {
+            font-size: 0.95rem;
+            color: #555;
+        }
+
+        /* Stats */
+        .stats-section {
+            margin-bottom: 40px;
+        }
+
+        .section-title {
+            font-size: 1.4rem;
+            margin-bottom: 16px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+        }
+
+        .stat-card {
+            background: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 20px;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: #666;
+            text-transform: uppercase;
+        }
+
+        /* Activity */
+        .activity-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+            gap: 20px;
+        }
+
+        .activity-card {
+            background: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 20px;
+        }
+
+            .activity-card h3 {
+                font-size: 1.1rem;
+                margin-bottom: 12px;
+            }
+
+        .activity-item {
+            padding: 12px;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+
+        .activity-item-title {
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .activity-item-meta {
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .empty-text {
+            color: #888;
+            font-style: italic;
+        }
+
+
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Header -->
+        <div class="dashboard-header">
+            <h1>Teacher Dashboard</h1>
+            <p>Welcome back, <strong>@User.Identity.Name</strong>! 👋</p>
+        </div>
+
+        <!-- Quick Action Cards -->
+        <div class="quick-actions">
+            <a class="action-card" asp-controller="Teacher" asp-action="ViewCourse">
+                <span class="action-card-icon">📚</span>
+                <div class="action-card-title">My Courses</div>
+                <div class="action-card-description">View and manage all your courses</div>
+            </a>
+
+            <a class="action-card" asp-controller="Teacher" asp-action="ViewLesson">
+                <span class="action-card-icon">📖</span>
+                <div class="action-card-title">My Lessons</div>
+                <div class="action-card-description">Organize lessons across your courses</div>
+            </a>
+        </div>
+
+        <!-- Statistics Section -->
+        <div class="stats-section">
+            <h2 class="section-title">Overview Statistics</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">@Model.Courses.Count</div>
+                    <div class="stat-label">Active Courses</div>
                 </div>
 
-                <div class="preview-stats">
-                    <div class="preview-stat-card">
-                        <div class="stat-number"></div>
-                    <div class="stat-title">(@approvedCourses.Count)</div>
-                    </div>
-                    <div class="preview-stat-card">
-                        <div class="stat-number"></div>
-                        <div class="stat-title">show number of students</div>
-                    </div>
-                    <div class="preview-stat-card">
-                        <div class="stat-number"></div>
-                        <div class="stat-title">show number of assessment</div>
-                    </div>
-                    <div class="preview-stat-card">
-                        <div class="stat-number"></div>
-                        <div class="stat-title">show number of lesson</div>
-                    </div>
+                <div class="stat-card">
+                    <div class="stat-number">@Model.TotalStudents</div>
+                    <div class="stat-label">Total Students</div>
                 </div>
 
-                <div class="preview-recent">
-                    <div class="recent-section">
-                        <h3>Upcoming lessons</h3>
-                            <p class="empty-text">No lesson yet</p>
-                    </div>
-
-                    <div class="recent-section">
-                        <h3>Recent Assessments</h3>
-                            <p class="empty-text">No assessments yet</p>
-                    </div>
+                <div class="stat-card">
+                    <div class="stat-number">@Model.TotalLessons</div>
+                    <div class="stat-label">Total Lessons</div>
                 </div>
 
+                <div class="stat-card">
+                    <div class="stat-number">@Model.TotalAssessments</div>
+                    <div class="stat-label">Assessments</div>
+                </div>
             </div>
         </div>
 
-        <script src="~/js/teacher.js"></script>
-    </body>
+        <!-- Recent Activity Section -->
+        <div class="stats-section">
+            <h2 class="section-title">Recent Activity</h2>
+            <div class="activity-section">
+                <div class="activity-card">
+                    <h3>📅 Upcoming Lessons</h3>
 
+                    @if (Model.UpcomingLessons.Any())
+                    {
+                        foreach (var lesson in Model.UpcomingLessons)
+                        {
+                            <div class="activity-item">
+                                <div class="activity-item-title">
+                                    @lesson.Title
+                                </div>
+                                <div class="activity-item-meta">
+                                    @lesson.Course.Title •
+                                    @lesson.ScheduleDate?.ToString("dd MMM yyyy, hh:mm tt")
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p class="empty-text">No upcoming lessons scheduled</p>
+                    }
+                </div>
+
+                <div class="activity-card">
+                    <h3>📝 Recent Assessments</h3>
+
+                    @if (Model.RecentAssessments.Any())
+                    {
+                        foreach (var assessment in Model.RecentAssessments)
+                        {
+                            <div class="activity-item">
+                                <div class="activity-item-title">
+                                    @assessment.Title
+                                </div>
+                                <div class="activity-item-meta">
+                                    @assessment.Course.Title
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p class="empty-text">No recent assessments</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="~/js/teacher.js"></script>
+</body>
 </html>
