@@ -435,6 +435,31 @@ namespace RSD_E_Learning.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateLesson(CreateLessonVm model, string LessonDate, string LessonTime, string LessonType, IFormFile MaterialFile)
         {
+            // Remove MaterialFile from ModelState since it's not part of the view model
+            ModelState.Remove(nameof(MaterialFile));
+
+            // Validate based on lesson type
+            if (LessonType == "online")
+            {
+                // For online meetings, MeetLink is required
+                if (string.IsNullOrWhiteSpace(model.MeetLink))
+                {
+                    ModelState.AddModelError(nameof(model.MeetLink), "Meeting link is required for online lessons.");
+                }
+            }
+            else if (LessonType == "pdf" || LessonType == "video")
+            {
+                // For file-based lessons, MaterialFile is required
+                if (MaterialFile == null || MaterialFile.Length == 0)
+                {
+                    ModelState.AddModelError("MaterialFile", "A file is required for this lesson type.");
+                }
+            }
+            else if (string.IsNullOrEmpty(LessonType))
+            {
+                ModelState.AddModelError("LessonType", "Please select a lesson type.");
+            }
+
             if (!ModelState.IsValid)
             {
                 var course = await _context.Courses.FindAsync(model.CourseId);
@@ -467,9 +492,22 @@ namespace RSD_E_Learning.Controllers
             DateTime? scheduledDateTime = null;
             if (!string.IsNullOrEmpty(LessonDate) && !string.IsNullOrEmpty(LessonTime))
             {
-                var datePart = DateTime.Parse(LessonDate);
-                var timePart = TimeSpan.Parse(LessonTime);
-                scheduledDateTime = datePart.Add(timePart);
+                try
+                {
+                    var datePart = DateTime.Parse(LessonDate);
+                    var timePart = TimeSpan.Parse(LessonTime);
+                    scheduledDateTime = datePart.Add(timePart);
+                }
+                catch
+                {
+                    TempData["ErrorMessage"] = "Invalid date or time format.";
+                    var course = await _context.Courses.FindAsync(model.CourseId);
+                    if (course != null)
+                    {
+                        ViewBag.CourseName = course.Title;
+                    }
+                    return View(model);
+                }
             }
 
             // Create lesson
@@ -477,7 +515,7 @@ namespace RSD_E_Learning.Controllers
             {
                 CourseId = model.CourseId,
                 Title = model.Title,
-                MeetLink = model.MeetLink ?? "",
+                MeetLink = LessonType == "online" ? (model.MeetLink ?? "") : "",
                 Description = model.Description ?? "",
                 ScheduleDate = scheduledDateTime
             };
@@ -485,31 +523,62 @@ namespace RSD_E_Learning.Controllers
             _context.Lessons.Add(lesson);
             await _context.SaveChangesAsync();
 
-            // Handle file upload if provided
-            if (MaterialFile != null && MaterialFile.Length > 0)
+            // Handle file upload if provided (for PDF or Video)
+            if (MaterialFile != null && MaterialFile.Length > 0 && (LessonType == "pdf" || LessonType == "video"))
             {
+                // Validate file size
+                long maxFileSize = LessonType == "pdf" ? 50 * 1024 * 1024 : 500 * 1024 * 1024; // 50MB for PDF, 500MB for video
+
+                if (MaterialFile.Length > maxFileSize)
+                {
+                    TempData["ErrorMessage"] = $"File size exceeds the maximum limit of {(maxFileSize / 1024 / 1024)}MB.";
+                    return RedirectToAction("CreateLesson", new { courseId = model.CourseId });
+                }
+
+                // Validate file extension
+                string[] allowedExtensions = LessonType == "pdf"
+                    ? new[] { ".pdf" }
+                    : new[] { ".mp4", ".avi", ".mov", ".mkv" };
+
+                string fileExtension = Path.GetExtension(MaterialFile.FileName).ToLowerInvariant();
+
+                if (!allowedExtensions.Contains(fileExtension))
+                {
+                    TempData["ErrorMessage"] = $"Invalid file type. Allowed types: {string.Join(", ", allowedExtensions)}";
+                    return RedirectToAction("CreateLesson", new { courseId = model.CourseId });
+                }
+
                 string uploadsFolder = Path.Combine(_environment.WebRootPath, "coursefiles");
                 Directory.CreateDirectory(uploadsFolder);
 
-                string uniqueFileName = Guid.NewGuid() + Path.GetExtension(MaterialFile.FileName);
+                string uniqueFileName = Guid.NewGuid() + fileExtension;
                 string physicalPath = Path.Combine(uploadsFolder, uniqueFileName);
 
-                using (var stream = new FileStream(physicalPath, FileMode.Create))
+                try
                 {
-                    await MaterialFile.CopyToAsync(stream);
+                    using (var stream = new FileStream(physicalPath, FileMode.Create))
+                    {
+                        await MaterialFile.CopyToAsync(stream);
+                    }
+
+                    // Save to CourseFile table - linked to Lesson
+                    var courseFile = new DB.CourseFile
+                    {
+                        LessonId = lesson.LessonId,
+                        FilePath = "/coursefiles/" + uniqueFileName,
+                        FileType = LessonType,
+                        UpdateAt = DateTime.UtcNow
+                    };
+
+                    _context.CourseFiles.Add(courseFile);
+                    await _context.SaveChangesAsync();
                 }
-
-                // Save to CourseFile table - now linked to Lesson
-                var courseFile = new DB.CourseFile
+                catch (Exception ex)
                 {
-                    LessonId = lesson.LessonId, // Changed from CourseId
-                    FilePath = "/coursefiles/" + uniqueFileName,
-                    FileType = LessonType ?? "file",
-                    UpdateAt = DateTime.UtcNow
-                };
-
-                _context.CourseFiles.Add(courseFile);
-                await _context.SaveChangesAsync();
+                    // Log the error
+                    TempData["ErrorMessage"] = "Error uploading file. Please try again.";
+                    return RedirectToAction("CreateLesson", new { courseId = model.CourseId });
+                }
             }
 
             TempData["SuccessMessage"] = "Lesson created successfully.";
