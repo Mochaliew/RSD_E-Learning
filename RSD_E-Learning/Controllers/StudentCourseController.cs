@@ -20,6 +20,10 @@ namespace RSD_E_Learning.Controllers
         // ================== VIEW PUBLISHED COURSES ==================
         public async Task<IActionResult> Index()
         {
+            ViewBag.Categories = await _db.Categories
+                .Where(c => !c.IsDeleted)
+                .ToListAsync();
+
             var courses = await _db.Courses
                 .Include(c => c.Category)
                 .Include(c => c.Teacher)
@@ -29,6 +33,7 @@ namespace RSD_E_Learning.Controllers
 
             return View(courses);
         }
+
 
         // ================== COURSE DETAILS ==================
         public async Task<IActionResult> Details(int id)
@@ -264,7 +269,6 @@ namespace RSD_E_Learning.Controllers
             if (student == null)
                 return Unauthorized();
 
-            // 🔐 Ensure student is enrolled
             var isEnrolled = await _db.Enrollments.AnyAsync(e =>
                 e.StudentId == student.StudentId &&
                 e.CourseId == courseId);
@@ -272,12 +276,12 @@ namespace RSD_E_Learning.Controllers
             if (!isEnrolled)
                 return Forbid();
 
-            // 📦 Load course + materials
             var course = await _db.Courses
                 .Include(c => c.Category)
                 .Include(c => c.Teacher)
                     .ThenInclude(t => t.User)
                 .Include(c => c.CourseFiles)
+                .Include(c => c.Assessments) // 🔥 KEEP THIS
                 .FirstOrDefaultAsync(c => c.CourseId == courseId);
 
             if (course == null)
@@ -286,9 +290,32 @@ namespace RSD_E_Learning.Controllers
             return View(course);
         }
 
+
+
+
         [Authorize(Roles = "Student")]
         public async Task<IActionResult> Payment(int courseId)
         {
+            var userEmail = User.Identity!.Name;
+
+            var student = await _db.Students
+                .Include(s => s.User)
+                .FirstOrDefaultAsync(s => s.User!.Email == userEmail);
+
+            if (student == null)
+                return Unauthorized();
+
+            //  SAFETY CHECK: Already enrolled → NO PAYMENT
+            var alreadyEnrolled = await _db.Enrollments.AnyAsync(e =>
+                e.StudentId == student.StudentId &&
+                e.CourseId == courseId);
+
+            if (alreadyEnrolled)
+            {
+                TempData["Message"] = "You are already enrolled in this course.";
+                return RedirectToAction("MyCourses");
+            }
+
             var course = await _db.Courses
                 .Include(c => c.Category)
                 .FirstOrDefaultAsync(c => c.CourseId == courseId);
@@ -298,6 +325,7 @@ namespace RSD_E_Learning.Controllers
 
             return View(course);
         }
+
 
 
         [HttpPost]
@@ -314,7 +342,6 @@ namespace RSD_E_Learning.Controllers
             if (student == null)
                 return Unauthorized();
 
-            // Prevent double enrollment
             var alreadyEnrolled = await _db.Enrollments.AnyAsync(e =>
                 e.StudentId == student.StudentId &&
                 e.CourseId == courseId);
@@ -322,17 +349,21 @@ namespace RSD_E_Learning.Controllers
             if (alreadyEnrolled)
                 return RedirectToAction("MyCourses");
 
-            // Create enrollment
+            var course = await _db.Courses
+                .FirstOrDefaultAsync(c => c.CourseId == courseId);
+
+            if (course == null)
+                return NotFound();
+
             _db.Enrollments.Add(new Enrollment
             {
                 StudentId = student.StudentId,
                 CourseId = courseId,
                 PaymentStatus = true,
                 PaymentMethod = "FakeGateway",
-                AmountPaid = 99
+                AmountPaid = course.Price
             });
 
-            // Create progress
             _db.StudentCourseProgresses.Add(new StudentCourseProgress
             {
                 StudentId = student.StudentId,
@@ -344,6 +375,23 @@ namespace RSD_E_Learning.Controllers
             await _db.SaveChangesAsync();
 
             return RedirectToAction("MyCourses");
+        }
+
+
+
+        [Authorize(Roles = "Student")]
+        public async Task<IActionResult> Profile()
+        {
+            var userEmail = User.Identity!.Name;
+
+            var student = await _db.Students
+                .Include(s => s.User)
+                .FirstOrDefaultAsync(s => s.User!.Email == userEmail);
+
+            if (student == null)
+                return Unauthorized();
+
+            return View(student);
         }
 
 

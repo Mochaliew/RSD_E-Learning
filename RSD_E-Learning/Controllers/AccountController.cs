@@ -162,6 +162,40 @@ namespace RSD_E_Learning.Controllers
             );
         }
 
+        [HttpGet]
+        public IActionResult ForgotPassword()
+        {
+            return View();
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ForgotPassword(string email, string newPassword)
+        {
+            if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(newPassword))
+            {
+                ModelState.AddModelError("", "All fields are required.");
+                return View();
+            }
+
+            var user = await _db.Users
+                .FirstOrDefaultAsync(u => u.Email == email && u.Role == DB.UserRole.Student);
+
+            if (user == null)
+            {
+                ModelState.AddModelError("", "Student account not found.");
+                return View();
+            }
+
+            user.PasswordHash = HashPassword(newPassword);
+            await _db.SaveChangesAsync();
+
+            TempData["Success"] = "Password reset successful. Please login.";
+            return RedirectToAction("Login");
+        }
+
+
         private bool VerifyPassword(string password, string hash)
         {
             return HashPassword(password) == hash;

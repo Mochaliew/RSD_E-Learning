@@ -1,5 +1,4 @@
 ﻿@model RSD_E_Learning.Models.DB.Course
-
 @{
     ViewData["Title"] = "Course Details";
 }
@@ -42,6 +41,40 @@ else
 
 <hr />
 
+<hr />
+
+<h4>Assessments</h4>
+
+@if (Model.Assessments == null || !Model.Assessments.Any())
+{
+    <p>No assessments available.</p>
+}
+else
+{
+    <ul class="list-group mb-3">
+        @foreach (var assessment in Model.Assessments)
+        {
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>@assessment.Title</strong><br />
+                    <small>
+                        Deadline:
+                        @assessment.DeadLine.ToString("dd/MM/yyyy")
+                    </small>
+                </div>
+
+                <a asp-controller="StudentAssessment"
+                   asp-action="Details"
+                   asp-route-id="@assessment.AssessmentId"
+                   class="btn btn-sm btn-outline-primary">
+                    View Assessment
+                </a>
+            </li>
+        }
+    </ul>
+}
+
+
 @if ((bool)ViewBag.IsEnrolled)
 {
     <a asp-controller="StudentCourse"
@@ -59,3 +92,5 @@ else
         Enroll Now
     </a>
 }
+
+

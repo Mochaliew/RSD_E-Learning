@@ -471,6 +471,9 @@ namespace RSD_E_Learning.Models
             public string Title { get; set; } = "";
             public int PassingMark { get; set; }
             public DateTime DeadLine { get; set; }
+
+           
+
             public List<CreateAssessmentQuestionVm> Questions { get; set; } = new();
         }
 

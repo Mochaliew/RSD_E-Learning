@@ -325,6 +325,8 @@ public class DB : DbContext
 
         public DateTime? ScheduleDate { get; set; }
 
+        public ICollection<CourseFile> CourseFiles { get; set; } = new List<CourseFile>();
+
         // Navigation Properties
         public Course? Course { get; set; }
         
@@ -368,10 +370,18 @@ public class DB : DbContext
 
         public DateTime DeadLine { get; set; }
 
-        // Navigation Properties
         public Course? Course { get; set; }
-        public ICollection<AssessmentSubmission> AssessmentSubmissions { get; set; } = new List<AssessmentSubmission>();
+
+        public int PassingMark { get; set; } 
+
+
+        public ICollection<AssessmentQuestion> Questions { get; set; }
+            = new List<AssessmentQuestion>();
+
+        public ICollection<AssessmentSubmission> AssessmentSubmissions { get; set; }
+            = new List<AssessmentSubmission>();
     }
+
 
     // ----------------------------------- ASSESSMENT SUBMISSION ------------------------------------ //
     public class AssessmentSubmission

@@ -7,7 +7,7 @@
 <p>
     <strong>Course:</strong> @Model.Title <br />
     <strong>Category:</strong> @Model.Category?.Name <br />
-    <strong>Price:</strong> RM 99.00
+    <strong>Price:</strong> RM @Model.Price.ToString("0.00")
 </p>
 
 <hr />

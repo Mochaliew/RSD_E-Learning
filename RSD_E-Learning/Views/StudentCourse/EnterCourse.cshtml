@@ -1,5 +1,8 @@
 ﻿@model RSD_E_Learning.Models.DB.Course
 
+@{
+    ViewData["Title"] = "Course Content";
+}
 
 <h2>@Model.Title</h2>
 
@@ -10,24 +13,26 @@
 
 <hr />
 
-<h4>Course Materials (@Model.CourseFiles.Count)</h4>
+<!-- ================== COURSE MATERIALS ================== -->
+<h4>Course Materials (@(Model.CourseFiles?.AsEnumerable().Count() ?? 0))</h4>
 
-@if (!Model.CourseFiles.Any())
+@if (Model.CourseFiles == null || !Model.CourseFiles.AsEnumerable().Any())
 {
-    <p>No materials available.</p>
+    <p>No materials available yet.</p>
 }
 else
 {
-    <ul class="list-group">
-        @foreach (var file in Model.CourseFiles.Where(f => f.IsActive))
+    <ul class="list-group mb-4">
+        @foreach (var file in Model.CourseFiles.AsEnumerable().Where(f => f.IsActive))
         {
             <li class="list-group-item d-flex justify-content-between align-items-center">
                 <div>
                     <strong>@file.FileName</strong><br />
-                    <small>@file.FileType</small>
+                    <small class="text-muted">@file.FileType</small>
                 </div>
 
-                <a asp-action="ViewMaterial"
+                <a asp-controller="StudentCourse"
+                   asp-action="ViewMaterial"
                    asp-route-id="@file.CourseFileId"
                    class="btn btn-sm btn-primary">
                     View
@@ -36,3 +41,37 @@ else
         }
     </ul>
 }
+
+<hr />
+
+<!-- ================== ASSESSMENTS ================== -->
+<h4>Assessments (@(Model.Assessments?.Count ?? 0))</h4>
+
+@if (Model.Assessments == null || !Model.Assessments.Any())
+{
+    <p>No assessments available.</p>
+}
+else
+{
+    <ul class="list-group">
+        @foreach (var assessment in Model.Assessments.OrderBy(a => a.DeadLine))
+        {
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>@assessment.Title</strong><br />
+                    <small class="text-muted">
+                        Deadline: @assessment.DeadLine.ToShortDateString()
+                    </small>
+                </div>
+
+                <a asp-controller="StudentAssessment"
+                   asp-action="Details"
+                   asp-route-id="@assessment.AssessmentId"
+                   class="btn btn-outline-primary btn-sm">
+                    View Assessment
+                </a>
+            </li>
+        }
+    </ul>
+}
+

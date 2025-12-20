@@ -1,4 +1,11 @@
 @model RSD_E_Learning.Models.LoginViewModel
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["Success"]
+    </div>
+}
+
 @{
     ViewData["Title"] = "Login";
 }
@@ -28,6 +35,16 @@
     </div>
 
     <button type="submit" class="btn btn-primary mt-3">Login</button>
+
+    <div class="mt-3 text-center">
+        <a asp-controller="Account"
+           asp-action="ForgotPassword"
+           class="text-decoration-none">
+            Forgot Password?
+        </a>
+    </div>
+
+
 </form>
 
 @section Scripts {

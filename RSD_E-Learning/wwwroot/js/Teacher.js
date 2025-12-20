@@ -258,13 +258,17 @@ async function publishAssessment() {
         alert("Please add at least one question.");
         return;
     }
+    const passingMark = parseInt(document.getElementById("passingMark").value);
+
 
     const payload = {
         CourseId: parseInt(courseId),
         Title: title,
+        PassingMark: passingMark,
         DeadLine: deadlineDate.toISOString(),
         Questions: questions
     };
+
 
     try {
         const response = await fetch("/api/teacher/create-assessment", {

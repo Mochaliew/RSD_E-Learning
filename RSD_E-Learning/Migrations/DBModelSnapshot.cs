@@ -55,6 +55,9 @@ namespace RSD_E_Learning.Migrations
                     b.Property<DateTime>("DeadLine")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("PassingMark")
+                        .HasColumnType("int");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -747,7 +750,7 @@ namespace RSD_E_Learning.Migrations
             modelBuilder.Entity("RSD_E_Learning.Models.DB+AssessmentQuestion", b =>
                 {
                     b.HasOne("RSD_E_Learning.Models.DB+Assessment", "Assessment")
-                        .WithMany()
+                        .WithMany("Questions")
                         .HasForeignKey("AssessmentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -823,7 +826,7 @@ namespace RSD_E_Learning.Migrations
                         .HasForeignKey("CourseId");
 
                     b.HasOne("RSD_E_Learning.Models.DB+Lesson", "Lesson")
-                        .WithMany()
+                        .WithMany("CourseFiles")
                         .HasForeignKey("LessonId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -947,6 +950,8 @@ namespace RSD_E_Learning.Migrations
             modelBuilder.Entity("RSD_E_Learning.Models.DB+Assessment", b =>
                 {
                     b.Navigation("AssessmentSubmissions");
+
+                    b.Navigation("Questions");
                 });
 
             modelBuilder.Entity("RSD_E_Learning.Models.DB+AssessmentAttempt", b =>
@@ -970,6 +975,11 @@ namespace RSD_E_Learning.Migrations
                     b.Navigation("Enrollments");
 
                     b.Navigation("Lessons");
+                });
+
+            modelBuilder.Entity("RSD_E_Learning.Models.DB+Lesson", b =>
+                {
+                    b.Navigation("CourseFiles");
                 });
 
             modelBuilder.Entity("RSD_E_Learning.Models.DB+Student", b =>
