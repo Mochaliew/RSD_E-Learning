@@ -67,6 +67,27 @@
         margin: 0;
     }
 
+    .lesson-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .lesson-item {
+        display: block;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+    }
+
+        .lesson-item:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+
     .file-item, .assessment-item {
         display: flex;
         justify-content: space-between;
@@ -79,6 +100,19 @@
 
     .file-info, .assessment-info {
         flex: 1;
+    }
+
+    .lesson-name {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 8px;
+        font-size: 1.1rem;
+    }
+
+    .lesson-meta {
+        font-size: 0.9rem;
+        color: #666;
+        line-height: 1.6;
     }
 
     .file-name, .assessment-name {
@@ -152,6 +186,60 @@
         text-decoration: none;
         display: inline-block;
     }
+
+    .lesson-files {
+        margin-top: 15px;
+        padding: 15px;
+        background: white;
+        border-radius: 6px;
+        border: 1px solid #e0e0e0;
+    }
+
+    .lesson-files-title {
+        font-size: 0.9rem;
+        color: #666;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+
+    .lesson-files-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .lesson-file-item {
+        padding: 8px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+        .lesson-file-item:last-child {
+            border-bottom: none;
+        }
+
+    .lesson-file-info {
+        font-size: 0.9rem;
+        color: #333;
+    }
+
+    .lesson-file-date {
+        color: #666;
+        font-size: 0.85rem;
+        margin-left: 10px;
+    }
+
+    .lesson-file-link {
+        color: #5b6ff5;
+        text-decoration: none;
+        font-size: 0.85rem;
+    }
+
+        .lesson-file-link:hover {
+            text-decoration: underline;
+        }
 </style>
 
 <div class="detail-container">
@@ -257,7 +345,7 @@
             <ul class="lesson-list">
                 @foreach (var lessonItem in Model.LessonsWithFiles)
                 {
-                    <li class="lesson-item" style="display: block;">
+                    <li class="lesson-item">
                         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
                             <div class="lesson-info" style="flex: 1;">
                                 <div class="lesson-name">📖 @lessonItem.Lesson.Title</div>
@@ -283,13 +371,13 @@
 
                         @if (lessonItem.Files.Any())
                         {
-                            <div style="margin-top: 10px; padding: 10px; background: white; border-radius: 6px;">
-                                <strong style="font-size: 0.9rem; color: #666;">📎 Attached Files:</strong>
-                                <ul style="list-style: none; padding: 0; margin: 5px 0 0 0;">
+                            <div class="lesson-files">
+                                <div class="lesson-files-title">📎 Attached Files</div>
+                                <ul class="lesson-files-list">
                                     @foreach (var file in lessonItem.Files)
                                     {
-                                        <li style="padding: 5px 0; display: flex; justify-content: space-between; align-items: center;">
-                                            <span style="font-size: 0.9rem; color: #333;">
+                                        <li class="lesson-file-item">
+                                            <span class="lesson-file-info">
                                                 @if (file.FileType == "pdf")
                                                 {
                                                     <span>📄</span>
@@ -302,12 +390,10 @@
                                                 {
                                                     <span>📎</span>
                                                 }
-                                                @file.FileType.ToUpper() -
-                                                <span style="color: #666; font-size: 0.85rem;">Uploaded @file.UpdateAt.ToString("MMM dd, yyyy")</span>
+                                                <strong>@file.FileType.ToUpper()</strong>
+                                                <span class="lesson-file-date">• Uploaded @file.UpdateAt.ToString("MMM dd, yyyy")</span>
                                             </span>
-                                            <div>
-                                                <a href="@file.FilePath" target="_blank" style="color: #5b6ff5; text-decoration: none; font-size: 0.85rem; margin-right: 10px;">View</a>
-                                            </div>
+                                            <a href="@file.FilePath" target="_blank" class="lesson-file-link">View</a>
                                         </li>
                                     }
                                 </ul>
