@@ -304,6 +304,7 @@ public class DB : DbContext
         public Lesson? Lesson { get; set; }
     }
 
+
     // ----------------------------------- LESSON ------------------------------------ //
     public class Lesson
     {

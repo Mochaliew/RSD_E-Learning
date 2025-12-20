@@ -553,7 +553,7 @@ namespace RSD_E_Learning.Controllers
                 Title = lesson.Title,
                 MeetLink = lesson.MeetLink,
                 Description = lesson.Description,
-                ScheduledDate = lesson.ScheduleDate,
+                ScheduleDate = lesson.ScheduleDate,
                 ExistingFiles = existingFiles
             };
 
