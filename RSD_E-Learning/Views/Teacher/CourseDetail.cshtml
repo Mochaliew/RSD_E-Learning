@@ -431,7 +431,7 @@
                                     ? ((Dictionary<int, int>)ViewBag.QuestionCounts)[assessment.AssessmentId]
                                     : 0;
                                 }
-                                Questions: @questionCount | Time: @(assessment.DeadLine) |
+                                Questions: @questionCount | Deadline: @assessment.DeadLine.ToLocalTime().ToString("MMM dd, yyyy hh:mm tt") |
                                 Total Marks: @(assessment.TotalMarks ?? 0)
                             </div>
                         </div>
