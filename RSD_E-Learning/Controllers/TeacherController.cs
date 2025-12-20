@@ -824,7 +824,7 @@ namespace RSD_E_Learning.Controllers
                 CourseId = model.CourseId,
                 Title = model.Title,
                 TotalMarks = model.Questions.Count,
-                DeadLine = model.DeadLine.ToUniversalTime()
+                DeadLine = model.DeadLine
             };
 
             _context.Assessments.Add(assessment);
