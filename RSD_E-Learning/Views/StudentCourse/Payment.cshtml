@@ -1,5 +1,9 @@
 ﻿@model RSD_E_Learning.Models.DB.Course
 
+@{
+    ViewData["Title"] = "Payment";
+}
+
 <h2>Course Payment</h2>
 
 <hr />
@@ -16,9 +20,12 @@
     @Html.AntiForgeryToken()
 
     <input type="hidden" name="courseId" value="@Model.CourseId" />
+    <input type="hidden" name="paymentToken" value="@ViewBag.PaymentToken" />
 
-    <button type="submit" class="btn btn-primary">
-        Pay Now (Fake Payment)
+
+
+    <button type="submit" class="btn btn-success">
+        Pay Now (Mock Payment)
     </button>
 
     <a asp-action="Details"

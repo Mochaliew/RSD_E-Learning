@@ -39,7 +39,17 @@
                         Enter Course
                     </a>
 
+                    @if (item.ProgressPercentage == 100)
+                    {
+                        <a asp-controller="StudentCourse"
+                           asp-action="Certificate"
+                           asp-route-courseId="@item.CourseId"
+                           class="btn btn-success ms-2">
+                            Get Certificate
+                        </a>
+                    }
                 </td>
+
             </tr>
         }
     </tbody>

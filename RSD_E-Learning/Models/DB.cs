@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using Microsoft.EntityFrameworkCore;
+using RSD_E_Learning.Models;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
-using RSD_E_Learning.Models;
+using static RSD_E_Learning.Models.DB;
 
 
 namespace RSD_E_Learning.Models;
@@ -37,6 +38,9 @@ public class DB : DbContext
 
     public DbSet<StudentCourseProgress> StudentCourseProgresses { get; set; }
     public DbSet<StudentMaterialProgress> StudentMaterialProgresses { get; set; }
+
+
+    public DbSet<PaymentTransaction> PaymentTransactions { get; set; }
 
 
     // ----------------------------------- ROLE ENUM ------------------------------------ //
@@ -517,12 +521,32 @@ public class DB : DbContext
     }
 
 
+  
+    public class PaymentTransaction
+    {
+        public int PaymentTransactionId { get; set; }
+
+        public int StudentId { get; set; }
+        public Student Student { get; set; } = null!;
+
+        public int CourseId { get; set; }
+        public Course Course { get; set; } = null!;
+
+        public decimal Amount { get; set; }
+        public string PaymentMethod { get; set; } = "FakeGateway";
+
+        public DateTime TransactionDate { get; set; } = DateTime.UtcNow;
+    }
 
 
 
 
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
+
+
+
+
+protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 

@@ -18,3 +18,37 @@
         Edit Profile
     </a>
 </div>
+
+
+<hr />
+<h4>Purchase History</h4>
+
+@if (ViewBag.Transactions != null && ((List<RSD_E_Learning.ViewModels.StudentTransactionVm>)ViewBag.Transactions).Any())
+{
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Course</th>
+                <th>Amount (RM)</th>
+                <th>Payment Method</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var t in (List<RSD_E_Learning.ViewModels.StudentTransactionVm>)ViewBag.Transactions)
+            {
+                <tr>
+                    <td>@t.CourseTitle</td>
+                    <td>@t.Amount.ToString("0.00")</td>
+                    <td>@t.PaymentMethod</td>
+                    <td>@t.TransactionDate.ToString("dd MMM yyyy HH:mm")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No transactions yet.</p>
+}
+

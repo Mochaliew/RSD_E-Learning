@@ -154,10 +154,32 @@ namespace RSD_E_Learning.Controllers
                     Category = e.Course.Category!.Name,
                     Instructor = e.Course.Teacher!.User!.FullName,
 
-                    ProgressPercentage = _db.StudentCourseProgresses
-                        .Where(p => p.StudentId == student.StudentId && p.CourseId == e.Course.CourseId)
-                        .Select(p => p.ProgressPercentage)
-                        .FirstOrDefault()
+                    ProgressPercentage =
+    (
+                        _db.StudentMaterialProgresses.Count(p =>
+                            p.StudentId == student.StudentId &&
+                            p.IsCompleted &&
+                            _db.CourseFiles.Any(f =>
+                                f.CourseFileId == p.CourseFileId &&
+                                _db.Lessons.Any(l =>
+                                    l.LessonId == f.LessonId &&
+                                    l.CourseId == e.Course.CourseId
+                                )
+                            )
+                        )
+                        * 100
+                    )
+                    /
+                    Math.Max(
+                        1,
+                        _db.CourseFiles.Count(f =>
+                            _db.Lessons.Any(l =>
+                                l.LessonId == f.LessonId &&
+                                l.CourseId == e.Course.CourseId
+                            )
+                        )
+                    )
+
                 })
                 .ToListAsync();
 
@@ -212,6 +234,7 @@ namespace RSD_E_Learning.Controllers
 
         private async Task UpdateCourseProgress(int studentId, int lessonId)
         {
+            // Get the lesson with its course
             var lesson = await _db.Lessons
                 .Include(l => l.Course)
                 .FirstOrDefaultAsync(l => l.LessonId == lessonId);
@@ -221,17 +244,22 @@ namespace RSD_E_Learning.Controllers
 
             int courseId = lesson.CourseId;
 
+            // Get ALL lesson IDs in this course
             var lessonIds = await _db.Lessons
                 .Where(l => l.CourseId == courseId)
                 .Select(l => l.LessonId)
                 .ToListAsync();
 
+            // Get TOTAL materials in this course
             var totalMaterials = await _db.CourseFiles
-                .CountAsync(f => lessonIds.Contains(f.LessonId) && f.IsActive);
+                .CountAsync(f =>
+                    lessonIds.Contains(f.LessonId) &&
+                    f.IsActive);
 
             if (totalMaterials == 0)
                 return;
 
+            // Get COMPLETED materials by student
             var completedMaterials = await _db.StudentMaterialProgresses
                 .CountAsync(p =>
                     p.StudentId == studentId &&
@@ -240,10 +268,12 @@ namespace RSD_E_Learning.Controllers
                         f.CourseFileId == p.CourseFileId &&
                         lessonIds.Contains(f.LessonId)));
 
-            var percentage = (int)Math.Round(
+            // Calculate percentage
+            int percentage = (int)Math.Round(
                 (double)completedMaterials / totalMaterials * 100
             );
 
+            // Update or create course progress
             var courseProgress = await _db.StudentCourseProgresses
                 .FirstOrDefaultAsync(p =>
                     p.StudentId == studentId &&
@@ -269,6 +299,7 @@ namespace RSD_E_Learning.Controllers
 
             await _db.SaveChangesAsync();
         }
+
 
 
 
@@ -340,59 +371,81 @@ namespace RSD_E_Learning.Controllers
             if (course == null)
                 return NotFound();
 
+            var paymentToken = Guid.NewGuid().ToString();  
+            ViewBag.PaymentToken = paymentToken;
+
             return View(course);
         }
 
 
 
         [HttpPost]
-[ValidateAntiForgeryToken]
-[Authorize(Roles = "Student")]
-public async Task<IActionResult> ConfirmPayment(int courseId)
-{
-    var userEmail = User.Identity!.Name;
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Student")]
+        public async Task<IActionResult> ConfirmPayment(int courseId, string paymentToken)
 
-    var student = await _db.Students
-        .Include(s => s.User)
-        .FirstOrDefaultAsync(s => s.User!.Email == userEmail);
+        {
 
-    if (student == null)
-        return Unauthorized();
+            if (string.IsNullOrEmpty(paymentToken))
+            {
+                return BadRequest("Payment verification failed.");
+            }
 
-    var alreadyEnrolled = await _db.Enrollments.AnyAsync(e =>
-        e.StudentId == student.StudentId &&
-        e.CourseId == courseId);
+            var userEmail = User.Identity!.Name;
 
-    if (alreadyEnrolled)
-        return RedirectToAction("MyCourses");
+            var student = await _db.Students
+                .Include(s => s.User)
+                .FirstOrDefaultAsync(s => s.User!.Email == userEmail);
 
-    var course = await _db.Courses
-        .FirstOrDefaultAsync(c => c.CourseId == courseId);
+            if (student == null)
+                return Unauthorized();
 
-    if (course == null)
-        return NotFound();
+            var alreadyEnrolled = await _db.Enrollments.AnyAsync(e =>
+                e.StudentId == student.StudentId &&
+                e.CourseId == courseId);
 
-    _db.Enrollments.Add(new Enrollment
-    {
-        StudentId = student.StudentId,
-        CourseId = courseId,
-        PaymentStatus = true,
-        PaymentMethod = "FakeGateway",
-        AmountPaid = course.Price
-    });
+            if (alreadyEnrolled)
+                return RedirectToAction("MyCourses");
 
-    _db.StudentCourseProgresses.Add(new StudentCourseProgress
-    {
-        StudentId = student.StudentId,
-        CourseId = courseId,
-        ProgressPercentage = 0,
-        UpdatedAt = DateTime.UtcNow
-    });
+            var course = await _db.Courses
+                .FirstOrDefaultAsync(c => c.CourseId == courseId);
 
-    await _db.SaveChangesAsync();
+            if (course == null)
+                return NotFound();
 
-    return RedirectToAction("MyCourses");
-}
+            _db.Enrollments.Add(new Enrollment
+            {
+                StudentId = student.StudentId,
+                CourseId = courseId,
+                PaymentStatus = true,
+                PaymentMethod = "FakeGateway",
+                AmountPaid = course.Price
+            });
+
+            _db.PaymentTransactions.Add(new PaymentTransaction
+            {
+                StudentId = student.StudentId,
+                CourseId = courseId,
+                Amount = course.Price,
+                PaymentMethod = "FakeGateway",
+                TransactionDate = DateTime.UtcNow
+            });
+
+            _db.StudentCourseProgresses.Add(new StudentCourseProgress
+            {
+                StudentId = student.StudentId,
+                CourseId = courseId,
+                ProgressPercentage = 0,
+                UpdatedAt = DateTime.UtcNow
+            });
+
+            
+
+
+            await _db.SaveChangesAsync();
+
+            return RedirectToAction("MyCourses");
+        }
 
 
 
@@ -409,8 +462,66 @@ public async Task<IActionResult> ConfirmPayment(int courseId)
             if (student == null)
                 return Unauthorized();
 
+            var transactions = await _db.PaymentTransactions
+                .Where(t => t.StudentId == student.StudentId)
+                .Join(
+                    _db.Courses,
+                    t => t.CourseId,
+                    c => c.CourseId,
+                    (t, c) => new StudentTransactionVm
+                    {
+                        CourseTitle = c.Title,
+                        Amount = t.Amount,
+                        PaymentMethod = t.PaymentMethod,
+                        TransactionDate = t.TransactionDate
+                    }
+                )
+                .OrderByDescending(t => t.TransactionDate)
+                .ToListAsync();
+
+
+            ViewBag.Transactions = transactions;
+
             return View(student);
         }
+
+        [Authorize(Roles = "Student")]
+        public async Task<IActionResult> Certificate(int courseId)
+        {
+            var userEmail = User.Identity!.Name;
+
+            var student = await _db.Students
+                .Include(s => s.User)
+                .FirstOrDefaultAsync(s => s.User!.Email == userEmail);
+
+            if (student == null)
+                return Unauthorized();
+
+            var progress = await _db.StudentCourseProgresses
+                .FirstOrDefaultAsync(p =>
+                    p.StudentId == student.StudentId &&
+                    p.CourseId == courseId);
+
+            if (progress == null || progress.ProgressPercentage < 100)
+                return Forbid(); // ❗ IMPORTANT SECURITY
+
+            var course = await _db.Courses
+                .Include(c => c.Teacher)
+                    .ThenInclude(t => t.User)
+                .FirstOrDefaultAsync(c => c.CourseId == courseId);
+
+            if (course == null)
+                return NotFound();
+
+            ViewBag.StudentName = student.User!.FullName;
+            ViewBag.CourseTitle = course.Title;
+            ViewBag.Instructor = course.Teacher!.User!.FullName;
+            ViewBag.Date = DateTime.UtcNow;
+
+            return View();
+        }
+
+
 
 
 

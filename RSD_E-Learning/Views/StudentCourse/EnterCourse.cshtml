@@ -13,6 +13,47 @@
 
 <hr />
 
+<hr />
+<h4>Live Classes</h4>
+
+@{
+    var lessonsWithMeet = Model.Lessons?
+        .Where(l => !string.IsNullOrEmpty(l.MeetLink))
+        .ToList();
+}
+
+@if (lessonsWithMeet == null || !lessonsWithMeet.Any())
+{
+    <p>No live classes available.</p>
+}
+else
+{
+    <ul class="list-group mb-4">
+        @foreach (var lesson in lessonsWithMeet)
+        {
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>@lesson.Title</strong><br />
+                    <small class="text-muted">
+                        Live session
+                        @if (lesson.ScheduleDate != null)
+                        {
+                            <span> • @lesson.ScheduleDate.Value.ToString("dd MMM yyyy HH:mm")</span>
+                        }
+                    </small>
+                </div>
+
+                <a href="@lesson.MeetLink"
+                   target="_blank"
+                   class="btn btn-sm btn-success">
+                    Join Class
+                </a>
+            </li>
+        }
+    </ul>
+}
+
+
 <!-- ================== COURSE MATERIALS ================== -->
 <h4>Course Materials</h4>
 
