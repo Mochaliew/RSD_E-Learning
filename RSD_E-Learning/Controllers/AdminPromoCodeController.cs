@@ -82,9 +82,21 @@ public class AdminPromoCodeController : Controller
         if (promo == null)
             return Json(new { success = false });
 
+        var today = DateTime.UtcNow.Date;
+
+        // Do not allow expired promo to toggle
+        if (promo.ExpiryDate < today)
+        {
+            return Json(new
+            {
+                success = false,
+                message = "Expired promo codes cannot be activated."
+            });
+        }
+
         promo.IsActive = !promo.IsActive;
 
-        _db.AuditLogs.Add(new AuditLog
+        _db.AuditLogs.Add(new DB.AuditLog
         {
             Action = promo.IsActive
                 ? $"Activated promo code: {promo.Code}"
@@ -100,4 +112,5 @@ public class AdminPromoCodeController : Controller
             isActive = promo.IsActive
         });
     }
+
 }

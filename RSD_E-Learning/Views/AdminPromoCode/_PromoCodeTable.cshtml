@@ -76,23 +76,3 @@
         }
     </tbody>
 </table>
-
-<script>
-    document.querySelectorAll('.toggle-btn').forEach(btn => {
-        btn.addEventListener('click', function () {
-
-            fetch('/AdminPromoCode/ToggleAjax', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'RequestVerificationToken':
-                        document.querySelector('input[name="__RequestVerificationToken"]').value
-                },
-                body: JSON.stringify({ id: parseInt(this.dataset.id) })
-            })
-            .then(() => {
-                document.querySelector('#filterForm button').click();
-            });
-        });
-    });
-</script>

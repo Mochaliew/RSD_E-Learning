@@ -51,19 +51,47 @@
             const search = document.getElementById('search').value;
             const status = document.getElementById('status').value;
 
-            fetch(`/AdminPromoCode/AjaxList?search=${search}&status=${status}`)
+            fetch(`/AdminPromoCode/AjaxList?search=${encodeURIComponent(search)}&status=${status}`)
                 .then(res => res.text())
                 .then(html => {
                     document.getElementById('promoTable').innerHTML = html;
                 });
         }
 
+        // FILTER
         document.getElementById('filterForm').addEventListener('submit', function (e) {
             e.preventDefault();
             loadPromoCodes();
         });
 
-        // Initial load
+        // ✅ EVENT DELEGATION FOR TOGGLE BUTTON
+        document.getElementById('promoTable').addEventListener('click', function (e) {
+            if (!e.target.classList.contains('toggle-btn')) return;
+
+            const id = e.target.dataset.id;
+
+            fetch('/AdminPromoCode/ToggleAjax', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken':
+                        document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: JSON.stringify({ id: parseInt(id) })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (!data.success) {
+                    alert(data.message ?? 'Action failed');
+                    return;
+                }
+
+                loadPromoCodes(); // refresh table
+            });
+        });
+
+        // INITIAL LOAD
         loadPromoCodes();
     </script>
 }
+
