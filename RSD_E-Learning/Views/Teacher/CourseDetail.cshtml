@@ -345,7 +345,7 @@
                                     ? ((Dictionary<int, int>)ViewBag.QuestionCounts)[assessment.AssessmentId]
                                     : 0;
                                 }
-                                Questions: @questionCount |
+                                Questions: @questionCount | Time: @(assessment.DeadLine) |
                                 Total Marks: @(assessment.TotalMarks ?? 0)
                             </div>
                         </div>

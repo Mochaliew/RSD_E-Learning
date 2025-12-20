@@ -12,7 +12,7 @@
         <p>Course: <strong>@ViewBag.CourseName</strong></p>
     </div>
 
-    <form asp-action="EditLesson" asp-controller="Teacher" method="post" onsubmit="console.log('Form submitting...');">
+    <form asp-action="EditLesson" asp-controller="Teacher" method="post" enctype="multipart/form-data">
         @Html.AntiForgeryToken()
         <input type="hidden" asp-for="LessonId" />
         <input type="hidden" asp-for="CourseId" />
@@ -31,9 +31,9 @@
 
         <div class="form-group">
             <label asp-for="MeetLink">Meeting Link</label>
-            <input type="text" asp-for="MeetLink" placeholder="e.g., https://meet.google.com/xxx-xxxx-xxx" required />
+            <input type="text" asp-for="MeetLink" placeholder="e.g., https://meet.google.com/xxx-xxxx-xxx" />
             <span asp-validation-for="MeetLink" class="text-danger"></span>
-            <small style="color:#666; display: block; margin-top: 5px;">Provide the online meeting link (Google Meet, Zoom, etc.)</small>
+            <small style="color:#666; display: block; margin-top: 5px;">Provide the online meeting link (Google Meet, Zoom, Teams, etc.)</small>
         </div>
 
         <div class="form-row">
@@ -48,12 +48,80 @@
             </div>
         </div>
 
+        <!-- Existing Files -->
+        @if (Model.ExistingFiles.Any())
+        {
+            <div class="materials-section">
+                <h3>Existing Files</h3>
+                <ul style="list-style: none; padding: 0;">
+                    @foreach (var file in Model.ExistingFiles)
+                    {
+                        <li style="padding: 10px; background: white; border-radius: 6px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                            <span>
+                                @if (file.FileType == "pdf")
+                                {
+                                    <span>📄 PDF</span>
+                                }
+                                else if (file.FileType == "video")
+                                {
+                                    <span>🎥 Video</span>
+                                }
+                                - Uploaded @file.UpdateAt.ToString("MMM dd, yyyy")
+                            </span>
+                            <a href="@file.FilePath" target="_blank" style="color: #5b6ff5; text-decoration: none;">View</a>
+                        </li>
+                    }
+                </ul>
+            </div>
+        }
+
+        <!-- Add New File -->
+        <div class="form-group">
+            <label>Add New File (Optional)</label>
+            <select id="lessonType" name="LessonType" onchange="toggleFileUpload()">
+                <option value="">-- No file to add --</option>
+                <option value="pdf">PDF Document</option>
+                <option value="video">Video File</option>
+            </select>
+        </div>
+
+        <div id="fileSection" style="display: none;">
+            <div class="form-group">
+                <label>File</label>
+                <input type="file" name="MaterialFile" id="materialFile" />
+                <small style="color:#666; display: block; margin-top: 5px;" id="fileHint">
+                    Upload a file
+                </small>
+            </div>
+        </div>
+
         <div class="button-group">
             <button type="submit" class="btn btn-primary">Save Changes</button>
-            <a href="@Url.Action("ViewLesson", "Teacher")" class="btn btn-secondary">Cancel</a>
+            <a href="@Url.Action("CourseDetail", "Teacher", new { id = Model.CourseId })" class="btn btn-secondary">Cancel</a>
         </div>
     </form>
 </div>
+
+<script>
+    function toggleFileUpload() {
+        const lessonType = document.getElementById('lessonType').value;
+        const fileSection = document.getElementById('fileSection');
+        const fileInput = document.getElementById('materialFile');
+        const fileHint = document.getElementById('fileHint');
+
+        if (lessonType === '') {
+            fileSection.style.display = 'none';
+        } else if (lessonType === 'pdf') {
+            fileSection.style.display = 'block';
+            fileInput.setAttribute('accept', '.pdf');
+            fileHint.textContent = 'Upload PDF file (Max: 50MB)';
+        } else if (lessonType === 'video') {
+            fileSection.style.display = 'block';
+            fileInput.setAttribute('accept', '.mp4,.avi,.mov,.mkv');
+            fileHint.textContent = 'Upload video file: MP4, AVI, MOV, MKV (Max: 500MB)';
+        }
+    }
+</script>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
