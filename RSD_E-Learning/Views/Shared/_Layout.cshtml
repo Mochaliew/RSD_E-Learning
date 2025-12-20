@@ -1,11 +1,4 @@
-﻿@{
-    var controller = ViewContext.RouteData.Values["controller"]?.ToString();
-    var action = ViewContext.RouteData.Values["action"]?.ToString();
-
-    bool isHomePage = controller == "Home" && action == "Index";
-}
-
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -27,25 +20,31 @@
                     RSD_E_Learning
                 </a>
 
-                <div class="collapse navbar-collapse d-sm-inline-flex justify-content-between">
+                <button class="navbar-toggler" type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#mainNavbar">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="mainNavbar">
 
                     <!-- LEFT -->
-                    <ul class="navbar-nav flex-grow-1">
+                    <ul class="navbar-nav me-auto">
                         <li class="nav-item">
-                            <a class="nav-link text-dark"
+                            <a class="nav-link"
                                asp-controller="Home"
                                asp-action="Index">
                                 Home
                             </a>
                         </li>
 
-                        @if (User.Identity?.IsAuthenticated == true && !User.IsInRole("Student"))
+                        @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Student"))
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark"
-                                   asp-controller="Home"
-                                   asp-action="Privacy">
-                                    Privacy
+                                <a class="nav-link"
+                                   asp-controller="Student"
+                                   asp-action="Dashboard">
+                                    Dashboard
                                 </a>
                             </li>
                         }
@@ -53,12 +52,12 @@
 
                     <!-- RIGHT -->
                     <ul class="navbar-nav ms-auto">
+
                         @if (User.Identity?.IsAuthenticated == true)
                         {
                             <li class="nav-item">
-                                <span class="nav-link text-dark">
-                                    Hello, @User.Identity?.Name
-
+                                <span class="nav-link">
+                                    Hello, @User.FindFirst("FullName")?.Value
                                 </span>
                             </li>
 
@@ -67,14 +66,25 @@
                                       asp-action="Logout"
                                       method="post">
                                     <button type="submit"
-                                            class="btn btn-link nav-link text-dark">
+                                            class="btn btn-link nav-link">
                                         Logout
                                     </button>
                                 </form>
                             </li>
                         }
-                    </ul>
+                        else
+                        {
+                            <!-- ONLY STUDENT REGISTER -->
+                            <li class="nav-item">
+                                <a class="nav-link fw-semibold"
+                                   asp-controller="Account"
+                                   asp-action="Register">
+                                    Student Register
+                                </a>
+                            </li>
+                        }
 
+                    </ul>
                 </div>
             </div>
         </nav>
@@ -88,8 +98,7 @@
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2025 - RSD_E_Learning -
-            <a asp-controller="Home" asp-action="Privacy">Privacy</a>
+            &copy; 2025 - RSD_E_Learning
         </div>
     </footer>
 

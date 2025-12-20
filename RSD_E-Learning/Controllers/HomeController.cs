@@ -16,10 +16,6 @@ namespace RSD_E_Learning.Controllers
 
         public IActionResult Index()
         {
-            if (User.Identity!.IsAuthenticated && User.IsInRole("Student"))
-            {
-                return RedirectToAction("Index", "StudentDashboard");
-            }
             return View();
         }
 
