@@ -112,11 +112,75 @@ namespace RSD_E_Learning.Controllers
             return HashPassword(password) == hash;
         }
 
-        // ------------------------- TEACHERINDEX ------------------------- // 
+        // ------------------------- TEACHERINDEX [GET] ------------------------- // 
 
-        public IActionResult TeacherIndex()
+        [HttpGet]
+        public async Task<IActionResult> TeacherIndex()
         {
-            return View();
+            var teacherIdClaim = User.FindFirst("TeacherId");
+            if (teacherIdClaim == null)
+            {
+                return RedirectToAction("TeacherLogin");
+            }
+
+            int teacherId = int.Parse(teacherIdClaim.Value);
+
+            var courses = await _context.Courses
+                .Include(c => c.Category)
+                .Include(c => c.Enrollments)
+                .Where(c =>
+                    c.TeacherId == teacherId &&
+                    c.IsApproved &&
+                    !c.IsRejected
+                )
+                .ToListAsync();
+
+
+            var courseIds = courses.Select(c => c.CourseId).ToList();
+            var totalStudents = await _context.Enrollments
+                .Where(e => courseIds.Contains(e.CourseId))
+                .Select(e => e.StudentId)
+                .Distinct()
+                .CountAsync();
+
+            var totalLessons = await _context.Lessons
+                .Where(l => courseIds.Contains(l.CourseId))
+                .CountAsync(); ;
+
+            var totalAssessments = await _context.Assessments
+                .Where(a => courseIds.Contains(a.CourseId))
+                .CountAsync();
+
+            var upcomingLessons = await _context.Lessons
+                .Include(l => l.Course)
+                .Where(l =>
+                    courseIds.Contains(l.CourseId) &&
+                    l.ScheduleDate.HasValue &&
+                    l.ScheduleDate.Value >= DateTime.Now
+                )
+                .OrderBy(l => l.ScheduleDate)
+                .Take(5)
+                .ToListAsync();
+
+            var recentAssessments = await _context.Assessments
+                .Include(a => a.Course)
+                .Where(a => courseIds.Contains(a.CourseId))
+                .OrderByDescending(a => a.AssessmentId)
+                .Take(5)
+                .ToListAsync();
+
+            // Create view model
+            var viewModel = new TeacherIndexVm
+            {
+                Courses = courses,
+                TotalStudents = totalStudents,
+                TotalLessons = totalLessons,
+                TotalAssessments = totalAssessments,
+                UpcomingLessons = upcomingLessons,
+                RecentAssessments = recentAssessments
+            };
+
+            return View(viewModel);
         }
 
         // ------------------------- CREATECOURSE [GET] ------------------------- // 

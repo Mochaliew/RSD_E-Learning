@@ -38,27 +38,54 @@ namespace RSD_E_Learning.Controllers
                     u.Email == vm.Email &&
                     u.Role == DB.UserRole.Admin);
 
-            if (user == null || !VerifyPassword(vm.Password, user.PasswordHash))
+            // Invalid email
+            if (user == null)
             {
                 ModelState.AddModelError("", "Invalid admin credentials.");
                 return View(vm);
             }
 
-            var admin = await _db.Admins.FirstOrDefaultAsync(a => a.UserId == user.Id);
-            if (admin == null)
+            // CHECK LOCKOUT
+            if (user.LockoutEnd != null && user.LockoutEnd > DateTime.UtcNow)
             {
-                ModelState.AddModelError("", "Admin account not found.");
+                ModelState.AddModelError("",
+                    "Account locked due to multiple failed attempts. Try again later.");
                 return View(vm);
             }
 
-            var claims = new List<Claim>
+            // WRONG PASSWORD
+            if (!VerifyPassword(vm.Password, user.PasswordHash))
             {
-                new Claim(ClaimTypes.Name, user.FullName),
-                new Claim(ClaimTypes.Email, user.Email),
-                new Claim("UserId", user.Id.ToString()),
-                new Claim("AdminId", admin.AdminId.ToString()),
-                new Claim(ClaimTypes.Role, "Admin")
-            };
+                user.FailedLoginCount++;
+
+                //LOCK AFTER 3 FAILS
+                if (user.FailedLoginCount >= 3)
+                {
+                    user.LockoutEnd = DateTime.UtcNow.AddMinutes(15); // lock 15 min
+                    user.FailedLoginCount = 0; // reset counter
+                }
+
+                await _db.SaveChangesAsync();
+
+                ModelState.AddModelError("", "Invalid admin credentials.");
+                return View(vm);
+            }
+
+            //SUCCESSFUL LOGIN
+            user.FailedLoginCount = 0;
+            user.LockoutEnd = null;
+            await _db.SaveChangesAsync();
+
+            var admin = await _db.Admins.FirstOrDefaultAsync(a => a.UserId == user.Id);
+
+            var claims = new List<Claim>
+    {
+        new Claim(ClaimTypes.Name, user.FullName),
+        new Claim(ClaimTypes.Email, user.Email),
+        new Claim("UserId", user.Id.ToString()),
+        new Claim("AdminId", admin!.AdminId.ToString()),
+        new Claim(ClaimTypes.Role, "Admin")
+    };
 
             var identity = new ClaimsIdentity(
                 claims,
@@ -72,6 +99,7 @@ namespace RSD_E_Learning.Controllers
 
             return RedirectToAction("Index", "AdminDashboard");
         }
+
 
         // -------------------- LOGOUT --------------------
         public async Task<IActionResult> Logout()

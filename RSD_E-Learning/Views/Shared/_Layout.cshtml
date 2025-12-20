@@ -1,4 +1,11 @@
-﻿<!DOCTYPE html>
+﻿@{
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString();
+    var action = ViewContext.RouteData.Values["action"]?.ToString();
+
+    bool isHomePage = controller == "Home" && action == "Index";
+}
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -8,12 +15,11 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/RSD_E_Learning.styles.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/admin.css" />
 </head>
 
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom mb-3">
             <div class="container-fluid">
 
                 <!-- BRAND -->
@@ -21,41 +27,19 @@
                     RSD_E_Learning
                 </a>
 
-                <button class="navbar-toggler" type="button"
-                        data-bs-toggle="collapse"
-                        data-bs-target=".navbar-collapse">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
+                <div class="collapse navbar-collapse d-sm-inline-flex justify-content-between">
 
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-
-                    <!-- LEFT NAVBAR -->
+                    <!-- LEFT -->
                     <ul class="navbar-nav flex-grow-1">
-
-                        <!-- HOME (ROLE AWARE) -->
                         <li class="nav-item">
-                            @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Student"))
-                            {
-                                <!-- STUDENT HOME → DASHBOARD -->
-                                <a class="nav-link text-dark"
-                                   asp-controller="Student"
-                                   asp-action="Dashboard">
-                                    Home
-                                </a>
-                            }
-                            else
-                            {
-                                <!-- NORMAL HOME -->
-                                <a class="nav-link text-dark"
-                                   asp-controller="Home"
-                                   asp-action="Index">
-                                    Home
-                                </a>
-                            }
+                            <a class="nav-link text-dark"
+                               asp-controller="Home"
+                               asp-action="Index">
+                                Home
+                            </a>
                         </li>
 
-                        <!-- EVERYTHING ELSE (HIDDEN FOR STUDENT) -->
-                        @if (!(User.Identity?.IsAuthenticated == true && User.IsInRole("Student")))
+                        @if (User.Identity?.IsAuthenticated == true && !User.IsInRole("Student"))
                         {
                             <li class="nav-item">
                                 <a class="nav-link text-dark"
@@ -64,113 +48,29 @@
                                     Privacy
                                 </a>
                             </li>
-
-                            <li class="nav-item">
-                                <a class="nav-link text-dark"
-                                   asp-controller="Courses"
-                                   asp-action="Catalog">
-                                    Browse Courses
-                                </a>
-                            </li>
-
-                            <li class="nav-item">
-                                <a class="nav-link text-dark"
-                                   asp-controller="Teacher"
-                                   asp-action="TeacherIndex">
-                                    Teacher
-                                </a>
-                            </li>
                         }
                     </ul>
 
-                    <!-- RIGHT NAVBAR -->
+                    <!-- RIGHT -->
                     <ul class="navbar-nav ms-auto">
                         @if (User.Identity?.IsAuthenticated == true)
                         {
                             <li class="nav-item">
                                 <span class="nav-link text-dark">
-                                    Hello, @User.FindFirst("FullName")?.Value
+                                    Hello, @User.Identity?.Name
+
                                 </span>
                             </li>
 
                             <li class="nav-item">
                                 <form asp-controller="Account"
                                       asp-action="Logout"
-                                      method="post"
-                                      class="d-inline">
+                                      method="post">
                                     <button type="submit"
                                             class="btn btn-link nav-link text-dark">
                                         Logout
                                     </button>
                                 </form>
-                            </li>
-                        }
-                        else
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link"
-                                   asp-controller="Certificate"
-                                   asp-action="MyCertificates">
-                                    My Certificates
-                                </a>
-                            </li>
-
-                            <li class="nav-item dropdown">
-                                <a class="nav-link text-dark dropdown-toggle"
-                                   href="#"
-                                   data-bs-toggle="dropdown">
-                                    Student
-                                </a>
-                                <ul class="dropdown-menu">
-                                    <li>
-                                        <a class="dropdown-item"
-                                           asp-controller="Account"
-                                           asp-action="Register">
-                                            Register
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item"
-                                           asp-controller="Account"
-                                           asp-action="Login">
-                                            Login
-                                        </a>
-                                    </li>
-                                </ul>
-                            </li>
-
-                            <li class="nav-item dropdown">
-                                <a class="nav-link text-dark dropdown-toggle"
-                                   href="#"
-                                   data-bs-toggle="dropdown">
-                                    Teacher
-                                </a>
-                                <ul class="dropdown-menu">
-                                    <li>
-                                        <a class="dropdown-item"
-                                           asp-controller="Teacher"
-                                           asp-action="TeacherLogin">
-                                            Login
-                                        </a>
-                                    </li>
-                                </ul>
-                            </li>
-
-                            <li class="nav-item dropdown ms-3">
-                                <a class="nav-link text-dark dropdown-toggle"
-                                   href="#"
-                                   data-bs-toggle="dropdown">
-                                    Admin
-                                </a>
-                                <ul class="dropdown-menu">
-                                    <li>
-                                        <a class="dropdown-item"
-                                           asp-controller="AdminLogin"
-                                           asp-action="Login">
-                                            Login
-                                        </a>
-                                    </li>
-                                </ul>
                             </li>
                         }
                     </ul>

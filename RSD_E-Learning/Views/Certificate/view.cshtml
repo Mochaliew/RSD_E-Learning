@@ -1,119 +1,19 @@
 ﻿@model RSD_E_Learning.Models.DB.Certificate
-
 @{
-    ViewData["Title"] = "Certificate Viewer";
+    ViewData["Title"] = "Certificate";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    var template = ViewBag.Template as string ?? "Default";
 }
 
-<div class="container my-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-10">
-            <!-- Certificate Card -->
-            <div class="card shadow-lg border-0">
-                <div class="card-body p-5" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-
-                    <!-- Certificate Header -->
-                    <div class="text-center text-white mb-4">
-                        <h1 class="display-4 mb-3">🎓 Certificate of Completion</h1>
-                        <p class="lead">This certifies that</p>
-                    </div>
-
-                    <!-- Student Name -->
-                    <div class="text-center mb-4">
-                        <h2 class="text-white font-weight-bold border-bottom border-white d-inline-block pb-2 px-5">
-                            @Model.Student?.User?.FullName
-                        </h2>
-                    </div>
-
-                    <!-- Certificate Body -->
-                    <div class="text-center text-white mb-4">
-                        <p class="h5 mb-3">has successfully completed the course</p>
-                        <h3 class="font-weight-bold mb-3">@Model.Course?.Title</h3>
-                        <p class="mb-2"><strong>Category:</strong> @Model.Course?.Category?.Name</p>
-                        <p class="mb-2"><strong>Instructor:</strong> @Model.Course?.Teacher?.User?.FullName</p>
-                        <p class="mb-4"><strong>Date Issued:</strong> @Model.IssuedDate.ToString("MMMM dd, yyyy")</p>
-                    </div>
-
-                    <!-- Certificate Footer -->
-                    <div class="row mt-5 text-white">
-                        <div class="col-md-6 text-center border-right">
-                            <p class="mb-1"><strong>Certificate ID</strong></p>
-                            <p class="small">CERT-@Model.CertificateId.ToString("D6")</p>
-                        </div>
-                        <div class="col-md-6 text-center">
-                            <p class="mb-1"><strong>Verification</strong></p>
-                            <p class="small">Scan QR Code Below</p>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
-            <!-- QR Code & Actions -->
-            <div class="row mt-4">
-                <div class="col-md-6 text-center">
-                    <div class="card shadow-sm">
-                        <div class="card-body">
-                            <h5 class="card-title">Verification QR Code</h5>
-                            <img src="@ViewBag.QRCodeUrl" alt="QR Code" class="img-fluid" style="max-width: 200px;" />
-                            <p class="small text-muted mt-2">Scan to verify authenticity</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-md-6">
-                    <div class="card shadow-sm">
-                        <div class="card-body">
-                            <h5 class="card-title">Actions</h5>
-                            <div class="d-grid gap-2">
-                                @if (User.IsInRole("Student"))
-                                {
-                                    <a href="@Url.Action("Download", "Certificate", new { id = Model.CertificateId })"
-                                       class="btn btn-primary">
-                                        <i class="bi bi-download"></i> Download Certificate
-                                    </a>
-                                }
-                                <a href="@Url.Action("Verify", "Certificate", new { id = Model.CertificateId })"
-                                   class="btn btn-outline-secondary" target="_blank">
-                                    <i class="bi bi-shield-check"></i> Verify Certificate
-                                </a>
-                                <button onclick="window.print()" class="btn btn-outline-primary">
-                                    <i class="bi bi-printer"></i> Print Certificate
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Back Button -->
-            <div class="text-center mt-4">
-                @if (User.IsInRole("Student"))
-                {
-                    <a href="@Url.Action("MyCertificates", "Certificate")" class="btn btn-secondary">
-                        <i class="bi bi-arrow-left"></i> Back to My Certificates
-                    </a>
-                }
-                else
-                {
-                    <a href="@Url.Action("Index", "Home")" class="btn btn-secondary">
-                        <i class="bi bi-house"></i> Back to Home
-                    </a>
-                }
-            </div>
-
-        </div>
-    </div>
-</div>
-
-<!-- Print Styles -->
-<style>
-    @@media print {
-        .btn, .card:not(.card-body), nav, footer {
-            display: none !important;
-        }
-        .card-body {
-            border: 2px solid #667eea;
-        }
-    }
-</style>
+@if (template.Contains("ModernBlue"))
+{
+    <partial name="Templates/_CertificateModernBlue" model="Model" />
+}
+else if (template.Contains("ClassicGold"))
+{
+    <partial name="Templates/_CertificateClassicGold" model="Model" />
+}
+else
+{
+    <partial name="Templates/_CertificateDefault" model="Model" />
+}

@@ -1,0 +1,34 @@
+﻿@model IEnumerable<RSD_E_Learning.Models.DB.AuditLog>
+
+<table class="table table-bordered table-striped align-middle shadow-sm">
+    <thead class="table-light">
+        <tr>
+            <th style="width:220px;">Date & Time</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (!Model.Any())
+        {
+            <tr>
+                <td colspan="2" class="text-center text-muted py-4">
+                    No audit records found.
+                </td>
+            </tr>
+        }
+        else
+        {
+            foreach (var log in Model)
+            {
+                <tr>
+                    <td>
+                        @log.Timestamp.ToLocalTime().ToString("dd MMM yyyy HH:mm")
+                    </td>
+                    <td>
+                        @log.Action
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
