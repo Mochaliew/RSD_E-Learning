@@ -1,0 +1,45 @@
+﻿@model RSD_E_Learning.ViewModels.StudentEditProfileVm
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+
+@{
+    ViewData["Title"] = "Edit Profile";
+}
+
+<h2>Edit Profile</h2>
+
+<hr />
+
+<form asp-action="EditProfile" asp-controller="Student" method="post">
+    @Html.AntiForgeryToken()
+
+    <div class="mb-3">
+        <label class="form-label">Full Name</label>
+        <input asp-for="FullName" class="form-control" />
+        <span asp-validation-for="FullName" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Email (Read-only)</label>
+        <input asp-for="Email" class="form-control" readonly />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Class</label>
+        <input asp-for="ClassName" class="form-control" placeholder="e.g. CS2025 / AI Batch" />
+    </div>
+
+    <button type="submit" class="btn btn-success">
+        Save Changes
+    </button>
+
+    <a asp-action="Profile" class="btn btn-secondary ms-2">
+        Cancel
+    </a>
+</form>

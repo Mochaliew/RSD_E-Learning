@@ -1,0 +1,78 @@
+﻿@model IEnumerable<RSD_E_Learning.Models.PromoCodeListVm>
+
+@{
+    var today = DateTime.UtcNow.Date;
+}
+
+<table class="table table-bordered align-middle">
+    <thead class="table-light">
+        <tr>
+            <th>Code</th>
+            <th>Discount</th>
+            <th>Start</th>
+            <th>Expiry</th>
+            <th>Status</th>
+            <th>Used</th>
+            <th style="width:140px">Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model == null || !Model.Any())
+        {
+            <tr>
+                <td colspan="7" class="text-center text-muted">
+                    No promo codes found.
+                </td>
+            </tr>
+        }
+        else
+        {
+            foreach (var promo in Model)
+            {
+                <tr>
+                    <td>@promo.Code</td>
+                    <td>@promo.DiscountPercent %</td>
+                    <td>@promo.StartDate.ToString("dd MMM yyyy")</td>
+                    <td>@promo.ExpiryDate.ToString("dd MMM yyyy")</td>
+
+                    <td>
+                        @if (promo.ExpiryDate < today)
+                        {
+                            <span class="badge bg-danger">Expired</span>
+                        }
+                        else if (promo.StartDate > today)
+                        {
+                            <span class="badge bg-info">Upcoming</span>
+                        }
+                        else if (promo.IsActive)
+                        {
+                            <span class="badge bg-success">Active</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Inactive</span>
+                        }
+                    </td>
+
+                    <td>@promo.UsedCount</td>
+
+                    <td>
+                        @if (promo.ExpiryDate < today)
+                        {
+                            <span class="text-muted">N/A</span>
+                        }
+                        else
+                        {
+                            <button type="button"
+                                    class="btn btn-sm toggle-btn
+                                                       @(promo.IsActive ? "btn-outline-danger" : "btn-outline-success")"
+                                    data-id="@promo.PromoCodeId">
+                                @(promo.IsActive ? "Deactivate" : "Activate")
+                            </button>
+                        }
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>

@@ -1,0 +1,20 @@
+﻿@model RSD_E_Learning.Models.DB.Student
+
+@{
+    ViewData["Title"] = "My Profile";
+}
+
+<h2>My Profile</h2>
+
+<hr />
+
+<div class="card p-4">
+    <p><strong>Full Name:</strong> @Model.User?.FullName</p>
+    <p><strong>Email:</strong> @Model.User?.Email</p>
+    <p><strong>Class:</strong> @(Model.ClassName ?? "Not set")</p>
+    <p><strong>Enrollment Date:</strong> @Model.EnrollmentDate.ToString("dd MMM yyyy")</p>
+
+    <a asp-action="EditProfile" class="btn btn-primary mt-3">
+        Edit Profile
+    </a>
+</div>

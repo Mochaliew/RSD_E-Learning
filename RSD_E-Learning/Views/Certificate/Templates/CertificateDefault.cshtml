@@ -1,0 +1,14 @@
+﻿@model RSD_E_Learning.Models.DB.Certificate
+
+<div class="container my-5">
+    <div class="card shadow-lg p-5 text-center">
+        <h1>🎓 Certificate of Completion</h1>
+        <p>This certifies that</p>
+        <h2>@Model.Student?.User?.FullName</h2>
+        <p>has successfully completed</p>
+        <h3>@Model.Course?.Title</h3>
+        <p>@Model.IssuedDate.ToString("MMMM dd, yyyy")</p>
+
+        <img src="@ViewBag.QRCodeUrl" width="150" />
+    </div>
+</div>

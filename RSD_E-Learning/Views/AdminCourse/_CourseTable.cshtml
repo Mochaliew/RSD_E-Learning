@@ -1,0 +1,93 @@
+﻿@model IEnumerable<RSD_E_Learning.Models.DB.Course>
+
+<table class="table table-bordered align-middle">
+    <thead class="table-light">
+        <tr>
+            <th>Title</th>
+            <th>Teacher</th>
+            <th>Category</th>
+            <th>Status</th>
+            <th>Publish</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (!Model.Any())
+        {
+            <tr>
+                <td colspan="5" class="text-center text-muted">
+                    No courses found.
+                </td>
+            </tr>
+        }
+        else
+        {
+            foreach (var course in Model)
+            {
+                <tr>
+                    <td>@course.Title</td>
+                    <td>@course.Teacher?.User?.FullName</td>
+                    <td>@course.Category?.Name</td>
+
+                    <td>
+                        @if (course.IsRejected)
+                        {
+                            <span class="badge bg-danger">Rejected</span>
+                        }
+                        else if (!course.IsApproved)
+                        {
+                            <span class="badge bg-warning">Pending</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-success">Approved</span>
+                        }
+                    </td>
+
+                    <td>
+                        @if (course.IsApproved && !course.IsRejected)
+                        {
+                            <button type="button"
+                                    class="btn btn-sm toggle-btn fixed-btn
+                                                       @(course.IsPublished ? "btn-outline-danger" : "btn-outline-success")"
+                                    data-id="@course.CourseId">
+                                @(course.IsPublished ? "Unpublish" : "Publish")
+                            </button>
+                        }
+                        else
+                        {
+                            <span class="text-muted">N/A</span>
+                        }
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+<script>
+    document.querySelectorAll('.toggle-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+
+            fetch('/AdminCourse/TogglePublishAjax', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken':
+                        document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: JSON.stringify({ id: parseInt(this.dataset.id) })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (!data.success) {
+                    alert(data.message ?? 'Action failed');
+                    return;
+                }
+
+                // reload table after publish/unpublish
+                document.getElementById('filterForm')
+                        .dispatchEvent(new Event('submit'));
+            });
+        });
+    });
+</script>

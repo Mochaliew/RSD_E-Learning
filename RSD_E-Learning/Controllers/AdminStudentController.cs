@@ -103,6 +103,41 @@ namespace RSD_E_Learning.Controllers
             });
         }
 
+        // ================= AJAX FILTER =================
+        [HttpGet]
+        public async Task<IActionResult> Filter(string? search, bool? isActive, string? className)
+        {
+            var query = _db.Students
+                .Include(s => s.User)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                query = query.Where(s =>
+                    s.User!.FullName.Contains(search) ||
+                    s.User.Email.Contains(search));
+            }
+
+            if (isActive.HasValue)
+            {
+                query = isActive.Value
+                    ? query.Where(s => s.User!.LockoutEnd == null)
+                    : query.Where(s => s.User!.LockoutEnd != null);
+            }
+
+            if (!string.IsNullOrWhiteSpace(className))
+            {
+                query = query.Where(s => s.ClassName == className);
+            }
+
+            var students = await query
+                .OrderBy(s => s.User!.FullName)
+                .ToListAsync();
+
+            return PartialView("_StudentTable", students);
+        }
+
+
         // ================= BULK ACTIVATE / DEACTIVATE =================
         [HttpPost]
         [ValidateAntiForgeryToken]

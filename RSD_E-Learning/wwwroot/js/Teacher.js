@@ -226,16 +226,23 @@ async function publishAssessment() {
 
     const courseId = document.getElementById("courseId").value;
     const title = document.getElementById("assessmentTitle").value;
-    const deadlineHours = parseInt(document.getElementById("deadline").value);
+    const deadlineInput = document.getElementById("deadline").value;
 
-    if (!deadlineHours || deadlineHours < 1) {
-        alert("Please enter a valid deadline (at least 1 hour).");
+    if (!title) {
+        alert("Assessment title is required.");
         return;
     }
 
-    // Convert hours to DateTime
-    const deadlineDate = new Date();
-    deadlineDate.setHours(deadlineDate.getHours() + deadlineHours);
+    if (!deadlineInput) {
+        alert("Please select a deadline date and time.");
+        return;
+    }
+
+
+    // Convert datetime-local value to Date object (LOCAL TIME)
+
+    const deadlineDate = new Date(deadlineInput);
+
 
     const questions = [];
 
@@ -264,8 +271,12 @@ async function publishAssessment() {
     const payload = {
         CourseId: parseInt(courseId),
         Title: title,
+<<<<<<< HEAD
         PassingMark: passingMark,
         DeadLine: deadlineDate.toISOString(),
+=======
+        DeadLine: deadlineDate,
+>>>>>>> 50ef53410ac889cfb59e987c326cfdad317e1629
         Questions: questions
     };
 

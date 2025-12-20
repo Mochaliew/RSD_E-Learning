@@ -15,31 +15,41 @@ namespace RSD_E_Learning.Controllers
             _db = db;
         }
 
-        // ================== FULL AUDIT LOG ==================
-        public async Task<IActionResult> Index(string module)
+        // ================= FULL PAGE =================
+        public async Task<IActionResult> Index()
+        {
+            var logs = await _db.AuditLogs
+                .OrderByDescending(l => l.Timestamp)
+                .Take(200)
+                .ToListAsync();
+
+            return View(logs);
+        }
+
+        // ================= AJAX FILTER =================
+        [HttpGet]
+        public async Task<IActionResult> Filter(string module)
         {
             var logsQuery = _db.AuditLogs.AsQueryable();
 
-            // ✅ Filter by module using action text
             if (!string.IsNullOrEmpty(module))
             {
                 logsQuery = module switch
                 {
-                    "Teacher" => logsQuery.Where(l => l.Action.Contains("teacher")),
-                    "Category" => logsQuery.Where(l => l.Action.Contains("category")),
-                    "Course" => logsQuery.Where(l => l.Action.Contains("course")),
-                    "Student" => logsQuery.Where(l => l.Action.Contains("student")),
+                    "Teacher" => logsQuery.Where(l => l.Action.ToLower().Contains("teacher")),
+                    "Student" => logsQuery.Where(l => l.Action.ToLower().Contains("student")),
+                    "Course" => logsQuery.Where(l => l.Action.ToLower().Contains("course")),
+                    "Category" => logsQuery.Where(l => l.Action.ToLower().Contains("category")),
                     _ => logsQuery
                 };
             }
 
             var logs = await logsQuery
                 .OrderByDescending(l => l.Timestamp)
-                .Take(200) // safety limit
+                .Take(200)
                 .ToListAsync();
 
-            ViewBag.SelectedModule = module;
-            return View(logs);
+            return PartialView("_AuditLogTable", logs);
         }
     }
 }

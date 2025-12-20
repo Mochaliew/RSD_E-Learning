@@ -1,12 +1,17 @@
-﻿@model IEnumerable<RSD_E_Learning.Models.DB.Enrollment>
+﻿@{
+    ViewData["Title"] = "Transactions";
+}
+
+@Html.AntiForgeryToken()
 
 <h2 class="mb-3">Transactions</h2>
 
 <!-- ================= FILTER ================= -->
-<form method="get" class="row g-3 mb-4">
+<form id="filterForm" class="row g-3 mb-4 align-items-end">
+
     <div class="col-md-4">
-        <label class="form-label">Filter by Course</label>
-        <select name="courseId" class="form-select">
+        <label class="form-label fw-semibold">Filter by Course</label>
+        <select id="courseId" class="form-select">
             <option value="">All Courses</option>
             @foreach (var c in ViewBag.Courses)
             {
@@ -16,64 +21,59 @@
     </div>
 
     <div class="col-md-3">
-        <label class="form-label">Start Date</label>
-        <input type="date" name="startDate" class="form-control" />
+        <label class="form-label fw-semibold">Start Date</label>
+        <input type="date" id="startDate" class="form-control" />
     </div>
 
     <div class="col-md-3">
-        <label class="form-label">End Date</label>
-        <input type="date" name="endDate" class="form-control" />
+        <label class="form-label fw-semibold">End Date</label>
+        <input type="date" id="endDate" class="form-control" />
     </div>
 
-    <div class="col-md-2 d-flex align-items-end">
-        <button class="btn btn-primary w-100">Apply</button>
+    <div class="col-md-2 d-grid">
+        <button class="btn btn-primary">Apply</button>
     </div>
 </form>
 
-<!-- ================= TRANSACTION TABLE ================= -->
-<table class="table table-bordered">
-    <thead class="table-light">
-        <tr>
-            <th>Student</th>
-            <th>Email</th>
-            <th>Course</th>
-            <th>Amount (RM)</th>
-            <th>Method</th>
-            <th>Status</th>
-            <th>Paid At</th>
-        </tr>
-    </thead>
-    <tbody>
-    @if (!Model.Any())
-    {
-        <tr>
-            <td colspan="7" class="text-center text-muted">
-                No transactions found
-            </td>
-        </tr>
-    }
-    else
-    {
-        foreach (var t in Model)
-        {
-            <tr>
-                <td>@t.Student.User.FullName</td>
-                <td>@t.Student.User.Email</td>
-                <td>@t.Course.Title</td>
-                <td>@t.AmountPaid.ToString("0.00")</td>
-                <td>@t.PaymentMethod</td>
-                <td>
-                    <span class="badge bg-success">Paid</span>
-                </td>
-                <td>@t.EnrolledAt.ToString("dd MMM yyyy")</td>
-            </tr>
-        }
-    }
-    </tbody>
-</table>
+<!-- ================= AJAX TABLE ================= -->
+<div id="transactionTable">
+    <div class="text-muted text-center py-4">
+        Loading transactions...
+    </div>
+</div>
 
 <a asp-controller="AdminDashboard"
    asp-action="Index"
    class="btn btn-secondary mt-3">
     ← Back to Dashboard
 </a>
+
+@section Scripts {
+    <script>
+        function loadTransactions() {
+            const courseId = document.getElementById('courseId').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+
+            const params = new URLSearchParams({
+                courseId,
+                startDate,
+                endDate
+            });
+
+            fetch('/AdminTransaction/AjaxList?' + params.toString())
+                .then(res => res.text())
+                .then(html => {
+                    document.getElementById('transactionTable').innerHTML = html;
+                });
+        }
+
+        document.getElementById('filterForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            loadTransactions();
+        });
+
+        // Initial load
+        loadTransactions();
+    </script>
+}

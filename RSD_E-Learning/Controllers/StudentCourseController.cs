@@ -210,10 +210,24 @@ namespace RSD_E_Learning.Controllers
         }
 
 
-        private async Task UpdateCourseProgress(int studentId, int courseId)
+        private async Task UpdateCourseProgress(int studentId, int lessonId)
         {
+            var lesson = await _db.Lessons
+                .Include(l => l.Course)
+                .FirstOrDefaultAsync(l => l.LessonId == lessonId);
+
+            if (lesson == null)
+                return;
+
+            int courseId = lesson.CourseId;
+
+            var lessonIds = await _db.Lessons
+                .Where(l => l.CourseId == courseId)
+                .Select(l => l.LessonId)
+                .ToListAsync();
+
             var totalMaterials = await _db.CourseFiles
-                .CountAsync(f => f.LessonId == courseId && f.IsActive);
+                .CountAsync(f => lessonIds.Contains(f.LessonId) && f.IsActive);
 
             if (totalMaterials == 0)
                 return;
@@ -224,7 +238,7 @@ namespace RSD_E_Learning.Controllers
                     p.IsCompleted &&
                     _db.CourseFiles.Any(f =>
                         f.CourseFileId == p.CourseFileId &&
-                        f.LessonId == courseId));
+                        lessonIds.Contains(f.LessonId)));
 
             var percentage = (int)Math.Round(
                 (double)completedMaterials / totalMaterials * 100
@@ -257,6 +271,7 @@ namespace RSD_E_Learning.Controllers
         }
 
 
+
         [Authorize(Roles = "Student")]
         public async Task<IActionResult> EnterCourse(int courseId)
         {
@@ -277,12 +292,14 @@ namespace RSD_E_Learning.Controllers
                 return Forbid();
 
             var course = await _db.Courses
-                .Include(c => c.Category)
-                .Include(c => c.Teacher)
-                    .ThenInclude(t => t.User)
-                .Include(c => c.CourseFiles)
-                .Include(c => c.Assessments) // 🔥 KEEP THIS
-                .FirstOrDefaultAsync(c => c.CourseId == courseId);
+            .Include(c => c.Category)
+            .Include(c => c.Teacher)
+                .ThenInclude(t => t.User)
+            .Include(c => c.Lessons)
+                .ThenInclude(l => l.CourseFiles)
+            .Include(c => c.Assessments)
+            .FirstOrDefaultAsync(c => c.CourseId == courseId);
+
 
             if (course == null)
                 return NotFound();
@@ -329,53 +346,54 @@ namespace RSD_E_Learning.Controllers
 
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Student")]
-        public async Task<IActionResult> ConfirmPayment(int courseId)
-        {
-            var userEmail = User.Identity!.Name;
+[ValidateAntiForgeryToken]
+[Authorize(Roles = "Student")]
+public async Task<IActionResult> ConfirmPayment(int courseId)
+{
+    var userEmail = User.Identity!.Name;
 
-            var student = await _db.Students
-                .Include(s => s.User)
-                .FirstOrDefaultAsync(s => s.User!.Email == userEmail);
+    var student = await _db.Students
+        .Include(s => s.User)
+        .FirstOrDefaultAsync(s => s.User!.Email == userEmail);
 
-            if (student == null)
-                return Unauthorized();
+    if (student == null)
+        return Unauthorized();
 
-            var alreadyEnrolled = await _db.Enrollments.AnyAsync(e =>
-                e.StudentId == student.StudentId &&
-                e.CourseId == courseId);
+    var alreadyEnrolled = await _db.Enrollments.AnyAsync(e =>
+        e.StudentId == student.StudentId &&
+        e.CourseId == courseId);
 
-            if (alreadyEnrolled)
-                return RedirectToAction("MyCourses");
+    if (alreadyEnrolled)
+        return RedirectToAction("MyCourses");
 
-            var course = await _db.Courses
-                .FirstOrDefaultAsync(c => c.CourseId == courseId);
+    var course = await _db.Courses
+        .FirstOrDefaultAsync(c => c.CourseId == courseId);
 
-            if (course == null)
-                return NotFound();
+    if (course == null)
+        return NotFound();
 
-            _db.Enrollments.Add(new Enrollment
-            {
-                StudentId = student.StudentId,
-                CourseId = courseId,
-                PaymentStatus = true,
-                PaymentMethod = "FakeGateway",
-                AmountPaid = course.Price
-            });
+    _db.Enrollments.Add(new Enrollment
+    {
+        StudentId = student.StudentId,
+        CourseId = courseId,
+        PaymentStatus = true,
+        PaymentMethod = "FakeGateway",
+        AmountPaid = course.Price
+    });
 
-            _db.StudentCourseProgresses.Add(new StudentCourseProgress
-            {
-                StudentId = student.StudentId,
-                CourseId = courseId,
-                ProgressPercentage = 0,
-                UpdatedAt = DateTime.UtcNow
-            });
+    _db.StudentCourseProgresses.Add(new StudentCourseProgress
+    {
+        StudentId = student.StudentId,
+        CourseId = courseId,
+        ProgressPercentage = 0,
+        UpdatedAt = DateTime.UtcNow
+    });
 
-            await _db.SaveChangesAsync();
+    await _db.SaveChangesAsync();
 
-            return RedirectToAction("MyCourses");
-        }
+    return RedirectToAction("MyCourses");
+}
+
 
 
 
@@ -393,6 +411,7 @@ namespace RSD_E_Learning.Controllers
 
             return View(student);
         }
+
 
 
 

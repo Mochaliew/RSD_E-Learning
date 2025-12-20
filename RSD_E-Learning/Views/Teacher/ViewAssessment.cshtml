@@ -5,7 +5,7 @@
 
 <p>
     <strong>Deadline:</strong>
-    @Model.Assessment.DeadLine.ToString("MMM dd, yyyy hh:mm tt")
+    @Model.Assessment.DeadLine.ToLocalTime().ToString("MMM dd, yyyy hh:mm tt")
 </p>
 
 <p><strong>Total Marks:</strong> @Model.Assessment.TotalMarks</p>

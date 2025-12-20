@@ -1,0 +1,94 @@
+﻿@model RSD_E_Learning.Models.DB.Assessment
+
+@{
+    ViewData["Title"] = "Assessment Details";
+    bool hasAttempted = ViewBag.HasAttempted ?? false;
+}
+
+<h2>@Model.Title</h2>
+
+<p>
+    <strong>Course:</strong> @Model.Course?.Title <br />
+    <strong>Deadline:</strong> @Model.DeadLine.ToString("dd MMM yyyy")
+</p>
+
+<hr />
+
+@if (Model.TotalMarks != null)
+{
+    <p><strong>Total Marks:</strong> @Model.TotalMarks</p>
+}
+
+attempt.IsPassed = assessment.PassingMark > 0 &&
+                   scorePercentage >= assessment.PassingMark;
+
+
+@if (Model.Questions != null && Model.Questions.Any())
+{
+    <h4>Questions</h4>
+
+    <form asp-action="Submit" method="post">
+        <input type="hidden" name="assessmentId" value="@Model.AssessmentId" />
+
+        @foreach (var q in Model.Questions)
+        {
+            <div class="card mb-3">
+                <div class="card-body">
+                    <p><strong>@q.QuestionDetail</strong></p>
+
+                    <div class="form-check">
+                        <input class="form-check-input"
+                               type="radio"
+                               name="answer_@q.QuestionId"
+                               value="A"
+                               required />
+                        <label class="form-check-label">A. @q.AnswerA</label>
+                    </div>
+
+                    <div class="form-check">
+                        <input class="form-check-input"
+                               type="radio"
+                               name="answer_@q.QuestionId"
+                               value="B" />
+                        <label class="form-check-label">B. @q.AnswerB</label>
+                    </div>
+
+                    <div class="form-check">
+                        <input class="form-check-input"
+                               type="radio"
+                               name="answer_@q.QuestionId"
+                               value="C" />
+                        <label class="form-check-label">C. @q.AnswerC</label>
+                    </div>
+
+                    <div class="form-check">
+                        <input class="form-check-input"
+                               type="radio"
+                               name="answer_@q.QuestionId"
+                               value="D" />
+                        <label class="form-check-label">D. @q.AnswerD</label>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <button type="submit" class="btn btn-primary">
+            Submit Answers
+        </button>
+    </form>
+}
+else
+{
+    <div class="alert alert-warning">
+        No questions available for this assessment.
+    </div>
+}
+
+<br />
+
+<a asp-controller="StudentCourse"
+   asp-action="EnterCourse"
+   asp-route-courseId="@Model.CourseId"
+   class="btn btn-secondary">
+    ← Back to Assessments
+</a>

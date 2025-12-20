@@ -1,0 +1,32 @@
+﻿<h2>Assessment Result</h2>
+
+<p>
+    Correct Answers: <strong>@ViewBag.Correct</strong> /
+    <strong>@ViewBag.Total</strong>
+</p>
+
+<p>
+    Score: <strong>@ViewBag.Score%</strong><br />
+    Passing Mark: <strong>@ViewBag.PassingMark%</strong>
+</p>
+
+@if (ViewBag.IsPassed)
+{
+    <div class="alert alert-success">
+        🎉 Congratulations! You have <strong>PASSED</strong> the assessment.
+    </div>
+}
+else
+{
+    <div class="alert alert-danger">
+        ❌ You did not meet the passing mark. Please try again.
+    </div>
+}
+
+<a asp-controller="StudentCourse"
+   asp-action="EnterCourse"
+   asp-route-courseId="@ViewBag.CourseId"
+   class="btn btn-secondary">
+    Back to Assessment
+</a>
+

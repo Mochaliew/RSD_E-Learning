@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel.DataAnnotations;
+using static RSD_E_Learning.Models.DB;
 
 namespace RSD_E_Learning.Models
 {
@@ -41,6 +42,17 @@ namespace RSD_E_Learning.Models
         public IEnumerable<SelectListItem>? CategoryList { get; set; }
     }
 
+    // Teacher Index View Models //
+    public class TeacherIndexVm
+    {
+        public List<Course> Courses { get; set; } = new();
+        public int TotalStudents { get; set; }
+        public int TotalLessons { get; set; }
+        public int TotalAssessments { get; set; }
+        public List<Lesson> UpcomingLessons { get; set; } = new();
+        public List<Assessment> RecentAssessments { get; set; } = new();
+    }
+
     // Course Detail View Models //
     public class CourseDetailVm
     {
@@ -50,6 +62,7 @@ namespace RSD_E_Learning.Models
         public IEnumerable<SelectListItem> Categories { get; set; } = new List<SelectListItem>();
     }
 
+    // Lesson with Files View Models //
     public class LessonWithFilesVm
 
     {
@@ -123,70 +136,71 @@ namespace RSD_E_Learning.Models
         public List<DB.CourseFile> ExistingFiles { get; set; } = new();
     }
 
-        // Teacher Edit View Models //
-        public class TeacherEditVM
-        {
-            public int TeacherId { get; set; }
+    // Teacher Edit View Models //
+    public class TeacherEditVM
+    {
+        public int TeacherId { get; set; }
 
-            [Required, StringLength(100)]
-            [Display(Name = "Full Name")]
-            public string FullName { get; set; } = "";
+        [Required, StringLength(100)]
+        [Display(Name = "Full Name")]
+        public string FullName { get; set; } = "";
 
-            [Required, EmailAddress]
-            public string Email { get; set; } = "";
+        [Required, EmailAddress]
+        public string Email { get; set; } = "";
 
-            [StringLength(100, MinimumLength = 6)]
-            [DataType(DataType.Password)]
-            [Display(Name = "New Password (Optional)")]
-            public string? NewPassword { get; set; }
+        [StringLength(100, MinimumLength = 6)]
+        [DataType(DataType.Password)]
+        [Display(Name = "New Password (Optional)")]
+        public string? NewPassword { get; set; }
 
-            [Required, StringLength(100)]
-            [Display(Name = "Subject Area")]
-            public string SubjectArea { get; set; } = "";
-        }
+        [Required, StringLength(100)]
+        [Display(Name = "Subject Area")]
+        public string SubjectArea { get; set; } = "";
+    }
 
         // Teacher Reset Password View Models //
-        public class ResetTeacherPasswordVm
-        {
-            [Required]
-            public int UserId { get; set; }
+    public class ResetTeacherPasswordVm
+    {
+        [Required]
+        public int UserId { get; set; }
 
-            [Required]
-            [StringLength(100, MinimumLength = 6)]
-            [DataType(DataType.Password)]
-            public string NewPassword { get; set; } = "";
+        [Required]
+        [StringLength(100, MinimumLength = 6)]
+        [DataType(DataType.Password)]
+        public string NewPassword { get; set; } = "";
 
-            [Required]
-            [DataType(DataType.Password)]
-            [Compare("NewPassword", ErrorMessage = "Passwords do not match.")]
-            public string ConfirmPassword { get; set; } = "";
-        }
+        [Required]
+        [DataType(DataType.Password)]
+        [Compare("NewPassword", ErrorMessage = "Passwords do not match.")]
+        public string ConfirmPassword { get; set; } = "";
+    }
 
-        // Course File View Models //
+    // Course File View Models //
     public class CourseFileVm
     {
-        public int FileId { get; set; }
-        public int CourseId { get; set; }
+    public int FileId { get; set; }
+    public int CourseId { get; set; }
 
-            [Required]
-            public string FileName { get; set; } = "";
+    [Required]
+    public string FileName { get; set; } = "";
 
-            public string FileType { get; set; } = "";
+    public string FileType { get; set; } = "";
 
-            public string? Description { get; set; }
+    public string? Description { get; set; }
 
-            public long Filesize { get; set; }
+    public long Filesize { get; set; }
 
-            public string FileUrl { get; set; } = "";
+    public string FileUrl { get; set; } = "";
 
-            public DateTime UploadedAt { get; set; }
+    public DateTime UploadedAt { get; set; }
 
-            public string UploadedBy { get; set; } = "";
-        }
+    public string UploadedBy { get; set; } = "";
+    }
 
+    // -------------------------------- Admins View Models --------------------------------------------- //
 
-        // Student View Models //
-        public class StudentRegisterVm
+    // Student View Models //
+    public class StudentRegisterVm
         {
             [Required, StringLength(100)]
             [Display(Name = "Full Name")]

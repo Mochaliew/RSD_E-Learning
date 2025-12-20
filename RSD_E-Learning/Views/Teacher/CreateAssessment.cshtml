@@ -54,8 +54,11 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="timeLimit">Deadine (H)</label>
-                        <input type="number" id="deadline" min="1" placeholder="Must be more than 1 hour">
+                    <label for="deadline">Deadline *</label>
+                    <input type="datetime-local"
+                           id="deadline"
+                           class="form-control"
+                           required />
                     </div>
 
                     <div class="button-group">

@@ -1,8 +1,97 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Home";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome To This Page?</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container mt-5">
+
+    <!-- HERO -->
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold text-primary">
+            RSD E-Learning Platform
+        </h1>
+        <p class="lead text-muted">
+            A secure online learning management system for students, teachers, and administrators
+        </p>
+    </div>
+
+    <!-- FEATURES -->
+    <div class="row text-center mb-5">
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title">📚 Online Learning</h5>
+                    <p class="card-text">
+                        Access structured courses and digital learning materials anytime.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title">🎓 Certification</h5>
+                    <p class="card-text">
+                        Earn verified digital certificates after completing courses.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title">🔐 Secure System</h5>
+                    <p class="card-text">
+                        Role-based access, session timeout, and account lockout protection.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ROLE ACCESS -->
+    <div class="row text-center mb-5">
+        <div class="col-md-4 mb-3">
+            <div class="card border-primary h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Student</h5>
+                    <p>Enroll in courses and track your learning progress.</p>
+                    <a asp-controller="Account"
+                       asp-action="Login"
+                       class="btn btn-primary">
+                        Student Login
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card border-success h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Teacher</h5>
+                    <p>Create courses, manage lessons, and assess students.</p>
+                    <a asp-controller="Teacher"
+                       asp-action="TeacherLogin"
+                       class="btn btn-success">
+                        Teacher Login
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card border-dark h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Administrator</h5>
+                    <p>Manage users, courses, and system configurations.</p>
+                    <a asp-controller="AdminLogin"
+                       asp-action="Login"
+                       class="btn btn-dark">
+                        Admin Login
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
