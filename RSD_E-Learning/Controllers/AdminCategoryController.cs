@@ -41,6 +41,28 @@ namespace RSD_E_Learning.Controllers
             return View(vm);
         }
 
+        // --------------------  AJAX LIST -------------------- 
+        [HttpGet]
+        public async Task<IActionResult> AjaxList(string? search, bool showDeleted)
+        {
+            var query = _db.Categories.AsQueryable();
+
+            query = showDeleted
+                ? query.Where(c => c.IsDeleted)
+                : query.Where(c => !c.IsDeleted);
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                query = query.Where(c => c.Name.Contains(search));
+            }
+
+            var categories = await query
+                .OrderBy(c => c.Name)
+                .ToListAsync();
+
+            return PartialView("_CategoryTable", categories);
+        }
+
 
         // -------------------- CREATE --------------------
         [HttpGet]

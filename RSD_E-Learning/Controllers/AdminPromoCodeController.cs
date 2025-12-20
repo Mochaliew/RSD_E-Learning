@@ -14,8 +14,15 @@ public class AdminPromoCodeController : Controller
         _db = db;
     }
 
-    // ===================== LIST =====================
-    public async Task<IActionResult> Index(string? search, string? status)
+    // ===================== MAIN PAGE =====================
+    public IActionResult Index()
+    {
+        return View();
+    }
+
+    // ===================== AJAX LIST =====================
+    [HttpGet]
+    public async Task<IActionResult> AjaxList(string? search, string? status)
     {
         var today = DateTime.UtcNow.Date;
         var query = _db.PromoCodes.AsQueryable();
@@ -34,6 +41,12 @@ public class AdminPromoCodeController : Controller
                     p.ExpiryDate >= today);
                 break;
 
+            case "Inactive":
+                query = query.Where(p =>
+                    !p.IsActive &&
+                    p.ExpiryDate >= today);
+                break;
+
             case "Expired":
                 query = query.Where(p => p.ExpiryDate < today);
                 break;
@@ -43,72 +56,31 @@ public class AdminPromoCodeController : Controller
                 break;
         }
 
-        var vm = new PromoCodeFilterVm
-        {
-            Search = search,
-            Status = status,
-            PromoCodes = await query
-                .OrderByDescending(p => p.CreatedAt)
-                .Select(p => new PromoCodeListVm
-                {
-                    PromoCodeId = p.PromoCodeId,
-                    Code = p.Code,
-                    DiscountPercent = p.DiscountPercent,
-                    StartDate = p.StartDate,
-                    ExpiryDate = p.ExpiryDate,
-                    IsActive = p.IsActive,
-                    UsedCount = p.UsedCount
-                })
-                .ToListAsync()
-        };
+        var list = await query
+            .OrderByDescending(p => p.CreatedAt)
+            .Select(p => new PromoCodeListVm
+            {
+                PromoCodeId = p.PromoCodeId,
+                Code = p.Code,
+                DiscountPercent = p.DiscountPercent,
+                StartDate = p.StartDate,
+                ExpiryDate = p.ExpiryDate,
+                IsActive = p.IsActive,
+                UsedCount = p.UsedCount
+            })
+            .ToListAsync();
 
-        return View(vm);
+        return PartialView("_PromoCodeTable", list);
     }
 
-
-    // ===================== CREATE =====================
-    public IActionResult Create()
-    {
-        return View();
-    }
-
+    // ===================== AJAX TOGGLE =====================
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(PromoCodeCreateVm vm)
+    public async Task<IActionResult> ToggleAjax([FromBody] ToggleVm vm)
     {
-        if (!ModelState.IsValid)
-            return View(vm);
-
-        var promo = new PromoCode
-        {
-            Code = vm.Code.ToUpper(),
-            DiscountPercent = vm.DiscountPercent,
-            StartDate = vm.StartDate,
-            ExpiryDate = vm.ExpiryDate,
-            MaxUsage = vm.MaxUsage,
-            IsActive = true,
-            CreatedAt = DateTime.UtcNow
-        };
-
-        _db.PromoCodes.Add(promo);
-
-        _db.AuditLogs.Add(new AuditLog
-        {
-            Action = $"Created promo code: {promo.Code}",
-            Timestamp = DateTime.UtcNow
-        });
-
-        await _db.SaveChangesAsync();
-        return RedirectToAction(nameof(Index));
-    }
-
-    // ===================== TOGGLE =====================
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Toggle(int id)
-    {
-        var promo = await _db.PromoCodes.FindAsync(id);
-        if (promo == null) return NotFound();
+        var promo = await _db.PromoCodes.FindAsync(vm.Id);
+        if (promo == null)
+            return Json(new { success = false });
 
         promo.IsActive = !promo.IsActive;
 
@@ -121,36 +93,11 @@ public class AdminPromoCodeController : Controller
         });
 
         await _db.SaveChangesAsync();
-        return RedirectToAction(nameof(Index));
+
+        return Json(new
+        {
+            success = true,
+            isActive = promo.IsActive
+        });
     }
-
-    // ===================== AJAX =====================
-    [HttpPost]
-[ValidateAntiForgeryToken]
-public async Task<IActionResult> ToggleAjax([FromBody] ToggleVm vm)
-{
-    var promo = await _db.PromoCodes.FindAsync(vm.Id);
-    if (promo == null)
-        return Json(new { success = false });
-
-    promo.IsActive = !promo.IsActive;
-
-    _db.AuditLogs.Add(new AuditLog
-    {
-        Action = promo.IsActive
-            ? $"Activated promo code: {promo.Code}"
-            : $"Deactivated promo code: {promo.Code}",
-        Timestamp = DateTime.UtcNow
-    });
-
-    await _db.SaveChangesAsync();
-
-    return Json(new
-    {
-        success = true,
-        isActive = promo.IsActive
-    });
-}
-
-
 }

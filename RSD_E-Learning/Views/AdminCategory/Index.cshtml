@@ -1,85 +1,65 @@
 ﻿@model RSD_E_Learning.Models.CategoryFilterVm
 
 @{
-    ViewData["Title"] = "Categories";
+    ViewData["Title"] = "Manage Categories";
 }
 
-<h2 class="mb-3">Categories</h2>
+<h2 class="mb-3">Manage Categories</h2>
 
-<!-- SEARCH + FILTER -->
-<form method="get" class="row g-2 mb-3">
+<!-- ================= SEARCH + FILTER ================= -->
+<div class="row g-2 mb-3 align-items-end">
+
     <div class="col-md-4">
-        <input name="search"
+        <label class="form-label fw-semibold">Search Category</label>
+        <input id="search"
                value="@Model.Search"
                class="form-control"
-               placeholder="Search category" />
+               placeholder="Search category name..." />
     </div>
 
     <div class="col-md-3">
-        <select name="showDeleted" class="form-select">
+        <label class="form-label fw-semibold">Status</label>
+        <select id="showDeleted" class="form-select">
             <option value="false" selected="@(!Model.ShowDeleted)">Active</option>
             <option value="true" selected="@(Model.ShowDeleted)">Deleted</option>
         </select>
     </div>
 
     <div class="col-md-2 d-grid">
-        <button class="btn btn-primary">Apply</button>
+        <button id="applyFilter" class="btn btn-primary">
+            Apply
+        </button>
     </div>
-</form>
 
-<a asp-action="Create" class="btn btn-success mb-3">+ Add Category</a>
+</div>
 
-<table class="table table-bordered align-middle">
-    <thead class="table-light">
-        <tr>
-            <th>Name</th>
-            <th style="width:220px">Action</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var cat in Model.Categories)
-        {
-            <tr>
-                <td>@cat.Name</td>
-                <td>
-                    @if (!cat.IsDeleted)
-                    {
-                        <a asp-action="Edit"
-                           asp-route-id="@cat.CategoryId"
-                           class="btn btn-sm btn-warning me-1">
-                            Edit
-                        </a>
+<a asp-action="Create" class="btn btn-success mb-3">
+    + Add Category
+</a>
 
-                        <form asp-action="Delete"
-                              method="post"
-                              class="d-inline">
-                            @Html.AntiForgeryToken()
-                            <input type="hidden" name="id" value="@cat.CategoryId" />
-                            <button class="btn btn-sm btn-danger">
-                                Delete
-                            </button>
-                        </form>
-                    }
-                    else
-                    {
-                        <form asp-action="Restore"
-                              method="post"
-                              class="d-inline">
-                            @Html.AntiForgeryToken()
-                            <input type="hidden" name="id" value="@cat.CategoryId" />
-                            <button class="btn btn-sm btn-success">
-                                Restore
-                            </button>
-                        </form>
-                    }
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+<!-- ================= TABLE ================= -->
+<div id="tableContainer">
+    @await Html.PartialAsync("_CategoryTable", Model.Categories)
+</div>
 
 <a asp-controller="AdminDashboard"
    asp-action="Index"
    class="btn btn-secondary mt-3">
     ← Back to Dashboard
 </a>
+
+@section Scripts {
+    <script>
+        document.getElementById('applyFilter').addEventListener('click', function () {
+
+            const search = document.getElementById('search').value;
+            const showDeleted = document.getElementById('showDeleted').value;
+
+            fetch(`/AdminCategory/AjaxList?search=${encodeURIComponent(search)}&showDeleted=${showDeleted}`)
+                .then(res => res.text())
+                .then(html => {
+                    document.getElementById('tableContainer').innerHTML = html;
+                });
+        });
+    </script>
+}

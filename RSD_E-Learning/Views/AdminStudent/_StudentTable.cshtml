@@ -1,0 +1,60 @@
+﻿@model IEnumerable<RSD_E_Learning.Models.DB.Student>
+
+<table class="table table-bordered align-middle">
+    <thead class="table-light">
+        <tr>
+            <th style="width:40px">
+                <input type="checkbox" id="selectAll" />
+            </th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Class</th>
+            <th>Status</th>
+            <th style="width:180px">Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (!Model.Any())
+        {
+            <tr>
+                <td colspan="6" class="text-center text-muted">
+                    No students found.
+                </td>
+            </tr>
+        }
+        else
+        {
+            foreach (var student in Model)
+            {
+                bool isActive = student.User?.LockoutEnd == null;
+
+                <tr>
+                    <td>
+                        <input type="checkbox"
+                               name="selectedIds"
+                               value="@student.StudentId" />
+                    </td>
+
+                    <td>@student.User?.FullName</td>
+                    <td>@student.User?.Email</td>
+                    <td>@student.ClassName</td>
+
+                    <td>
+                        <span class="badge status-badge @(isActive ? "bg-success" : "bg-secondary")">
+                            @(isActive ? "Active" : "Inactive")
+                        </span>
+                    </td>
+
+                    <td>
+                        <button type="button"
+                                class="btn btn-sm toggle-btn
+                                               @(isActive ? "btn-outline-danger" : "btn-outline-success")"
+                                data-id="@student.StudentId">
+                            @(isActive ? "Deactivate" : "Activate")
+                        </button>
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>

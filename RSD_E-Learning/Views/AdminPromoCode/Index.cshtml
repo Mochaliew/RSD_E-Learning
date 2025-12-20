@@ -1,119 +1,44 @@
-﻿@model RSD_E_Learning.Models.PromoCodeFilterVm
-@Html.AntiForgeryToken()
-
-@{
+﻿@{
     ViewData["Title"] = "Promo Codes";
 }
 
+@Html.AntiForgeryToken()
+
 <h2 class="mb-3">Promo Codes</h2>
 
-<!-- ================= FILTER + SEARCH ================= -->
-<form method="get" class="row g-2 mb-3 align-items-end">
+<!-- FILTER -->
+<form id="filterForm" class="row g-2 mb-3 align-items-end">
 
-    <!-- SEARCH -->
     <div class="col-md-4">
         <label class="form-label fw-semibold">Search</label>
-        <input type="text"
-               name="search"
-               value="@Model.Search"
-               class="form-control"
-               placeholder="Search promo code..." />
+        <input id="search" class="form-control" placeholder="Search promo code..." />
     </div>
 
-    <!-- STATUS FILTER -->
     <div class="col-md-3">
         <label class="form-label fw-semibold">Status</label>
-        <select name="status" class="form-select">
+        <select id="status" class="form-select">
             <option value="">All</option>
-            <option value="Active" selected="@(Model.Status == "Active")">Active</option>
-            <option value="Upcoming" selected="@(Model.Status == "Upcoming")">Upcoming</option>
-            <option value="Expired" selected="@(Model.Status == "Expired")">Expired</option>
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+            <option value="Upcoming">Upcoming</option>
+            <option value="Expired">Expired</option>
         </select>
     </div>
 
-    <!-- APPLY -->
     <div class="col-md-2 d-grid">
-        <button class="btn btn-primary">
+        <button type="submit" class="btn btn-primary">
             Apply
         </button>
     </div>
 </form>
 
-<!-- ================= ACTIONS ================= -->
-<div class="mb-3">
-    <a asp-action="Create" class="btn btn-success">
-        + Create Promo Code
-    </a>
+<!-- AJAX TABLE CONTAINER -->
+<div id="promoTable">
+    <div class="text-muted text-center py-4">
+        Loading promo codes...
+    </div>
 </div>
 
-<!-- ================= TABLE ================= -->
-<table class="table table-bordered align-middle">
-    <thead class="table-light">
-        <tr>
-            <th>Code</th>
-            <th>Discount</th>
-            <th>Start</th>
-            <th>Expiry</th>
-            <th>Status</th>
-            <th>Used</th>
-            <th style="width:140px">Action</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var promo in Model.PromoCodes)
-        {
-            var today = DateTime.UtcNow.Date;
-
-            <tr>
-                <td>@promo.Code</td>
-                <td>@promo.DiscountPercent %</td>
-                <td>@promo.StartDate.ToString("dd MMM yyyy")</td>
-                <td>@promo.ExpiryDate.ToString("dd MMM yyyy")</td>
-
-                <!-- STATUS -->
-                <td>
-                    @if (promo.ExpiryDate < today)
-                    {
-                        <span class="badge bg-danger">Expired</span>
-                    }
-                    else if (promo.StartDate > today)
-                    {
-                        <span class="badge bg-info">Upcoming</span>
-                    }
-                    else if (promo.IsActive)
-                    {
-                        <span class="badge bg-success">Active</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-secondary">Inactive</span>
-                    }
-                </td>
-
-                <td>@promo.UsedCount</td>
-
-                <!-- ACTION -->
-                <td>
-                    @if (promo.ExpiryDate < today)
-                    {
-                        <span class="text-muted">N/A</span>
-                    }
-                    else
-                    {
-                        <button type="button"
-                                class="btn btn-sm toggle-btn
-                                               @(promo.IsActive ? "btn-outline-danger" : "btn-outline-success")"
-                                data-id="@promo.PromoCodeId">
-                            @(promo.IsActive ? "Deactivate" : "Activate")
-                        </button>
-                    }
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
-
-<!-- ================= BACK ================= -->
 <a asp-controller="AdminDashboard"
    asp-action="Index"
    class="btn btn-secondary mt-3">
@@ -122,40 +47,23 @@
 
 @section Scripts {
     <script>
-        document.querySelectorAll('.toggle-btn').forEach(btn => {
-            btn.addEventListener('click', function () {
+        function loadPromoCodes() {
+            const search = document.getElementById('search').value;
+            const status = document.getElementById('status').value;
 
-                const id = this.dataset.id;
-                const row = this.closest('tr');
-                const badge = row.querySelector('td:nth-child(5) span');
-                const button = this;
-
-                fetch('/AdminPromoCode/ToggleAjax', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'RequestVerificationToken':
-                            document.querySelector('input[name="__RequestVerificationToken"]').value
-                    },
-                    body: JSON.stringify({ id: parseInt(id) })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (!data.success) return;
-
-                    if (data.isActive) {
-                        badge.className = 'badge bg-success';
-                        badge.innerText = 'Active';
-                        button.className = 'btn btn-sm btn-outline-danger toggle-btn';
-                        button.innerText = 'Deactivate';
-                    } else {
-                        badge.className = 'badge bg-secondary';
-                        badge.innerText = 'Inactive';
-                        button.className = 'btn btn-sm btn-outline-success toggle-btn';
-                        button.innerText = 'Activate';
-                    }
+            fetch(`/AdminPromoCode/AjaxList?search=${search}&status=${status}`)
+                .then(res => res.text())
+                .then(html => {
+                    document.getElementById('promoTable').innerHTML = html;
                 });
-            });
+        }
+
+        document.getElementById('filterForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            loadPromoCodes();
         });
+
+        // Initial load
+        loadPromoCodes();
     </script>
 }
