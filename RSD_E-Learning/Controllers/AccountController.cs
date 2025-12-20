@@ -110,7 +110,7 @@ namespace RSD_E_Learning.Controllers
 
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name, user.FullName),
+                new Claim(ClaimTypes.Name, user.Email),
                 new Claim(ClaimTypes.Email, user.Email),
                 new Claim("FullName", user.FullName),
                 new Claim("UserId", user.Id.ToString()),
