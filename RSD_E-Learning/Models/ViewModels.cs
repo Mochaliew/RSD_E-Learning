@@ -51,8 +51,18 @@ namespace RSD_E_Learning.Models
     }
 
     public class LessonWithFilesVm
+
     {
         public DB.Lesson Lesson { get; set; } = new();
+
+        public int LessonId { get; set; }
+        public string Title { get; set; } = "";
+        public string? Description { get; set; }
+
+        public string? MeetLink { get; set; }
+
+        public DateTime? ScheduleDate { get; set; }
+
         public List<DB.CourseFile> Files { get; set; } = new();
     }
 
@@ -61,6 +71,7 @@ namespace RSD_E_Learning.Models
     public class CourseLessonVm
     {
         public DB.Course Course { get; set; } = new();
+
         public List<LessonWithFilesVm> LessonsWithFiles { get; set; } = new();
     }
 
@@ -76,6 +87,9 @@ namespace RSD_E_Learning.Models
         [StringLength(200)]
         [Display(Name = "Meeting Link")]
         public string? MeetLink { get; set; }
+
+        [StringLength(200)]
+        public string? MaterialFile{ get; set; }
 
         [StringLength(500)]
         [Display(Name = "Description")]

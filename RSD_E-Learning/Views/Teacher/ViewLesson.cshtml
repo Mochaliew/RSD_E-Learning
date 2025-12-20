@@ -1,128 +1,232 @@
-﻿@model RSD_E_Learning.Models.EditLessonVm
+﻿@model List<RSD_E_Learning.Models.CourseLessonVm>
 
 @{
-    ViewData["Title"] = "Edit Lesson";
+    ViewData["Title"] = "Manage Lessons";
 }
 
 <link rel="stylesheet" href="~/css/Teacher.css" />
 
-<div class="container" style="max-width: 800px; margin: 50px auto;">
-    <div class="header">
-        <h1>Edit Lesson</h1>
-        <p>Course: <strong>@ViewBag.CourseName</strong></p>
+<style>
+    .lesson-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 20px;
+    }
+
+    .lesson-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+        .lesson-header h1 {
+            font-size: 2.5rem;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+    .course-box {
+        background: white;
+        border: 2px solid #e0e0e0;
+        border-radius: 12px;
+        padding: 25px;
+        margin-bottom: 30px;
+    }
+
+    .course-box-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #f0f0f0;
+        margin-bottom: 20px;
+    }
+
+    .course-title {
+        font-size: 1.5rem;
+        color: #333;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .course-meta {
+        font-size: 0.9rem;
+        color: #666;
+        margin-top: 5px;
+    }
+
+    .lesson-list {
+        display: grid;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .lesson-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border-left: 4px solid #5b6ff5;
+    }
+
+    .lesson-info {
+        flex: 1;
+    }
+
+    .lesson-title {
+        font-weight: 600;
+        color: #333;
+        font-size: 1.1rem;
+        margin-bottom: 5px;
+    }
+
+    .lesson-details {
+        font-size: 0.9rem;
+        color: #666;
+    }
+
+    .lesson-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-lesson {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-view-lesson {
+        background: #5b6ff5;
+        color: white;
+    }
+
+    .btn-edit-lesson {
+        background: #667eea;
+        color: white;
+    }
+
+    .btn-add-lesson {
+        background: #5b6ff5;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .empty-lessons {
+        text-align: center;
+        padding: 40px;
+        color: #999;
+    }
+
+    .empty-lessons-icon {
+        font-size: 50px;
+        margin-bottom: 15px;
+    }
+
+    .btn-back {
+        background: #f0f0f0;
+        color: #333;
+        padding: 10px 20px;
+        border-radius: 8px;
+        text-decoration: none;
+        display: inline-block;
+        margin-bottom: 20px;
+    }
+</style>
+
+<div class="lesson-container">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="vc-alert vc-alert-success">@TempData["SuccessMessage"]</div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="vc-alert vc-alert-danger">@TempData["ErrorMessage"]</div>
+    }
+
+    <a href="@Url.Action("TeacherDashboard", "Teacher")" class="btn-back">← Back to Dashboard</a>
+
+    <div class="lesson-header">
+        <h1>Manage Lessons</h1>
+        <p style="color: #666;">Organize lessons for all your courses</p>
     </div>
 
-    <form asp-action="EditLesson" asp-controller="Teacher" method="post" enctype="multipart/form-data">
-        @Html.AntiForgeryToken()
-        <input type="hidden" asp-for="LessonId" />
-        <input type="hidden" asp-for="CourseId" />
-
-        <div class="form-group">
-            <label asp-for="Title">Lesson Title</label>
-            <input type="text" asp-for="Title" placeholder="e.g., Introduction to Variables" required />
-            <span asp-validation-for="Title" class="text-danger"></span>
+    @if (!Model.Any())
+    {
+        <div class="empty-lessons">
+            <div class="empty-lessons-icon">📚</div>
+            <h3>No Courses Available</h3>
+            <p>You don't have any courses yet. Create a course first to add lessons.</p>
+            <a href="@Url.Action("CreateCourse", "Teacher")" class="btn-add-lesson">Create Your First Course</a>
         </div>
-
-        <div class="form-group">
-            <label asp-for="Description">Description</label>
-            <textarea asp-for="Description" rows="4" placeholder="Brief description of what will be covered in this lesson"></textarea>
-            <span asp-validation-for="Description" class="text-danger"></span>
-        </div>
-
-        <div class="form-group">
-            <label asp-for="MeetLink">Meeting Link</label>
-            <input type="text" asp-for="MeetLink" placeholder="e.g., https://meet.google.com/xxx-xxxx-xxx" />
-            <span asp-validation-for="MeetLink" class="text-danger"></span>
-            <small style="color:#666; display: block; margin-top: 5px;">Provide the online meeting link (Google Meet, Zoom, Teams, etc.)</small>
-        </div>
-
-        <div class="form-row">
-            <div class="form-group">
-                <label>Date</label>
-                <input type="date" name="LessonDate" value="@(Model.ScheduleDate.HasValue? Model.ScheduleDate.Value.ToString("yyyy-MM-dd") : "")" />
-            </div>
-
-            <div class="form-group">
-                <label>Time</label>
-                <input type="time" name="LessonTime" value="@(Model.ScheduleDate.HasValue? Model.ScheduleDate.Value.ToString("HH:mm") : "")" />
-            </div>
-        </div>
-
-        <!-- Existing Files -->
-        @if (Model.ExistingFiles.Any())
+    }
+    else
+    {
+        @foreach (var courseLesson in Model)
         {
-            <div class="materials-section">
-                <h3>Existing Files</h3>
-                <ul style="list-style: none; padding: 0;">
-                    @foreach (var file in Model.ExistingFiles)
-                    {
-                        <li style="padding: 10px; background: white; border-radius: 6px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
-                            <span>
-                                @if (file.FileType == "pdf")
-                                {
-                                    <span>📄 PDF</span>
-                                }
-                                else if (file.FileType == "video")
-                                {
-                                    <span>🎥 Video</span>
-                                }
-                                - Uploaded @file.UpdateAt.ToString("MMM dd, yyyy")
-                            </span>
-                            <a href="@file.FilePath" target="_blank" style="color: #5b6ff5; text-decoration: none;">View</a>
-                        </li>
-                    }
-                </ul>
+            <div class="course-box">
+                <div class="course-box-header">
+                    <div>
+                        <h2 class="course-title">@courseLesson.Course.Title</h2>
+                        <p class="course-meta">
+                            Category: @(courseLesson.Course.Category?.Name ?? "N/A") |
+                            @courseLesson.LessonsWithFiles.Count Lesson(s)
+                        </p>
+                    </div>
+                    <a href="@Url.Action("CreateLesson", "Teacher", new { courseId = courseLesson.Course.CourseId })" class="btn-add-lesson">+ Add Lesson</a>
+                </div>
+
+                @if (courseLesson.LessonsWithFiles.Any())
+                {
+                    <div class="lesson-list">
+                        @foreach (var lesson in courseLesson.LessonsWithFiles)
+                        {
+                            <div class="lesson-item">
+                                <div class="lesson-info">
+                                    <div class="lesson-title">📖 @lesson.Title</div>
+                                    <div class="lesson-details">
+                                        @if (!string.IsNullOrEmpty(lesson.Description))
+                                        {
+                                            <span>@lesson.Description</span>
+                                        }
+                                        @if (!string.IsNullOrEmpty(lesson.MeetLink))
+                                        {
+                                            <span> | 🔗 <a href="@lesson.MeetLink" target="_blank" style="color: #5b6ff5;">Join Meeting</a></span>
+                                        }
+                                        @if (lesson.ScheduleDate.HasValue)
+                                        {
+                                            <span> | 📅 @lesson.ScheduleDate.Value.ToString("MMM dd, yyyy hh:mm tt")</span>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="lesson-actions">
+                                    <a href="@Url.Action("EditLesson", "Teacher", new { id = lesson.LessonId })" class="btn-lesson btn-edit-lesson">Edit</a>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="empty-lessons">
+                        <div class="empty-lessons-icon">📝</div>
+                        <p>No lessons created for this course yet.</p>
+                        <a href="@Url.Action("CreateLesson", "Teacher", new { courseId = courseLesson.Course.CourseId })" class="btn-add-lesson">Create First Lesson</a>
+                    </div>
+                }
             </div>
-        }
-
-        <!-- Add New File -->
-        <div class="form-group">
-            <label>Add New File (Optional)</label>
-            <select id="lessonType" name="LessonType" onchange="toggleFileUpload()">
-                <option value="">-- No file to add --</option>
-                <option value="pdf">PDF Document</option>
-                <option value="video">Video File</option>
-            </select>
-        </div>
-
-        <div id="fileSection" style="display: none;">
-            <div class="form-group">
-                <label>File</label>
-                <input type="file" name="MaterialFile" id="materialFile" />
-                <small style="color:#666; display: block; margin-top: 5px;" id="fileHint">
-                    Upload a file
-                </small>
-            </div>
-        </div>
-
-        <div class="button-group">
-            <button type="submit" class="btn btn-primary">Save Changes</button>
-            <a href="@Url.Action("CourseDetail", "Teacher", new { id = Model.CourseId })" class="btn btn-secondary">Cancel</a>
-        </div>
-    </form>
-</div>
-
-<script>
-    function toggleFileUpload() {
-        const lessonType = document.getElementById('lessonType').value;
-        const fileSection = document.getElementById('fileSection');
-        const fileInput = document.getElementById('materialFile');
-        const fileHint = document.getElementById('fileHint');
-
-        if (lessonType === '') {
-            fileSection.style.display = 'none';
-        } else if (lessonType === 'pdf') {
-            fileSection.style.display = 'block';
-            fileInput.setAttribute('accept', '.pdf');
-            fileHint.textContent = 'Upload PDF file (Max: 50MB)';
-        } else if (lessonType === 'video') {
-            fileSection.style.display = 'block';
-            fileInput.setAttribute('accept', '.mp4,.avi,.mov,.mkv');
-            fileHint.textContent = 'Upload video file: MP4, AVI, MOV, MKV (Max: 500MB)';
         }
     }
-</script>
-
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-}
+</div>

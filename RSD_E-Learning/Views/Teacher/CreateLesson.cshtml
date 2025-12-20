@@ -12,13 +12,13 @@
         <p>Course: <strong>@ViewBag.CourseName</strong></p>
     </div>
 
-    <form asp-action="CreateLesson" asp-controller="Teacher" method="post">
+    <form asp-action="CreateLesson" asp-controller="Teacher" method="post" enctype="multipart/form-data">
         @Html.AntiForgeryToken()
         <input type="hidden" asp-for="CourseId" />
 
         <div class="form-group">
             <label asp-for="Title">Lesson Title</label>
-            <input type="text" asp-for="Title" placeholder="e.g., Introduction / Chapter / Recap / Review" required />
+            <input type="text" asp-for="Title" placeholder="e.g., Introduction to Variables" required />
             <span asp-validation-for="Title" class="text-danger"></span>
         </div>
 
@@ -26,13 +26,6 @@
             <label asp-for="Description">Description</label>
             <textarea asp-for="Description" rows="4" placeholder="Brief description of what will be covered in this lesson"></textarea>
             <span asp-validation-for="Description" class="text-danger"></span>
-        </div>
-
-        <div class="form-group">
-            <label asp-for="MeetLink">Meeting Link</label>
-            <input type="text" asp-for="MeetLink" placeholder="e.g. meet1.google.com" required />
-            <span asp-validation-for="MeetLink" class="text-danger"></span>
-            <small style="color:#666; display: block; margin-top: 5px;">Provide the online meeting link (Google Meet, Zoom, etc.)</small>
         </div>
 
         <div class="form-row">
@@ -47,12 +40,86 @@
             </div>
         </div>
 
+        <!-- Lesson Type Selection -->
+        <div class="form-group">
+            <label>Lesson Type</label>
+            <select id="lessonType" name="LessonType" onchange="toggleLessonType()" required>
+                <option value="">-- Select Lesson Type --</option>
+                <option value="online">Online Meeting (Google Meet/Zoom)</option>
+                <option value="pdf">PDF Document</option>
+                <option value="video">Video File</option>
+            </select>
+        </div>
+
+        <!-- Online Meeting Section -->
+        <div id="meetingSection" class="form-group" style="display: none;">
+            <label asp-for="MeetLink">Meeting Link</label>
+            <input type="text" asp-for="MeetLink" placeholder="e.g., https://meet.google.com/xxx-xxxx-xxx" />
+            <span asp-validation-for="MeetLink" class="text-danger"></span>
+            <small style="color:#666; display: block; margin-top: 5px;">Provide the online meeting link (Google Meet, Zoom, Teams, etc.)</small>
+        </div>
+
+        <!-- File Upload Section -->
+        <div id="fileSection" style="display: none;">
+            <div class="materials-section">
+                <h3 id="fileTypeLabel">Upload Material</h3>
+
+                <div class="form-group">
+                    <label>File</label>
+                    <input type="file" name="MaterialFile" id="materialFile" accept=".pdf,.mp4,.avi,.mov,.mkv" />
+                    <small style="color:#666; display: block; margin-top: 5px;" id="fileHint">
+                        Supported formats: PDF (Max: 50MB) or Video MP4, AVI, MOV (Max: 500MB)
+                    </small>
+                </div>
+            </div>
+        </div>
+
         <div class="button-group">
             <button type="submit" class="btn btn-primary">Create Lesson</button>
             <a href="@Url.Action("ViewLesson", "Teacher")" class="btn btn-secondary">Cancel</a>
         </div>
     </form>
 </div>
+
+<script>
+    function toggleLessonType() {
+        const lessonType = document.getElementById('lessonType').value;
+        const meetingSection = document.getElementById('meetingSection');
+        const fileSection = document.getElementById('fileSection');
+        const fileInput = document.getElementById('materialFile');
+        const meetLinkInput = document.querySelector('input[name="MeetLink"]');
+        const fileTypeLabel = document.getElementById('fileTypeLabel');
+        const fileHint = document.getElementById('fileHint');
+
+        // Hide all sections first
+        meetingSection.style.display = 'none';
+        fileSection.style.display = 'none';
+
+        // Remove required attributes
+        if (meetLinkInput) meetLinkInput.removeAttribute('required');
+        if (fileInput) fileInput.removeAttribute('required');
+
+        // Show relevant section based on type
+        if (lessonType === 'online') {
+            meetingSection.style.display = 'block';
+            if (meetLinkInput) meetLinkInput.setAttribute('required', 'required');
+        }
+        else if (lessonType === 'pdf') {
+            fileSection.style.display = 'block';
+            fileTypeLabel.textContent = 'Upload PDF Document';
+            fileInput.setAttribute('accept', '.pdf');
+            fileInput.setAttribute('required', 'required');
+            fileHint.textContent = 'Upload PDF file (Max: 50MB)';
+        }
+        else if (lessonType === 'video') {
+            fileSection.style.display = 'block';
+            fileTypeLabel.textContent = 'Upload Video';
+            fileInput.setAttribute('accept', '.mp4,.avi,.mov,.mkv');
+            fileInput.setAttribute('required', 'required');
+            fileHint.textContent = 'Upload video file: MP4, AVI, MOV, MKV (Max: 500MB)';
+        }
+    }
+</script>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
