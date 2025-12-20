@@ -1,0 +1,55 @@
+﻿@model IEnumerable<RSD_E_Learning.Models.DB.Teacher>
+
+<table class="table table-bordered align-middle">
+    <thead class="table-light">
+        <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Subject Area</th>
+            <th>Status</th>
+            <th style="width:260px;">Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (!Model.Any())
+        {
+            <tr>
+                <td colspan="5" class="text-center text-muted py-4">
+                    No teachers found.
+                </td>
+            </tr>
+        }
+        else
+        {
+            foreach (var teacher in Model)
+            {
+                <tr>
+                    <td>@teacher.User?.FullName</td>
+                    <td>@teacher.User?.Email</td>
+                    <td>@teacher.SubjectArea</td>
+
+                    <td>
+                        <span class="badge status-badge @(teacher.IsActive ? "bg-success" : "bg-secondary")">
+                            @(teacher.IsActive ? "Active" : "Inactive")
+                        </span>
+                    </td>
+
+                    <td>
+                        <a asp-action="ResetTeacherPassword"
+                           asp-route-teacherId="@teacher.TeacherId"
+                           class="btn btn-sm btn-outline-warning me-1">
+                            Reset Password
+                        </a>
+
+                        <button type="button"
+                                class="btn btn-sm toggle-btn fixed-btn
+                                               @(teacher.IsActive ? "btn-outline-danger" : "btn-outline-success")"
+                                data-id="@teacher.TeacherId">
+                            @(teacher.IsActive ? "Deactivate" : "Activate")
+                        </button>
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>

@@ -27,7 +27,7 @@ namespace RSD_E_Learning.Controllers
                 .Include(t => t.User)
                 .AsQueryable();
 
-            // 🔍 Search by Name or Email
+            //  Search by Name or Email
             if (!string.IsNullOrWhiteSpace(search))
             {
                 query = query.Where(t =>
@@ -35,13 +35,13 @@ namespace RSD_E_Learning.Controllers
                     t.User.Email.Contains(search));
             }
 
-            // 🔘 Filter by Status
+            //  Filter by Status
             if (isActive.HasValue)
             {
                 query = query.Where(t => t.IsActive == isActive.Value);
             }
 
-            // 📚 Filter by Subject Area
+            //  Filter by Subject Area
             if (!string.IsNullOrWhiteSpace(subjectArea))
             {
                 query = query.Where(t => t.SubjectArea == subjectArea);
@@ -65,6 +65,40 @@ namespace RSD_E_Learning.Controllers
             };
 
             return View(vm);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Filter(
+            string? search,
+            bool? isActive,
+            string? subjectArea)
+        {
+            var query = _db.Teachers
+                .Include(t => t.User)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                query = query.Where(t =>
+                    t.User!.FullName.Contains(search) ||
+                    t.User.Email.Contains(search));
+            }
+
+            if (isActive.HasValue)
+            {
+                query = query.Where(t => t.IsActive == isActive.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(subjectArea))
+            {
+                query = query.Where(t => t.SubjectArea == subjectArea);
+            }
+
+            var teachers = await query
+                .OrderBy(t => t.User!.FullName)
+                .ToListAsync();
+
+            return PartialView("_TeacherTable", teachers);
         }
 
 

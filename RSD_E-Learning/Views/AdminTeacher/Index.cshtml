@@ -21,8 +21,8 @@
     </div>
 }
 
-<!-- 🔍 SEARCH & FILTER -->
-<form method="get" class="row g-2 mb-3">
+<!-- ================= SEARCH & FILTER ================= -->
+<form id="filterForm" class="row g-2 mb-4">
 
     <div class="col-md-4">
         <input name="search"
@@ -33,7 +33,7 @@
 
     <div class="col-md-3">
         <select name="isActive" class="form-select">
-            <option value="">-- All Status --</option>
+            <option value="">All Status</option>
             <option value="true" selected="@(Model.IsActive == true)">Active</option>
             <option value="false" selected="@(Model.IsActive == false)">Inactive</option>
         </select>
@@ -41,7 +41,7 @@
 
     <div class="col-md-3">
         <select name="subjectArea" class="form-select">
-            <option value="">-- All Subjects --</option>
+            <option value="">All Subjects</option>
             @foreach (var subject in Model.SubjectAreas)
             {
                 <option value="@subject"
@@ -53,53 +53,17 @@
     </div>
 
     <div class="col-md-2 d-grid">
-        <button class="btn btn-primary">Filter</button>
+        <button class="btn btn-primary">
+            Apply
+        </button>
     </div>
+
 </form>
 
-<!-- 📋 TEACHERS TABLE -->
-<table class="table table-bordered align-middle">
-    <thead class="table-light">
-        <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Subject Area</th>
-            <th>Status</th>
-            <th style="width:260px;">Action</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var teacher in Model.Teachers)
-        {
-            <tr>
-                <td>@teacher.User?.FullName</td>
-                <td>@teacher.User?.Email</td>
-                <td>@teacher.SubjectArea</td>
-
-                <td>
-                    <span class="badge status-badge @(teacher.IsActive ? "bg-success" : "bg-secondary")">
-                        @(teacher.IsActive ? "Active" : "Inactive")
-                    </span>
-                </td>
-
-                <td>
-                    <a asp-action="ResetTeacherPassword"
-                       asp-route-teacherId="@teacher.TeacherId"
-                       class="btn btn-sm btn-outline-warning me-1">
-                        Reset Password
-                    </a>
-
-                    <button type="button"
-                            class="btn btn-sm toggle-btn fixed-btn
-                                       @(teacher.IsActive ? "btn-outline-danger" : "btn-outline-success")"
-                            data-id="@teacher.TeacherId">
-                        @(teacher.IsActive ? "Deactivate" : "Activate")
-                    </button>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+<!-- ================= TABLE CONTAINER ================= -->
+<div id="teacherTable">
+    @await Html.PartialAsync("_TeacherTable", Model.Teachers)
+</div>
 
 <div class="mt-4">
     <a asp-controller="AdminDashboard"
@@ -111,42 +75,59 @@
 
 @section Scripts {
     <script>
-        document.querySelectorAll('.toggle-btn').forEach(btn => {
-            btn.addEventListener('click', function () {
+        const form = document.getElementById('filterForm');
+        const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
 
-                const id = this.dataset.id;
-                const row = this.closest('tr');
-                const badge = row.querySelector('.status-badge');
-                const button = this;
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
 
-                fetch('/AdminTeacher/ToggleStatusAjax', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'RequestVerificationToken':
-                            document.querySelector('input[name="__RequestVerificationToken"]').value
-                    },
-                    body: JSON.stringify({ id: parseInt(id) })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (!data.success) return;
+            const params = new URLSearchParams(new FormData(form)).toString();
 
-                    if (data.isActive) {
-                        badge.textContent = 'Active';
-                        badge.className = 'badge status-badge bg-success';
-
-                        button.textContent = 'Deactivate';
-                        button.className = 'btn btn-sm btn-outline-danger toggle-btn fixed-btn';
-                    } else {
-                        badge.textContent = 'Inactive';
-                        badge.className = 'badge status-badge bg-secondary';
-
-                        button.textContent = 'Activate';
-                        button.className = 'btn btn-sm btn-outline-success toggle-btn fixed-btn';
-                    }
+            fetch('/AdminTeacher/Filter?' + params)
+                .then(res => res.text())
+                .then(html => {
+                    document.getElementById('teacherTable').innerHTML = html;
+                    attachToggleHandlers();
                 });
-            });
         });
+
+        function attachToggleHandlers() {
+            document.querySelectorAll('.toggle-btn').forEach(btn => {
+                btn.onclick = function () {
+
+                    const id = this.dataset.id;
+                    const row = this.closest('tr');
+                    const badge = row.querySelector('.status-badge');
+                    const button = this;
+
+                    fetch('/AdminTeacher/ToggleStatusAjax', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': token
+                        },
+                        body: JSON.stringify({ id: parseInt(id) })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (!data.success) return;
+
+                        if (data.isActive) {
+                            badge.textContent = 'Active';
+                            badge.className = 'badge status-badge bg-success';
+                            button.textContent = 'Deactivate';
+                            button.className = 'btn btn-sm btn-outline-danger toggle-btn fixed-btn';
+                        } else {
+                            badge.textContent = 'Inactive';
+                            badge.className = 'badge status-badge bg-secondary';
+                            button.textContent = 'Activate';
+                            button.className = 'btn btn-sm btn-outline-success toggle-btn fixed-btn';
+                        }
+                    });
+                };
+            });
+        }
+
+        attachToggleHandlers();
     </script>
 }
