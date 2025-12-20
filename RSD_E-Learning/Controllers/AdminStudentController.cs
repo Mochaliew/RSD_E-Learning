@@ -16,7 +16,7 @@ namespace RSD_E_Learning.Controllers
         }
 
         // ================= LIST =================
-        public async Task<IActionResult> Index(string? search, bool? isActive, string? className)
+        public async Task<IActionResult> Index(string? search, bool? isActive)
         {
             var query = _db.Students
                 .Include(s => s.User)
@@ -39,27 +39,13 @@ namespace RSD_E_Learning.Controllers
                     query = query.Where(s => s.User!.LockoutEnd != null);
             }
 
-            // FILTER: Class
-            if (!string.IsNullOrWhiteSpace(className))
-            {
-                query = query.Where(s => s.ClassName == className);
-            }
-
             var vm = new StudentFilterVm
             {
                 Search = search,
                 IsActive = isActive,
-                ClassName = className,
                 Students = await query
                     .OrderBy(s => s.User!.FullName)
                     .ToListAsync(),
-
-                ClassNames = await _db.Students
-                    .Where(s => s.ClassName != null)
-                    .Select(s => s.ClassName!)
-                    .Distinct()
-                    .OrderBy(c => c)
-                    .ToListAsync()
             };
 
             return View(vm);
@@ -105,7 +91,7 @@ namespace RSD_E_Learning.Controllers
 
         // ================= AJAX FILTER =================
         [HttpGet]
-        public async Task<IActionResult> Filter(string? search, bool? isActive, string? className)
+        public async Task<IActionResult> Filter(string? search, bool? isActive)
         {
             var query = _db.Students
                 .Include(s => s.User)
@@ -123,11 +109,6 @@ namespace RSD_E_Learning.Controllers
                 query = isActive.Value
                     ? query.Where(s => s.User!.LockoutEnd == null)
                     : query.Where(s => s.User!.LockoutEnd != null);
-            }
-
-            if (!string.IsNullOrWhiteSpace(className))
-            {
-                query = query.Where(s => s.ClassName == className);
             }
 
             var students = await query
