@@ -104,10 +104,10 @@ namespace RSD_E_Learning.Models
         public string? Description { get; set; }
 
         [Display(Name = "Scheduled Date & Time")]
-        public DateTime? ScheduledDate { get; set; }
+        public DateTime? ScheduleDate { get; set; }
 
         public List<DB.CourseFile> ExistingFiles { get; set; } = new();
-
+    }
 
         // Teacher Edit View Models //
         public class TeacherEditVM
@@ -263,10 +263,53 @@ namespace RSD_E_Learning.Models
             public int UnpublishedCourses { get; set; }
         }
 
+    // filter
+    public class TeacherFilterVm
+    {
+        public string? Search { get; set; }
+        public bool? IsActive { get; set; }
+        public string? SubjectArea { get; set; }
 
+        public List<DB.Teacher> Teachers { get; set; } = new();
+        public List<string> SubjectAreas { get; set; } = new();
+    }
 
-        // Login View Models //
-        public class LoginViewModel
+    public class StudentFilterVm
+    {
+        public string? Search { get; set; }
+        public bool? IsActive { get; set; }
+        public string? ClassName { get; set; }
+
+        public List<DB.Student> Students { get; set; } = new();
+        public List<string> ClassNames { get; set; } = new();
+    }
+
+    public class CourseFilterVm
+    {
+        public string? Search { get; set; }
+        public string Filter { get; set; } = "all";
+
+        public List<DB.Course> Courses { get; set; } = new();
+    }
+
+    public class CategoryFilterVm
+    {
+        public string? Search { get; set; }
+        public bool ShowDeleted { get; set; }
+
+        public List<DB.Category> Categories { get; set; } = new();
+    }
+
+    public class PromoCodeFilterVm
+    {
+        public string? Search { get; set; }
+        public string? Status { get; set; }
+
+        public List<PromoCodeListVm> PromoCodes { get; set; } = new();
+    }
+
+    // Login View Models //
+    public class LoginViewModel
         {
             [Required, EmailAddress]
             [Display(Name = "Email Address")]
@@ -428,7 +471,6 @@ namespace RSD_E_Learning.Models
         }
 
 
-    }
 }
 
 

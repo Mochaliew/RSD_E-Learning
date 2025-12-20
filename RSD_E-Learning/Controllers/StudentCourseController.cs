@@ -198,7 +198,7 @@ namespace RSD_E_Learning.Controllers
                 _db.StudentMaterialProgresses.Add(progress);
                 await _db.SaveChangesAsync();
 
-                await UpdateCourseProgress(student.StudentId, material.CourseId);
+                await UpdateCourseProgress(student.StudentId, material.LessonId);
             }
 
             return View(material);
@@ -208,7 +208,7 @@ namespace RSD_E_Learning.Controllers
         private async Task UpdateCourseProgress(int studentId, int courseId)
         {
             var totalMaterials = await _db.CourseFiles
-                .CountAsync(f => f.CourseId == courseId && f.IsActive);
+                .CountAsync(f => f.LessonId == courseId && f.IsActive);
 
             if (totalMaterials == 0)
                 return;
@@ -219,7 +219,7 @@ namespace RSD_E_Learning.Controllers
                     p.IsCompleted &&
                     _db.CourseFiles.Any(f =>
                         f.CourseFileId == p.CourseFileId &&
-                        f.CourseId == courseId));
+                        f.LessonId == courseId));
 
             var percentage = (int)Math.Round(
                 (double)completedMaterials / totalMaterials * 100
