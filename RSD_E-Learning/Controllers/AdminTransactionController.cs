@@ -15,8 +15,16 @@ namespace RSD_E_Learning.Controllers
             _db = db;
         }
 
-        // ================= TRANSACTION LIST + FILTER =================
-        public async Task<IActionResult> Index(
+        // ================= MAIN PAGE =================
+        public async Task<IActionResult> Index()
+        {
+            ViewBag.Courses = await _db.Courses.ToListAsync();
+            return View();
+        }
+
+        // ================= AJAX LIST =================
+        [HttpGet]
+        public async Task<IActionResult> AjaxList(
             int? courseId,
             DateTime? startDate,
             DateTime? endDate)
@@ -27,11 +35,9 @@ namespace RSD_E_Learning.Controllers
                 .Where(e => e.PaymentStatus)
                 .AsQueryable();
 
-            // FILTER: Course
             if (courseId.HasValue)
                 query = query.Where(e => e.CourseId == courseId);
 
-            // FILTER: Date Range
             if (startDate.HasValue)
                 query = query.Where(e => e.EnrolledAt >= startDate.Value);
 
@@ -42,9 +48,7 @@ namespace RSD_E_Learning.Controllers
                 .OrderByDescending(e => e.EnrolledAt)
                 .ToListAsync();
 
-            ViewBag.Courses = await _db.Courses.ToListAsync();
-
-            return View(transactions);
+            return PartialView("_TransactionTable", transactions);
         }
     }
 }
