@@ -59,6 +59,44 @@ namespace RSD_E_Learning.Controllers
             return View(vm);
         }
 
+        // ================= AJAX SEARCH + FILTER =================
+        [HttpGet]
+        public async Task<IActionResult> AjaxList(string? search, string filter = "all")
+        {
+            var query = _db.Courses
+                .Include(c => c.Teacher).ThenInclude(t => t.User)
+                .Include(c => c.Category)
+                .AsQueryable();
+
+            // SEARCH
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                query = query.Where(c =>
+                    c.Title.Contains(search) ||
+                    c.Teacher!.User!.FullName.Contains(search));
+            }
+
+            // FILTER
+            switch (filter)
+            {
+                case "pending":
+                    query = query.Where(c => !c.IsApproved && !c.IsRejected);
+                    break;
+                case "approved":
+                    query = query.Where(c => c.IsApproved && !c.IsRejected);
+                    break;
+                case "rejected":
+                    query = query.Where(c => c.IsRejected);
+                    break;
+            }
+
+            var courses = await query
+                .OrderByDescending(c => c.CourseId)
+                .ToListAsync();
+
+            return PartialView("_CourseTable", courses);
+        }
+
 
         // =========================
         // PUBLISH / UNPUBLISH
@@ -103,7 +141,7 @@ namespace RSD_E_Learning.Controllers
             if (course == null)
                 return Json(new { success = false });
 
-            // ❌ Cannot publish rejected course
+            //  Cannot publish rejected course
             if (course.IsRejected)
             {
                 return Json(new

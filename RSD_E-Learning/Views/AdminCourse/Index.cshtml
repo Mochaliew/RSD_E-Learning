@@ -7,17 +7,21 @@
 
 <h2 class="mb-3">Manage Courses</h2>
 
-<!-- SEARCH + FILTER -->
-<form method="get" class="row g-2 mb-3">
+<!-- ================= SEARCH + FILTER ================= -->
+<form id="filterForm" class="row g-2 mb-3 align-items-end">
+
     <div class="col-md-4">
-        <input name="search"
+        <label class="form-label fw-semibold">Search</label>
+        <input type="text"
+               id="search"
                value="@Model.Search"
                class="form-control"
                placeholder="Search course or teacher" />
     </div>
 
     <div class="col-md-4">
-        <select name="filter" class="form-select">
+        <label class="form-label fw-semibold">Status</label>
+        <select id="filter" class="form-select">
             <option value="all" selected="@(Model.Filter == "all")">All</option>
             <option value="pending" selected="@(Model.Filter == "pending")">Pending</option>
             <option value="approved" selected="@(Model.Filter == "approved")">Approved</option>
@@ -26,63 +30,79 @@
     </div>
 
     <div class="col-md-2 d-grid">
-        <button class="btn btn-primary">Filter</button>
+        <button class="btn btn-primary">
+            Apply
+        </button>
     </div>
+
 </form>
 
-<!-- TABLE -->
-<table class="table table-bordered align-middle">
-    <thead class="table-light">
-        <tr>
-            <th>Title</th>
-            <th>Teacher</th>
-            <th>Category</th>
-            <th>Status</th>
-            <th>Publish</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var course in Model.Courses)
-        {
+<!-- ================= TABLE (AJAX TARGET) ================= -->
+<div id="courseTable">
+    <table class="table table-bordered align-middle">
+        <thead class="table-light">
             <tr>
-                <td>@course.Title</td>
-                <td>@course.Teacher?.User?.FullName</td>
-                <td>@course.Category?.Name</td>
-
-                <td>
-                    @if (course.IsRejected)
-                    {
-                        <span class="badge bg-danger">Rejected</span>
-                    }
-                    else if (!course.IsApproved)
-                    {
-                        <span class="badge bg-warning">Pending</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-success">Approved</span>
-                    }
-                </td>
-
-                <td>
-                    @if (course.IsApproved && !course.IsRejected)
-                    {
-                        <button type="button"
-                                class="btn btn-sm toggle-btn fixed-btn
-                                               @(course.IsPublished ? "btn-outline-danger" : "btn-outline-success")"
-                                data-id="@course.CourseId">
-                            @(course.IsPublished ? "Unpublish" : "Publish")
-                        </button>
-                    }
-                    else
-                    {
-                        <span class="text-muted">N/A</span>
-                    }
-                </td>
+                <th>Title</th>
+                <th>Teacher</th>
+                <th>Category</th>
+                <th>Status</th>
+                <th>Publish</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @if (!Model.Courses.Any())
+            {
+                <tr>
+                    <td colspan="5" class="text-center text-muted">
+                        No courses found.
+                    </td>
+                </tr>
+            }
+            else
+            {
+                foreach (var course in Model.Courses)
+                {
+                    <tr>
+                        <td>@course.Title</td>
+                        <td>@course.Teacher?.User?.FullName</td>
+                        <td>@course.Category?.Name</td>
+
+                        <td>
+                            @if (course.IsRejected)
+                            {
+                                <span class="badge bg-danger">Rejected</span>
+                            }
+                            else if (!course.IsApproved)
+                            {
+                                <span class="badge bg-warning">Pending</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success">Approved</span>
+                            }
+                        </td>
+
+                        <td>
+                            @if (course.IsApproved && !course.IsRejected)
+                            {
+                                <button type="button"
+                                        class="btn btn-sm toggle-btn fixed-btn
+                                                           @(course.IsPublished ? "btn-outline-danger" : "btn-outline-success")"
+                                        data-id="@course.CourseId">
+                                    @(course.IsPublished ? "Unpublish" : "Publish")
+                                </button>
+                            }
+                            else
+                            {
+                                <span class="text-muted">N/A</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
 
 <a asp-controller="AdminDashboard"
    asp-action="Index"
@@ -92,36 +112,43 @@
 
 @section Scripts {
     <script>
-        document.querySelectorAll('.toggle-btn').forEach(btn => {
-            btn.addEventListener('click', function () {
+        // ================= AJAX FILTER =================
+        document.getElementById('filterForm').addEventListener('submit', function (e) {
+            e.preventDefault();
 
-                const id = this.dataset.id;
-                const button = this;
-
-                fetch('/AdminCourse/TogglePublishAjax', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'RequestVerificationToken':
-                            document.querySelector('input[name="__RequestVerificationToken"]').value
-                    },
-                    body: JSON.stringify({ id: parseInt(id) })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (!data.success) {
-                        alert(data.message ?? 'Action failed');
-                        return;
-                    }
-
-                    if (data.isPublished) {
-                        button.innerText = 'Unpublish';
-                        button.className = 'btn btn-sm btn-outline-danger toggle-btn fixed-btn';
-                    } else {
-                        button.innerText = 'Publish';
-                        button.className = 'btn btn-sm btn-outline-success toggle-btn fixed-btn';
-                    }
+            fetch(`/AdminCourse/AjaxList?search=${search.value}&filter=${filter.value}`)
+                .then(res => res.text())
+                .then(html => {
+                    document.getElementById('courseTable').innerHTML = html;
                 });
+        });
+
+        // ================= PUBLISH / UNPUBLISH =================
+        document.addEventListener('click', function (e) {
+            if (!e.target.classList.contains('toggle-btn')) return;
+
+            const btn = e.target;
+            const id = btn.dataset.id;
+
+            fetch('/AdminCourse/TogglePublishAjax', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken':
+                        document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: JSON.stringify({ id: parseInt(id) })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (!data.success) {
+                    alert(data.message ?? 'Action failed');
+                    return;
+                }
+
+                // reload table after toggle
+                document.getElementById('filterForm')
+                    .dispatchEvent(new Event('submit'));
             });
         });
     </script>
