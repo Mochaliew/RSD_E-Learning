@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using RSD_E_Learning.Models;
+using RSD_E_Learning.ViewModels;
 using System.Security.Claims;
 using System.Text;
 
@@ -857,5 +858,37 @@ namespace RSD_E_Learning.Controllers
             ViewBag.CourseId = courseId;
             return View();
         }
+        // ------------------------- VIEW ASSESSMENT [GET] ------------------------- //
+        [HttpGet]
+        public async Task<IActionResult> ViewAssessment(int id)
+        {
+            var teacherIdClaim = User.FindFirst("TeacherId");
+            if (teacherIdClaim == null)
+                return RedirectToAction("TeacherLogin");
+
+            int teacherId = int.Parse(teacherIdClaim.Value);
+
+            var assessment = await _context.Assessments
+                .Include(a => a.Course)
+                .FirstOrDefaultAsync(a =>
+                    a.AssessmentId == id &&
+                    a.Course.TeacherId == teacherId);
+
+            if (assessment == null)
+                return NotFound();
+
+            var questions = await _context.AssessmentQuestions
+                .Where(q => q.AssessmentId == id)
+                .ToListAsync();
+
+            var vm = new ViewAssessmentVm
+            {
+                Assessment = assessment,
+                Questions = questions
+            };
+
+            return View(vm);
+        }
+
     }
 }
