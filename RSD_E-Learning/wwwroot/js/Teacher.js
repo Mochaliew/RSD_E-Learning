@@ -271,12 +271,8 @@ async function publishAssessment() {
     const payload = {
         CourseId: parseInt(courseId),
         Title: title,
-<<<<<<< HEAD
         PassingMark: passingMark,
         DeadLine: deadlineDate.toISOString(),
-=======
-        DeadLine: deadlineDate,
->>>>>>> 50ef53410ac889cfb59e987c326cfdad317e1629
         Questions: questions
     };
 
