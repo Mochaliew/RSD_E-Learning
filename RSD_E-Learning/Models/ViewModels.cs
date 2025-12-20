@@ -149,10 +149,10 @@ namespace RSD_E_Learning.Models
         }
 
         // Course File View Models //
-        public class CourseFileVm
-        {
-            public int FileId { get; set; }
-            public int CourseId { get; set; }
+    public class CourseFileVm
+    {
+        public int FileId { get; set; }
+        public int CourseId { get; set; }
 
             [Required]
             public string FileName { get; set; } = "";

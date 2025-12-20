@@ -1,54 +1,142 @@
-﻿@model IEnumerable<RSD_E_Learning.Models.DB.Student>
+﻿@model RSD_E_Learning.Models.StudentFilterVm
+@Html.AntiForgeryToken()
 
 @{
     ViewData["Title"] = "Manage Students";
 }
 
-@Html.AntiForgeryToken()
-
 <h2 class="mb-3">Manage Students</h2>
 
-<table class="table table-bordered align-middle">
-    <thead class="table-light">
-        <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Class</th>
-            <th>Status</th>
-            <th style="width:220px;">Action</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var student in Model)
-        {
-            var isActive = student.User?.LockoutEnd == null;
+<!-- ================= SEARCH + FILTER ================= -->
+<form method="get" class="row g-2 mb-3 align-items-end">
 
+    <!-- SEARCH -->
+    <div class="col-md-4">
+        <label class="form-label fw-semibold">Search</label>
+        <input type="text"
+               name="search"
+               value="@Model.Search"
+               class="form-control"
+               placeholder="Search name or email..." />
+    </div>
+
+    <!-- STATUS -->
+    <div class="col-md-3">
+        <label class="form-label fw-semibold">Status</label>
+        <select name="isActive" class="form-select">
+            <option value="">All</option>
+            <option value="true" selected="@(Model.IsActive == true)">Active</option>
+            <option value="false" selected="@(Model.IsActive == false)">Inactive</option>
+        </select>
+    </div>
+
+    <!-- CLASS -->
+    <div class="col-md-3">
+        <label class="form-label fw-semibold">Class</label>
+        <select name="className" class="form-select">
+            <option value="">All</option>
+            @foreach (var cls in Model.ClassNames)
+            {
+                <option value="@cls" selected="@(Model.ClassName == cls)">
+                    @cls
+                </option>
+            }
+        </select>
+    </div>
+
+    <!-- APPLY -->
+    <div class="col-md-2 d-grid">
+        <button class="btn btn-primary">
+            Apply
+        </button>
+    </div>
+
+</form>
+
+<!-- ================= BULK ACTION ================= -->
+<form asp-action="BulkUpdateStatus" method="post">
+    @Html.AntiForgeryToken()
+
+    <div class="mb-3 d-flex gap-2">
+        <button type="submit"
+                name="actionType"
+                value="activate"
+                class="btn btn-outline-success">
+            Activate Selected
+        </button>
+
+        <button type="submit"
+                name="actionType"
+                value="deactivate"
+                class="btn btn-outline-danger">
+            Deactivate Selected
+        </button>
+    </div>
+
+
+    <table class="table table-bordered align-middle">
+        <thead class="table-light">
             <tr>
-                <td>@student.User?.FullName</td>
-                <td>@student.User?.Email</td>
-                <td>@student.ClassName</td>
-
-                <!-- STATUS -->
-                <td>
-                    <span class="badge status-badge @(isActive ? "bg-success" : "bg-secondary")">
-                        @(isActive ? "Active" : "Inactive")
-                    </span>
-                </td>
-
-                <!-- ACTION -->
-                <td>
-                    <button type="button"
-                            class="btn btn-sm toggle-btn fixed-btn
-                                       @(isActive ? "btn-outline-danger" : "btn-outline-success")"
-                            data-id="@student.StudentId">
-                        @(isActive ? "Deactivate" : "Activate")
-                    </button>
-                </td>
+                <th style="width:40px">
+                    <input type="checkbox" id="selectAll" />
+                </th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Class</th>
+                <th>Status</th>
+                <th style="width:180px">Action</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @if (!Model.Students.Any())
+            {
+                <tr>
+                    <td colspan="6" class="text-center text-muted">
+                        No students found.
+                    </td>
+                </tr>
+            }
+            else
+            {
+                @foreach (var student in Model.Students)
+                {
+                    var isActive = student.User?.LockoutEnd == null;
 
+                    <tr>
+                        <td>
+                            <input type="checkbox"
+                                   name="selectedIds"
+                                   value="@student.StudentId" />
+                        </td>
+
+                        <td>@student.User?.FullName</td>
+                        <td>@student.User?.Email</td>
+                        <td>@student.ClassName</td>
+
+                        <!-- STATUS -->
+                        <td>
+                            <span class="badge @(isActive ? "bg-success" : "bg-secondary")">
+                                @(isActive ? "Active" : "Inactive")
+                            </span>
+                        </td>
+
+                        <!-- SINGLE TOGGLE -->
+                        <td>
+                            <button type="button"
+                                    class="btn btn-sm toggle-btn
+                                                   @(isActive ? "btn-outline-danger" : "btn-outline-success")"
+                                    data-id="@student.StudentId">
+                                @(isActive ? "Deactivate" : "Activate")
+                            </button>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</form>
+
+<!-- ================= BACK ================= -->
 <a asp-controller="AdminDashboard"
    asp-action="Index"
    class="btn btn-secondary mt-3">
@@ -57,12 +145,20 @@
 
 @section Scripts {
     <script>
+        // Select all checkbox
+        document.getElementById('selectAll')?.addEventListener('change', function () {
+            document.querySelectorAll('input[name="selectedIds"]').forEach(cb => {
+                cb.checked = this.checked;
+            });
+        });
+
+        // AJAX single toggle
         document.querySelectorAll('.toggle-btn').forEach(btn => {
             btn.addEventListener('click', function () {
 
                 const id = this.dataset.id;
                 const row = this.closest('tr');
-                const badge = row.querySelector('.status-badge');
+                const badge = row.querySelector('.badge');
                 const button = this;
 
                 fetch('/AdminStudent/ToggleStatusAjax', {
@@ -79,15 +175,15 @@
                     if (!data.success) return;
 
                     if (data.isActive) {
-                        badge.className = 'badge bg-success status-badge';
+                        badge.className = 'badge bg-success';
                         badge.innerText = 'Active';
+                        button.className = 'btn btn-sm btn-outline-danger toggle-btn';
                         button.innerText = 'Deactivate';
-                        button.className = 'btn btn-sm btn-outline-danger toggle-btn fixed-btn';
                     } else {
-                        badge.className = 'badge bg-secondary status-badge';
+                        badge.className = 'badge bg-secondary';
                         badge.innerText = 'Inactive';
+                        button.className = 'btn btn-sm btn-outline-success toggle-btn';
                         button.innerText = 'Activate';
-                        button.className = 'btn btn-sm btn-outline-success toggle-btn fixed-btn';
                     }
                 });
             });

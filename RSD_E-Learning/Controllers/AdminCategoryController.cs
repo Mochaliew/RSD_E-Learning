@@ -16,13 +16,31 @@ namespace RSD_E_Learning.Controllers
         }
 
         // -------------------- LIST --------------------
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string? search, bool showDeleted = false)
         {
-            var categories = await _db.Categories
-                .Where(c => !c.IsDeleted)
-                .ToListAsync();
-            return View(categories);
+            var query = _db.Categories.AsQueryable();
+
+            query = showDeleted
+                ? query.Where(c => c.IsDeleted)
+                : query.Where(c => !c.IsDeleted);
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                query = query.Where(c => c.Name.Contains(search));
+            }
+
+            var vm = new CategoryFilterVm
+            {
+                Search = search,
+                ShowDeleted = showDeleted,
+                Categories = await query
+                    .OrderBy(c => c.Name)
+                    .ToListAsync()
+            };
+
+            return View(vm);
         }
+
 
         // -------------------- CREATE --------------------
         [HttpGet]

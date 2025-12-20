@@ -43,8 +43,31 @@ namespace RSD_E_Learning.Controllers
             if (course == null)
                 return NotFound();
 
+            
+            bool isEnrolled = false;
+
+            if (User.Identity!.IsAuthenticated && User.IsInRole("Student"))
+            {
+                var userEmail = User.Identity.Name;
+
+                var student = await _db.Students
+                    .Include(s => s.User)
+                    .FirstOrDefaultAsync(s => s.User!.Email == userEmail);
+
+                if (student != null)
+                {
+                    isEnrolled = await _db.Enrollments.AnyAsync(e =>
+                        e.StudentId == student.StudentId &&
+                        e.CourseId == id);
+                }
+            }
+
+            ViewBag.IsEnrolled = isEnrolled;
+
             return View(course);
         }
+
+
 
         // ================== ENROLL COURSE ==================
         [HttpPost]
@@ -262,6 +285,67 @@ namespace RSD_E_Learning.Controllers
 
             return View(course);
         }
+
+        [Authorize(Roles = "Student")]
+        public async Task<IActionResult> Payment(int courseId)
+        {
+            var course = await _db.Courses
+                .Include(c => c.Category)
+                .FirstOrDefaultAsync(c => c.CourseId == courseId);
+
+            if (course == null)
+                return NotFound();
+
+            return View(course);
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Student")]
+        public async Task<IActionResult> ConfirmPayment(int courseId)
+        {
+            var userEmail = User.Identity!.Name;
+
+            var student = await _db.Students
+                .Include(s => s.User)
+                .FirstOrDefaultAsync(s => s.User!.Email == userEmail);
+
+            if (student == null)
+                return Unauthorized();
+
+            // Prevent double enrollment
+            var alreadyEnrolled = await _db.Enrollments.AnyAsync(e =>
+                e.StudentId == student.StudentId &&
+                e.CourseId == courseId);
+
+            if (alreadyEnrolled)
+                return RedirectToAction("MyCourses");
+
+            // Create enrollment
+            _db.Enrollments.Add(new Enrollment
+            {
+                StudentId = student.StudentId,
+                CourseId = courseId,
+                PaymentStatus = true,
+                PaymentMethod = "FakeGateway",
+                AmountPaid = 99
+            });
+
+            // Create progress
+            _db.StudentCourseProgresses.Add(new StudentCourseProgress
+            {
+                StudentId = student.StudentId,
+                CourseId = courseId,
+                ProgressPercentage = 0,
+                UpdatedAt = DateTime.UtcNow
+            });
+
+            await _db.SaveChangesAsync();
+
+            return RedirectToAction("MyCourses");
+        }
+
 
 
 

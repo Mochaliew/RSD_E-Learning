@@ -1,4 +1,4 @@
-﻿@model IEnumerable<RSD_E_Learning.Models.DB.Teacher>
+﻿@model RSD_E_Learning.Models.TeacherFilterVm
 
 @{
     ViewData["Title"] = "Manage Teachers";
@@ -21,6 +21,43 @@
     </div>
 }
 
+<!-- 🔍 SEARCH & FILTER -->
+<form method="get" class="row g-2 mb-3">
+
+    <div class="col-md-4">
+        <input name="search"
+               value="@Model.Search"
+               class="form-control"
+               placeholder="Search name or email" />
+    </div>
+
+    <div class="col-md-3">
+        <select name="isActive" class="form-select">
+            <option value="">-- All Status --</option>
+            <option value="true" selected="@(Model.IsActive == true)">Active</option>
+            <option value="false" selected="@(Model.IsActive == false)">Inactive</option>
+        </select>
+    </div>
+
+    <div class="col-md-3">
+        <select name="subjectArea" class="form-select">
+            <option value="">-- All Subjects --</option>
+            @foreach (var subject in Model.SubjectAreas)
+            {
+                <option value="@subject"
+                        selected="@(Model.SubjectArea == subject)">
+                    @subject
+                </option>
+            }
+        </select>
+    </div>
+
+    <div class="col-md-2 d-grid">
+        <button class="btn btn-primary">Filter</button>
+    </div>
+</form>
+
+<!-- 📋 TEACHERS TABLE -->
 <table class="table table-bordered align-middle">
     <thead class="table-light">
         <tr>
@@ -32,21 +69,19 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var teacher in Model)
+        @foreach (var teacher in Model.Teachers)
         {
             <tr>
                 <td>@teacher.User?.FullName</td>
                 <td>@teacher.User?.Email</td>
                 <td>@teacher.SubjectArea</td>
 
-                <!--STATUS (AJAX READY) -->
                 <td>
                     <span class="badge status-badge @(teacher.IsActive ? "bg-success" : "bg-secondary")">
                         @(teacher.IsActive ? "Active" : "Inactive")
                     </span>
                 </td>
 
-                <!--ACTIONS -->
                 <td>
                     <a asp-action="ResetTeacherPassword"
                        asp-route-teacherId="@teacher.TeacherId"
@@ -91,7 +126,7 @@
                         'RequestVerificationToken':
                             document.querySelector('input[name="__RequestVerificationToken"]').value
                     },
-                    body: JSON.stringify({ id: parseInt(id) }) 
+                    body: JSON.stringify({ id: parseInt(id) })
                 })
                 .then(res => res.json())
                 .then(data => {

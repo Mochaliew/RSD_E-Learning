@@ -18,15 +18,55 @@ namespace RSD_E_Learning.Controllers
         }
 
         // ================== LIST ==================
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(
+    string? search,
+    bool? isActive,
+    string? subjectArea)
         {
-            var teachers = await _db.Teachers
+            var query = _db.Teachers
                 .Include(t => t.User)
-                .OrderBy(t => t.User!.FullName)
-                .ToListAsync();
+                .AsQueryable();
 
-            return View(teachers);
+            // 🔍 Search by Name or Email
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                query = query.Where(t =>
+                    t.User!.FullName.Contains(search) ||
+                    t.User.Email.Contains(search));
+            }
+
+            // 🔘 Filter by Status
+            if (isActive.HasValue)
+            {
+                query = query.Where(t => t.IsActive == isActive.Value);
+            }
+
+            // 📚 Filter by Subject Area
+            if (!string.IsNullOrWhiteSpace(subjectArea))
+            {
+                query = query.Where(t => t.SubjectArea == subjectArea);
+            }
+
+            var vm = new TeacherFilterVm
+            {
+                Search = search,
+                IsActive = isActive,
+                SubjectArea = subjectArea,
+
+                Teachers = await query
+                    .OrderBy(t => t.User!.FullName)
+                    .ToListAsync(),
+
+                SubjectAreas = await _db.Teachers
+                    .Select(t => t.SubjectArea)
+                    .Distinct()
+                    .OrderBy(s => s)
+                    .ToListAsync()
+            };
+
+            return View(vm);
         }
+
 
         // ================== CREATE (GET) ==================
         [HttpGet]

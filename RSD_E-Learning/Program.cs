@@ -2,6 +2,9 @@
 using Microsoft.EntityFrameworkCore;
 using RSD_E_Learning.Models;
 using System.Text;
+
+using Stripe;
+
 using static RSD_E_Learning.Models.DB;
 
 
@@ -162,6 +165,10 @@ using (var scope = app.Services.CreateScope())
     }
 
 }
+
+StripeConfiguration.ApiKey =
+    builder.Configuration["Stripe:SecretKey"];
+
 
 // Enable API Controllers
 app.MapControllers();
