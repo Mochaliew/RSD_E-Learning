@@ -1,0 +1,35 @@
+﻿@model RSD_E_Learning.Models.DB.Course
+@{
+    ViewData["Title"] = "Assessments";
+}
+
+<h3>📝 Assessments</h3>
+
+@if (!Model.Assessments.Any())
+{
+    <p class="text-muted">No assessments available.</p>
+}
+else
+{
+    <ul class="list-group">
+        @foreach (var a in Model.Assessments.OrderBy(a => a.DeadLine))
+        {
+            <li class="list-group-item d-flex justify-content-between">
+                <div>
+                    <strong>@a.Title</strong><br />
+                    <small class="text-muted">
+                        Deadline: @a.DeadLine.ToString("dd MMM yyyy")
+                    </small>
+                </div>
+
+                <a asp-controller="StudentAssessment"
+                   asp-action="Details"
+                   asp-route-id="@a.AssessmentId"
+                   class="btn btn-outline-primary btn-sm">
+                    View
+                </a>
+
+            </li>
+        }
+    </ul>
+}

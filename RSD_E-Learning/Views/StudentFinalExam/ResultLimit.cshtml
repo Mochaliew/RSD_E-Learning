@@ -1,0 +1,17 @@
+﻿@{
+    ViewData["Title"] = "Attempt Limit Reached";
+}
+
+<h3>Final Exam Attempt Limit</h3>
+
+<div class="alert alert-warning">
+    ⚠️ You have reached the maximum number of attempts (3) for this final exam.
+    <br />
+    Please contact your instructor if you require assistance.
+</div>
+
+<a asp-controller="StudentCourse"
+   asp-action="MyCourses"
+   class="btn btn-primary">
+    Back to My Courses
+</a>

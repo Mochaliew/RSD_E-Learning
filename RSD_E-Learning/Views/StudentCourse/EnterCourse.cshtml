@@ -61,7 +61,13 @@ else
             <div class="card-body">
                 <h5>📚 Materials</h5>
                 <p>@Model.Lessons.Sum(l => l.CourseFiles.Count) items</p>
-                <a href="#materials" class="btn btn-outline-primary btn-sm">View</a>
+                <a asp-controller="StudentCourse"
+                   asp-action="Materials"
+                   asp-route-courseId="@Model.CourseId"
+                   class="btn btn-outline-primary btn-sm">
+                    View
+                </a>
+
             </div>
         </div>
     </div>
@@ -71,7 +77,13 @@ else
             <div class="card-body">
                 <h5>📝 Assessments</h5>
                 <p>@Model.Assessments.Count assessment(s)</p>
-                <a href="#assessments" class="btn btn-outline-primary btn-sm">View</a>
+                <a asp-controller="StudentCourse"
+                   asp-action="Assessments"
+                   asp-route-courseId="@Model.CourseId"
+                   class="btn btn-outline-primary btn-sm">
+                    View
+                </a>
+
             </div>
         </div>
     </div>
@@ -95,7 +107,13 @@ else
             <div class="card-body">
                 <h5>📝 Final Exams</h5>
                 <p>@Model.FinalExams.Count Final Exam(s)</p>
-                <a href="#final" class="btn btn-outline-primary btn-sm">View</a>
+                <a asp-controller="StudentFinalExam"
+                   asp-action="Index"
+                   asp-route-courseId="@Model.CourseId"
+                   class="btn btn-outline-primary btn-sm">
+                    View
+                </a>
+
             </div>
         </div>
     </div>
@@ -103,74 +121,4 @@ else
 
 
 
-<!-- ================== COURSE MATERIALS ================== -->
-<h4>Course Materials</h4>
-
-@if (Model.Lessons != null && Model.Lessons.Any(l => l.CourseFiles.Any(f => f.IsActive)))
-{
-    foreach (var lesson in Model.Lessons)
-    {
-        var activeFiles = lesson.CourseFiles.Where(f => f.IsActive).ToList();
-
-        if (activeFiles.Any())
-        {
-            <h5 class="mt-3">@lesson.Title</h5>
-
-            <ul class="list-group mb-3">
-                @foreach (var file in activeFiles)
-                {
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <div>
-                            <strong>@file.FileName</strong><br />
-                            <small class="text-muted">@file.FileType</small>
-                        </div>
-
-                        <a asp-controller="StudentCourse"
-                           asp-action="ViewMaterial"
-                           asp-route-id="@file.CourseFileId"
-                           class="btn btn-sm btn-primary">
-                            View
-                        </a>
-                    </li>
-                }
-            </ul>
-        }
-    }
-}
-else
-{
-    <p>No materials available yet.</p>
-}
-
-
-<!-- ================== ASSESSMENTS ================== -->
-<h4>Assessments (@(Model.Assessments?.Count ?? 0))</h4>
-
-@if (Model.Assessments == null || !Model.Assessments.Any())
-{
-    <p>No assessments available.</p>
-}
-else
-{
-    <ul class="list-group">
-        @foreach (var assessment in Model.Assessments.OrderBy(a => a.DeadLine))
-        {
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                <div>
-                    <strong>@assessment.Title</strong><br />
-                    <small class="text-muted">
-                        Deadline: @assessment.DeadLine.ToShortDateString()
-                    </small>
-                </div>
-
-                <a asp-controller="StudentAssessment"
-                   asp-action="Details"
-                   asp-route-id="@assessment.AssessmentId"
-                   class="btn btn-outline-primary btn-sm">
-                    View Assessment
-                </a>
-            </li>
-        }
-    </ul>
-}
 

@@ -1,4 +1,6 @@
-﻿@{
+﻿@model RSD_E_Learning.ViewModels.StudentDashboardVm
+
+@{
     ViewData["Title"] = "Student Dashboard";
 }
 
@@ -23,7 +25,6 @@
             padding: 32px 20px;
         }
 
-        /* Header */
         .dashboard-header {
             margin-bottom: 32px;
         }
@@ -37,7 +38,6 @@
                 color: #555;
             }
 
-        /* Quick Actions */
         .quick-actions {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -52,7 +52,12 @@
             padding: 24px;
             text-decoration: none;
             color: inherit;
+            transition: box-shadow 0.2s ease;
         }
+
+            .action-card:hover {
+                box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+            }
 
         .action-card-icon {
             font-size: 2rem;
@@ -69,7 +74,6 @@
             color: #555;
         }
 
-        /* Sections */
         .section-title {
             font-size: 1.4rem;
             margin-bottom: 16px;
@@ -89,19 +93,11 @@
             padding: 20px;
         }
 
-        .activity-item {
-            padding: 10px;
-            border: 1px solid #eee;
-            border-radius: 4px;
-            margin-bottom: 8px;
-        }
-
         .empty-text {
             color: #888;
             font-style: italic;
         }
 
-        /* Study Tips */
         .tips li {
             margin-bottom: 8px;
         }
@@ -114,11 +110,16 @@
         <!-- Header -->
         <div class="dashboard-header">
             <h1>Student Dashboard</h1>
-            <p>Welcome back, <strong>@User.Identity.Name</strong> 👋 Learning is Life, Life is Learning !</p>
+            <p>
+                Welcome back,
+                <strong>@(User.FindFirst("FullName")?.Value ?? User.Identity.Name)</strong>
+                👋 Learning is Life, Life is Learning!
+            </p>
         </div>
 
         <!-- Quick Actions -->
         <div class="quick-actions">
+
             <a class="action-card" asp-controller="Courses" asp-action="Catalog">
                 <div class="action-card-icon">📘</div>
                 <div class="action-card-title">Browse Courses</div>
@@ -131,29 +132,6 @@
                 <div class="action-card-description">View courses you are enrolled in</div>
             </a>
 
-            <a class="action-card" asp-controller="Student" asp-action="">
-                <div class="action-card-icon">📖</div>
-                <div class="action-card-title">My Lessons</div>
-                <div class="action-card-description">View all your lessons</div>
-            </a>
-
-            <a class="action-card" asp-controller="Student" asp-action="">
-                <div class="action-card-icon">📝</div>
-                <div class="action-card-title">My Assessments</div>
-                <div class="action-card-description">View upcoming or completed assessments</div>
-            </a>
-
-            <a class="action-card" asp-controller="Student" asp-action="MyFinalExams">
-                <div class="action-card-icon">📊</div>
-                <div class="action-card-title">Final Exams</div>
-                <div class="action-card-description">View upcoming or completed exams</div>
-            </a>
-
-            <a class="action-card" asp-controller="Student" asp-action="MyCertificates">
-                <div class="action-card-icon">🏆</div>
-                <div class="action-card-title">Certificates</div>
-                <div class="action-card-description">View/Download your certificates</div>
-            </a>
         </div>
 
         <!-- Activity Section -->
@@ -161,24 +139,71 @@
         <div class="activity-section">
             <div class="activity-card">
                 <h3>📅 Recent Lessons</h3>
-                <p class="empty-text">No lessons yet</p>
+
+                @if (!Model.RecentLessons.Any())
+                {
+                    <p class="empty-text">No lessons yet</p>
+                }
+                else
+                {
+                    <ul>
+                        @foreach (var l in Model.RecentLessons)
+                        {
+                            <li>
+                                <strong>@l.CourseTitle</strong><br />
+                                @l.LessonTitle
+                                <small class="text-muted">
+                                    (@l.ScheduleDate?.ToString("dd MMM yyyy"))
+                                </small>
+                            </li>
+                        }
+                    </ul>
+                }
             </div>
+
 
             <div class="activity-card">
                 <h3>📝 Pending Final Exams</h3>
-                <p class="empty-text">No pending Final Exams</p>
+
+                @if (!Model.PendingFinalExams.Any())
+                {
+                    <p class="empty-text">No pending Final Exams</p>
+                }
+                else
+                {
+                    <ul>
+                        @foreach (var f in Model.PendingFinalExams)
+                        {
+                            <li>
+                                <strong>@f.CourseTitle</strong><br />
+                                @f.Title<br />
+                                <small>
+                                    Deadline: @f.DeadLine.ToString("dd MMM yyyy") |
+                                    Attempts: @f.AttemptsUsed / 3
+                                </small><br />
+
+                                <a asp-controller="StudentFinalExam"
+                                   asp-action="Attempt"
+                                   asp-route-finalId="@f.FinalId">
+                                    Attempt
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                }
             </div>
+
         </div>
 
         <!-- Study Tips -->
         <h2 class="section-title">📌 Study Tips</h2>
         <div class="activity-card">
             <ul class="tips">
-                <li>Always remember: Theres is no end towards learning.</li>
-                <li>Complete lessons before attempting assessments</li>
-                <li>Dont play while studying, bad habbit #1</li>
-                <li>Dont cheat on your test, bad habbit #2</li>
-                <li>Revise regularly instead of last-minute studying, bad habbit #3</li>
+                <li>Always remember: There is no end towards learning.</li>
+                <li>Complete lessons before attempting assessments.</li>
+                <li>Don’t play while studying, bad habit #1.</li>
+                <li>Don’t cheat on tests, bad habit #2.</li>
+                <li>Revise regularly instead of last-minute studying.</li>
             </ul>
         </div>
 

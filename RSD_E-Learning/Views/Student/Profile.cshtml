@@ -2,53 +2,88 @@
 
 @{
     ViewData["Title"] = "My Profile";
+    var transactions = ViewBag.Transactions as List<RSD_E_Learning.Models.DB.PaymentTransaction>;
 }
 
-<h2>My Profile</h2>
+<div class="container mt-4">
 
-<hr />
+    <h2>👤 My Profile</h2>
+    <hr />
 
-<div class="card p-4">
-    <p><strong>Full Name:</strong> @Model.User?.FullName</p>
-    <p><strong>Email:</strong> @Model.User?.Email</p>
-    <p><strong>Class:</strong> @(Model.ClassName ?? "Not set")</p>
-    <p><strong>Enrollment Date:</strong> @Model.EnrollmentDate.ToString("dd MMM yyyy")</p>
+    <!-- BASIC INFO -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <strong>Personal Information</strong>
+        </div>
+        <div class="card-body">
+            <p><strong>Name:</strong> @Model.User?.FullName</p>
+            <p><strong>Email:</strong> @Model.User?.Email</p>
+            <p><strong>Birthday:</strong> <span class="text-muted">Not provided</span></p>
+        </div>
+    </div>
 
-    <a asp-action="EditProfile" class="btn btn-primary mt-3">
-        Edit Profile
-    </a>
-</div>
-
-
-<hr />
-<h4>Purchase History</h4>
-
-@if (ViewBag.Transactions != null && ((List<RSD_E_Learning.ViewModels.StudentTransactionVm>)ViewBag.Transactions).Any())
-{
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>Course</th>
-                <th>Amount (RM)</th>
-                <th>Payment Method</th>
-                <th>Date</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var t in (List<RSD_E_Learning.ViewModels.StudentTransactionVm>)ViewBag.Transactions)
+    <!-- ENROLLMENTS -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <strong>📚 Enrolled Courses</strong>
+        </div>
+        <div class="card-body">
+            @if (!Model.Enrollments.Any())
             {
-                <tr>
-                    <td>@t.CourseTitle</td>
-                    <td>@t.Amount.ToString("0.00")</td>
-                    <td>@t.PaymentMethod</td>
-                    <td>@t.TransactionDate.ToString("dd MMM yyyy HH:mm")</td>
-                </tr>
+                <p class="text-muted">No enrolled courses yet.</p>
             }
-        </tbody>
-    </table>
-}
-else
-{
-    <p>No transactions yet.</p>
-}
+            else
+            {
+                <ul class="list-group">
+                    @foreach (var e in Model.Enrollments)
+                    {
+                        <li class="list-group-item">
+                            <strong>@e.Course?.Title</strong><br />
+                            <small class="text-muted">
+                                Enrolled on @e.EnrolledAt.ToString("dd MMM yyyy")
+                            </small>
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+    </div>
 
+    <!-- TRANSACTIONS -->
+    <div class="card">
+        <div class="card-header">
+            <strong>💳 Transaction History</strong>
+        </div>
+        <div class="card-body">
+            @if (transactions == null || !transactions.Any())
+            {
+                <p class="text-muted">No payment records found.</p>
+            }
+            else
+            {
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Course</th>
+                            <th>Amount</th>
+                            <th>Payment Method</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var t in transactions)
+                        {
+                            <tr>
+                                <td>@t.Course?.Title</td>
+                                <td>RM @t.Amount</td>
+                                <td>@t.PaymentMethod</td>
+                                <td>@t.TransactionDate.ToString("dd MMM yyyy")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+
+</div>

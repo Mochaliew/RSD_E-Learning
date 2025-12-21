@@ -1,0 +1,51 @@
+﻿@model RSD_E_Learning.Models.DB.FinalExam
+
+@{
+    ViewData["Title"] = "Final Exam Attempt";
+}
+
+<h3>📝 @Model.Title</h3>
+
+<p class="text-muted">
+    Deadline: @Model.DeadLine.ToString("dd MMM yyyy") <br />
+    Passing Mark: @Model.PassingMark%
+</p>
+
+<hr />
+
+<form asp-action="Submit" method="post">
+    <input type="hidden" name="FinalId" value="@Model.FinalId" />
+
+    @for (int i = 0; i < Model.FinalQuestions.Count; i++)
+    {
+        var q = Model.FinalQuestions.ElementAt(i);
+
+        <div class="mb-4">
+            <strong>@(i + 1). @q.QuestionDetail</strong>
+
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="answers[@q.QuestionId]" value="A" required />
+                <label class="form-check-label">A. @q.AnswerA</label>
+            </div>
+
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="answers[@q.QuestionId]" value="B" />
+                <label class="form-check-label">B. @q.AnswerB</label>
+            </div>
+
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="answers[@q.QuestionId]" value="C" />
+                <label class="form-check-label">C. @q.AnswerC</label>
+            </div>
+
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="answers[@q.QuestionId]" value="D" />
+                <label class="form-check-label">D. @q.AnswerD</label>
+            </div>
+        </div>
+    }
+
+    <button type="submit" class="btn btn-success">
+        Submit Final Exam
+    </button>
+</form>

@@ -1,0 +1,42 @@
+﻿@{
+    ViewData["Title"] = "Final Exam Result";
+}
+
+<h3>Final Exam Result</h3>
+
+@if (ViewBag.Passed)
+{
+    <div class="alert alert-success">
+        🎉 You passed the final exam! <br />
+        Score: @ViewBag.Score% <br />
+        Passing Mark: @ViewBag.PassingMark%
+    </div>
+
+    <a asp-controller="StudentCourse"
+       asp-action="MyCourses"
+       class="btn btn-success">
+        Go to My Courses
+    </a>
+
+    <a asp-controller="StudentCourse"
+       asp-action="Certificate"
+       asp-route-courseId="@ViewBag.CourseId"
+       class="btn btn-primary ms-2">
+        View Certificate
+    </a>
+}
+else
+{
+    <div class="alert alert-danger">
+        ❌ You did not meet the passing mark. <br />
+        Score: @ViewBag.Score%
+    </div>
+
+    <a asp-action="Attempt"
+       asp-route-finalId="@ViewBag.FinalId"
+       class="btn btn-secondary">
+        Retry Final Exam
+    </a>
+
+
+}

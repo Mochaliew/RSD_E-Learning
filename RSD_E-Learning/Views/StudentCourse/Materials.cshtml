@@ -1,0 +1,39 @@
+﻿@model RSD_E_Learning.Models.DB.Course
+@{
+    ViewData["Title"] = "Course Materials";
+}
+
+<h3>📚 Course Materials</h3>
+
+@if (!Model.Lessons.Any(l => l.CourseFiles.Any(f => f.IsActive)))
+{
+    <p class="text-muted">No materials available.</p>
+}
+else
+{
+    foreach (var lesson in Model.Lessons)
+    {
+        var files = lesson.CourseFiles.Where(f => f.IsActive).ToList();
+
+        if (files.Any())
+        {
+            <h5 class="mt-3">@lesson.Title</h5>
+
+            <ul class="list-group mb-3">
+                @foreach (var file in files)
+                {
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>@file.FileName (@file.FileType)</span>
+
+                        <a asp-controller="StudentCourse"
+                           asp-action="ViewMaterial"
+                           asp-route-id="@file.CourseFileId"
+                           class="btn btn-sm btn-primary">
+                            View
+                        </a>
+                    </li>
+                }
+            </ul>
+        }
+    }
+}

@@ -1,0 +1,35 @@
+﻿@model List<RSD_E_Learning.Models.DB.FinalExam>
+
+@{
+    ViewData["Title"] = "Final Exams";
+}
+
+<h3> Final Exams</h3>
+
+@if (!Model.Any())
+{
+    <p class="text-muted">No final exams available.</p>
+}
+else
+{
+    <ul class="list-group">
+        @foreach (var exam in Model)
+        {
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>@exam.Title</strong><br />
+                    <small class="text-muted">
+                        Deadline: @exam.DeadLine.ToString("dd MMM yyyy")
+                        | Passing Mark: @exam.PassingMark%
+                    </small>
+                </div>
+
+                <a asp-action="Attempt"
+                   asp-route-finalId="@exam.FinalId"
+                   class="btn btn-primary btn-sm">
+                    Attempt
+                </a>
+            </li>
+        }
+    </ul>
+}

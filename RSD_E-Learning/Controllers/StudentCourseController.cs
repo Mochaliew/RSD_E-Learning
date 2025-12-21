@@ -329,7 +329,9 @@ namespace RSD_E_Learning.Controllers
             .Include(c => c.Lessons)
                 .ThenInclude(l => l.CourseFiles)
             .Include(c => c.Assessments)
+            .Include(c => c.FinalExams)   
             .FirstOrDefaultAsync(c => c.CourseId == courseId);
+
 
 
             if (course == null)
@@ -337,6 +339,35 @@ namespace RSD_E_Learning.Controllers
 
             return View(course);
         }
+
+        [Authorize(Roles = "Student")]
+        public async Task<IActionResult> Materials(int courseId)
+        {
+            var course = await _db.Courses
+                .Include(c => c.Lessons)
+                    .ThenInclude(l => l.CourseFiles)
+                .FirstOrDefaultAsync(c => c.CourseId == courseId);
+
+            if (course == null)
+                return NotFound();
+
+            return View(course);
+        }
+
+        [Authorize(Roles = "Student")]
+        public async Task<IActionResult> Assessments(int courseId)
+        {
+            var course = await _db.Courses
+                .Include(c => c.Assessments)
+                .FirstOrDefaultAsync(c => c.CourseId == courseId);
+
+            if (course == null)
+                return NotFound();
+
+            return View(course);
+        }
+
+
 
 
 
