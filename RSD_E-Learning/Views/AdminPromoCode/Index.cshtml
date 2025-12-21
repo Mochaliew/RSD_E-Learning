@@ -49,31 +49,53 @@
 
 @section Scripts {
     <script>
+        const form = document.getElementById('filterForm');
+        const searchInput = document.getElementById('search');
+        const statusSelect = document.getElementById('status');
+        const promoTable = document.getElementById('promoTable');
+        const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
         function loadPromoCodes() {
-            fetch(`/AdminPromoCode/AjaxList?search=${search.value}&status=${status.value}`)
+            const search = encodeURIComponent(searchInput.value);
+            const status = encodeURIComponent(statusSelect.value);
+
+            fetch(`/AdminPromoCode/AjaxList?search=${search}&status=${status}`)
                 .then(res => res.text())
                 .then(html => promoTable.innerHTML = html);
         }
 
-        filterForm.addEventListener('submit', e => {
+        // FILTER SUBMIT
+        form.addEventListener('submit', function (e) {
             e.preventDefault();
             loadPromoCodes();
         });
 
-        promoTable.addEventListener('click', e => {
+        // TOGGLE ACTIVE / INACTIVE
+        promoTable.addEventListener('click', function (e) {
             if (!e.target.classList.contains('toggle-btn')) return;
 
             fetch('/AdminPromoCode/ToggleAjax', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'RequestVerificationToken':
-                        document.querySelector('input[name="__RequestVerificationToken"]').value
+                    'RequestVerificationToken': token
                 },
-                body: JSON.stringify({ id: parseInt(e.target.dataset.id) })
-            }).then(() => loadPromoCodes());
+                body: JSON.stringify({
+                    id: parseInt(e.target.dataset.id)
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (!data.success) {
+                    alert(data.message ?? 'Action failed');
+                    return;
+                }
+                loadPromoCodes();
+            });
         });
 
+        // INITIAL LOAD
         loadPromoCodes();
     </script>
 }
+
