@@ -975,6 +975,38 @@ namespace RSD_E_Learning.Controllers
             return View(vm);
         }
 
+        // ------------------------- VIEW FINAL [GET] ------------------------- //
+        [HttpGet]
+        public async Task<IActionResult> ViewFinalExam(int id)
+        {
+            var teacherIdClaim = User.FindFirst("TeacherId");
+            if (teacherIdClaim == null)
+                return RedirectToAction("TeacherLogin");
+
+            int teacherId = int.Parse(teacherIdClaim.Value);
+
+            var final = await _context.FinalExams
+                .Include(a => a.Course)
+                .FirstOrDefaultAsync(a =>
+                    a.FinalId == id &&
+                    a.Course.TeacherId == teacherId);
+
+            if (final == null)
+                return NotFound();
+
+            var questions = await _context.FinalQuestions
+                .Where(q => q.FinalId == id)
+                .ToListAsync();
+
+            var vm = new ViewFinalExamVm
+            {
+                FinalExam = final,
+                Questions = questions
+            };
+
+            return View(vm);
+        }
+
         // ------------------------- CREATEFINAL [POST] ------------------------- // 
         [HttpPost]
         [Route("api/teacher/create-final")]

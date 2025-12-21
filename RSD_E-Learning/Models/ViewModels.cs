@@ -514,6 +514,13 @@ namespace RSD_E_Learning.Models
             public string CorrectAnswer { get; set; } = "";
         }
 
+    public class ViewFinalExamVm
+    {
+        public FinalExam FinalExam { get; set; }
+        public List<FinalQuestion> Questions { get; set; }
+    }
+
+
     public class CreateAssessmentQuestionVm
         {
             public string QuestionDetail { get; set; } = "";

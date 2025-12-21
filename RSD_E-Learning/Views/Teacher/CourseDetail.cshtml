@@ -473,7 +473,7 @@
                                     : 0;
                                 }
                                 Questions: @questionCount | Deadline: @assessment.DeadLine.ToLocalTime().ToString("MMM dd, yyyy hh:mm tt") |
-                                Total Marks: @(assessment.TotalMarks ?? 0)
+                                Passing Mark: @assessment.PassingMark%
                             </div>
                         </div>
                         <div class="item-actions">

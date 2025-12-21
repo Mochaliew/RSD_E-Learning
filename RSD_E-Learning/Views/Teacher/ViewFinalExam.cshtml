@@ -1,0 +1,41 @@
+﻿@model RSD_E_Learning.Models.ViewFinalExamVm
+
+<h2>📝 @Model.FinalExam.Title</h2>
+
+<p>
+    <strong>Deadline:</strong>
+    @Model.FinalExam.DeadLine.ToLocalTime().ToString("MMM dd, yyyy hh:mm tt")
+</p>
+
+<p><strong>Total Marks:</strong> @Model.FinalExam.TotalMarks</p>
+
+<hr />
+
+<h4>Questions</h4>
+
+@if (Model.Questions.Any())
+{
+    int qNo = 1;
+    foreach (var q in Model.Questions)
+    {
+        <div style="margin-bottom:20px;">
+            <p><strong>@qNo. @q.QuestionDetail</strong></p>
+            <p>A. @q.AnswerA</p>
+            <p>B. @q.AnswerB</p>
+            <p>C. @q.AnswerC</p>
+            <p>D. @q.AnswerD</p>
+            <p>✅ Correct Answer: <strong>@q.CorrectAnswer</strong></p>
+        </div>
+        qNo++;
+    }
+}
+else
+{
+    <p>No questions found.</p>
+}
+
+<a asp-action="CourseDetail"
+   asp-route-id="@Model.FinalExam.CourseId"
+   class="btn btn-secondary">
+    ← Back to Course
+</a>
