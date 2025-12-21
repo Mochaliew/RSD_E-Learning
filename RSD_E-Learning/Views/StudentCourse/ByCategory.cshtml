@@ -1,55 +1,25 @@
-﻿@model List<RSD_E_Learning.Models.DB.Course>
+﻿<link rel="stylesheet" href="~/css/student.css" />
 
-@{
-    ViewData["Title"] = "Courses";
-}
+<div class="student-container">
+    <h2 class="mb-4">Courses</h2>
 
-<h2>Courses in this Category</h2>
-
-<p class="text-muted">
-    Select a course to view details.
-</p>
-
-@if (!Model.Any())
-{
-    <div class="alert alert-info">
-        No courses available in this category yet.
-    </div>
-}
-else
-{
-    <div class="row">
+    <div class="student-grid">
         @foreach (var course in Model)
         {
-            <div class="col-md-4 mb-3">
-                <div class="card h-100 shadow-sm">
-                    <div class="card-body">
-                        <h5 class="card-title">@course.Title</h5>
+            <div class="card-clean p-4 d-flex flex-column">
+                <h5>@course.Title</h5>
+                <p class="text-muted">@course.Description</p>
 
-                        @if (!string.IsNullOrEmpty(course.Description))
-                        {
-                            <p class="card-text">@course.Description</p>
-                        }
+                <small class="text-muted">
+                    Instructor: @course.Teacher?.User?.FullName
+                </small>
 
-                        <p class="text-muted mb-1">
-                            Instructor: @course.Teacher?.User?.FullName
-                        </p>
-
-                        <p class="text-muted">
-                            Category: @course.Category?.Name
-                        </p>
-                    </div>
-
-                    <div class="card-footer bg-white border-0">
-                        <a asp-controller="StudentCourse"
-                           asp-action="Details"
-                           asp-route-id="@course.CourseId"
-                           class="btn btn-outline-primary btn-sm w-100">
-                            View Details
-                        </a>
-                    </div>
-                </div>
+                <a asp-action="Details"
+                   asp-route-id="@course.CourseId"
+                   class="btn btn-outline-primary btn-sm mt-auto">
+                    View Details
+                </a>
             </div>
         }
-    </div>//FAKEDATA
-}
+    </div>
+</div>

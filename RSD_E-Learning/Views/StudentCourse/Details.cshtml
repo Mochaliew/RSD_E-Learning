@@ -3,94 +3,85 @@
     ViewData["Title"] = "Course Details";
 }
 
-@if (TempData["Message"] != null)
-{
-    <div class="alert alert-info">
-        @TempData["Message"]
-    </div>
-}
+<style>
+    body {
+        background: #f6f7f9;
+    }
 
-<h2>@Model.Title</h2>
+    .course-container {
+        max-width: 900px;
+        margin: auto;
+        padding: 32px 20px;
+    }
+</style>
 
-<p>
-    <strong>Category:</strong> @Model.Category?.Name <br />
-    <strong>Instructor:</strong> @Model.Teacher?.User?.FullName
-</p>
+<div class="course-container">
+    <h1>@Model.Title</h1>
+    <p class="text-muted">
+        Category: @Model.Category?.Name <br />
+        Instructor: @Model.Teacher?.User?.FullName
+    </p>
 
-<p>@Model.Description</p>
+    <p>@Model.Description</p>
 
-<hr />
+    <hr />
 
-<h4>Lessons</h4>
+    <h4>📖 Lessons</h4>
+    @if (!Model.Lessons.Any())
+    {
+        <p class="text-muted">No lessons available.</p>
+    }
+    else
+    {
+        <ul class="list-group mb-4">
+            @foreach (var lesson in Model.Lessons)
+            {
+                <li class="list-group-item">@lesson.Title</li>
+            }
+        </ul>
+    }
 
-@if (!Model.Lessons.Any())
-{
-    <p>No lessons available yet.</p>
-}
-else
-{
-    <ul class="list-group mb-3">
-        @foreach (var lesson in Model.Lessons)
-        {
-            <li class="list-group-item">
-                @lesson.Title
-            </li>
-        }
-    </ul>
-}
+    <h4>📝 Assessments</h4>
+    @if (!Model.Assessments.Any())
+    {
+        <p class="text-muted">No assessments available.</p>
+    }
+    else
+    {
+        <ul class="list-group mb-4">
+            @foreach (var assessment in Model.Assessments)
+            {
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>@assessment.Title</strong><br />
+                        <small class="text-muted">
+                            Deadline: @assessment.DeadLine.ToString("dd/MM/yyyy")
+                        </small>
+                    </div>
+                    <a asp-controller="StudentAssessment"
+                       asp-action="Details"
+                       asp-route-id="@assessment.AssessmentId"
+                       class="btn btn-outline-primary btn-sm">
+                        View
+                    </a>
+                </li>
+            }
+        </ul>
+    }
 
-<hr />
-
-<hr />
-
-<h4>Assessments</h4>
-
-@if (Model.Assessments == null || !Model.Assessments.Any())
-{
-    <p>No assessments available.</p>
-}
-else
-{
-    <ul class="list-group mb-3">
-        @foreach (var assessment in Model.Assessments)
-        {
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                <div>
-                    <strong>@assessment.Title</strong><br />
-                    <small>
-                        Deadline:
-                        @assessment.DeadLine.ToString("dd/MM/yyyy")
-                    </small>
-                </div>
-
-                <a asp-controller="StudentAssessment"
-                   asp-action="Details"
-                   asp-route-id="@assessment.AssessmentId"
-                   class="btn btn-sm btn-outline-primary">
-                    View Assessment
-                </a>
-            </li>
-        }
-    </ul>
-}
-
-
-@if ((bool)ViewBag.IsEnrolled)
-{
-    <a asp-controller="StudentCourse"
-       asp-action="MyCourses"
-       class="btn btn-primary">
-        Go to My Courses
-    </a>
-}
-else
-{
-    <a asp-controller="StudentCourse"
-       asp-action="Payment"
-       asp-route-courseId="@Model.CourseId"
-       class="btn btn-success">
-        Enroll Now
-    </a>
-}
-
-
+    @if ((bool)ViewBag.IsEnrolled)
+    {
+        <a asp-controller="StudentCourse" asp-action="MyCourses" class="btn btn-primary">
+            Go to My Courses
+        </a>
+    }
+    else
+    {
+        <a asp-controller="StudentCourse"
+           asp-action="Payment"
+           asp-route-courseId="@Model.CourseId"
+           class="btn btn-success">
+            Enroll Now
+        </a>
+    }
+</div>
