@@ -1,55 +1,22 @@
-﻿@model List<RSD_E_Learning.Models.DB.Category>
+﻿<link rel="stylesheet" href="~/css/student.css" />
 
-@{
-    ViewData["Title"] = "Browse Courses";
-}
+<div class="student-container">
+    <h2 class="mb-4">Browse Courses</h2>
 
-<h2>Browse Courses</h2>
-
-@if (!Model.Any())
-{
-    <div class="alert alert-info">
-        No course categories available.
-    </div>
-}
-else
-{
-    <div class="row">
+    <div class="student-grid">
         @foreach (var category in Model)
         {
-            <div class="col-md-4 mb-3">
-                <div class="card h-100 shadow-sm">
-                    <div class="card-body">
-                        <h5 class="card-title">
-                            @category.Name
-                        </h5>
+            <div class="card-clean p-4">
+                <h5>@category.Name</h5>
+                <p class="text-muted">@category.Description</p>
 
-                        @if (!string.IsNullOrEmpty(category.Description))
-                        {
-                            <p class="card-text">
-                                @category.Description
-                            </p>
-                        }
-
-                        <!--<a asp-controller="Courses"
-                           asp-action="Catalog"
-                           asp-route-categoryId="@category.CategoryId"
-                           class="btn btn-outline-primary btn-sm">
-                            View Courses
-                        </a>-->
-
-                        <!--FAKEDATA-->
-                        <a asp-controller="StudentCourse"
-                           asp-action="ByCategory"
-                           asp-route-categoryId="@category.CategoryId"
-                           class="btn btn-outline-primary btn-sm">
-                            View Courses
-                        </a>
-
-
-                    </div>
-                </div>
+                <a asp-controller="StudentCourse"
+                   asp-action="ByCategory"
+                   asp-route-categoryId="@category.CategoryId"
+                   class="btn btn-outline-primary btn-sm">
+                    View Courses
+                </a>
             </div>
         }
     </div>
-}
+</div>
