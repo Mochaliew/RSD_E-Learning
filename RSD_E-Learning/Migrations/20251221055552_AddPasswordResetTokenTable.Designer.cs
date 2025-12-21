@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RSD_E_Learning.Models;
 
@@ -11,9 +12,11 @@ using RSD_E_Learning.Models;
 namespace RSD_E_Learning.Migrations
 {
     [DbContext(typeof(DB))]
-    partial class DBModelSnapshot : ModelSnapshot
+    [Migration("20251221055552_AddPasswordResetTokenTable")]
+    partial class AddPasswordResetTokenTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -395,147 +398,6 @@ namespace RSD_E_Learning.Migrations
                     b.ToTable("Enrollments");
                 });
 
-            modelBuilder.Entity("RSD_E_Learning.Models.DB+FinalAttempt", b =>
-                {
-                    b.Property<int>("AttemptId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AttemptId"));
-
-                    b.Property<DateTime>("AttemptedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("FinalId")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsPassed")
-                        .HasColumnType("bit");
-
-                    b.Property<double>("Score")
-                        .HasColumnType("float");
-
-                    b.Property<int>("StudentId")
-                        .HasColumnType("int");
-
-                    b.HasKey("AttemptId");
-
-                    b.HasIndex("FinalId");
-
-                    b.HasIndex("StudentId");
-
-                    b.ToTable("FinalAttempts");
-                });
-
-            modelBuilder.Entity("RSD_E_Learning.Models.DB+FinalExam", b =>
-                {
-                    b.Property<int>("FinalId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("FinalId"));
-
-                    b.Property<int>("CourseId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("DeadLine")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("PassingMark")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<int?>("TotalMarks")
-                        .HasColumnType("int");
-
-                    b.HasKey("FinalId");
-
-                    b.HasIndex("CourseId");
-
-                    b.ToTable("FinalExams");
-                });
-
-            modelBuilder.Entity("RSD_E_Learning.Models.DB+FinalQuestion", b =>
-                {
-                    b.Property<int>("FinalQuestionId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("FinalQuestionId"));
-
-                    b.Property<string>("AnswerA")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("AnswerB")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("AnswerC")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("AnswerD")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CorrectAnswer")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("FinalId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("QuestionDetail")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.HasKey("FinalQuestionId");
-
-                    b.HasIndex("FinalId");
-
-                    b.ToTable("FinalQuestions");
-                });
-
-            modelBuilder.Entity("RSD_E_Learning.Models.DB+FinalSubmission", b =>
-                {
-                    b.Property<int>("FinalSubmissionId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("FinalSubmissionId"));
-
-                    b.Property<int?>("FinalExamFinalId")
-                        .HasColumnType("int");
-
-                    b.Property<double?>("Grade")
-                        .HasColumnType("float");
-
-                    b.Property<int>("LessonId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("StudentId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("SubmittedDate")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("FinalSubmissionId");
-
-                    b.HasIndex("FinalExamFinalId");
-
-                    b.HasIndex("LessonId");
-
-                    b.HasIndex("StudentId");
-
-                    b.ToTable("FinalSubmissions");
-                });
-
             modelBuilder.Entity("RSD_E_Learning.Models.DB+Lesson", b =>
                 {
                     b.Property<int>("LessonId")
@@ -754,36 +616,6 @@ namespace RSD_E_Learning.Migrations
                     b.HasIndex("StudentId");
 
                     b.ToTable("StudentCourseProgresses");
-                });
-
-            modelBuilder.Entity("RSD_E_Learning.Models.DB+StudentFinalAnswer", b =>
-                {
-                    b.Property<int>("AnswerId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AnswerId"));
-
-                    b.Property<int>("AttemptId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("FinalQuestionId")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsCorrect")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("SelectedAnswer")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("AnswerId");
-
-                    b.HasIndex("AttemptId");
-
-                    b.HasIndex("FinalQuestionId");
-
-                    b.ToTable("StudentFinalAnswers");
                 });
 
             modelBuilder.Entity("RSD_E_Learning.Models.DB+StudentMaterialProgress", b =>
@@ -1089,70 +921,6 @@ namespace RSD_E_Learning.Migrations
                     b.Navigation("Student");
                 });
 
-            modelBuilder.Entity("RSD_E_Learning.Models.DB+FinalAttempt", b =>
-                {
-                    b.HasOne("RSD_E_Learning.Models.DB+FinalExam", "FinalExam")
-                        .WithMany()
-                        .HasForeignKey("FinalId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("RSD_E_Learning.Models.DB+Student", "Student")
-                        .WithMany()
-                        .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("FinalExam");
-
-                    b.Navigation("Student");
-                });
-
-            modelBuilder.Entity("RSD_E_Learning.Models.DB+FinalExam", b =>
-                {
-                    b.HasOne("RSD_E_Learning.Models.DB+Course", "Course")
-                        .WithMany()
-                        .HasForeignKey("CourseId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Course");
-                });
-
-            modelBuilder.Entity("RSD_E_Learning.Models.DB+FinalQuestion", b =>
-                {
-                    b.HasOne("RSD_E_Learning.Models.DB+FinalExam", "FinalExam")
-                        .WithMany("FinalQuestions")
-                        .HasForeignKey("FinalId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("FinalExam");
-                });
-
-            modelBuilder.Entity("RSD_E_Learning.Models.DB+FinalSubmission", b =>
-                {
-                    b.HasOne("RSD_E_Learning.Models.DB+FinalExam", null)
-                        .WithMany("FinalSubmissions")
-                        .HasForeignKey("FinalExamFinalId");
-
-                    b.HasOne("RSD_E_Learning.Models.DB+Lesson", "Lesson")
-                        .WithMany()
-                        .HasForeignKey("LessonId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("RSD_E_Learning.Models.DB+Student", "Student")
-                        .WithMany()
-                        .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Lesson");
-
-                    b.Navigation("Student");
-                });
-
             modelBuilder.Entity("RSD_E_Learning.Models.DB+Lesson", b =>
                 {
                     b.HasOne("RSD_E_Learning.Models.DB+Course", "Course")
@@ -1243,25 +1011,6 @@ namespace RSD_E_Learning.Migrations
                     b.Navigation("Student");
                 });
 
-            modelBuilder.Entity("RSD_E_Learning.Models.DB+StudentFinalAnswer", b =>
-                {
-                    b.HasOne("RSD_E_Learning.Models.DB+FinalAttempt", "FinalAttempt")
-                        .WithMany("StudentFinalAnswers")
-                        .HasForeignKey("AttemptId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("RSD_E_Learning.Models.DB+FinalQuestion", "FinalQuestion")
-                        .WithMany()
-                        .HasForeignKey("FinalQuestionId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("FinalAttempt");
-
-                    b.Navigation("FinalQuestion");
-                });
-
             modelBuilder.Entity("RSD_E_Learning.Models.DB+StudentMaterialProgress", b =>
                 {
                     b.HasOne("RSD_E_Learning.Models.DB+CourseFile", "CourseFile")
@@ -1320,18 +1069,6 @@ namespace RSD_E_Learning.Migrations
                     b.Navigation("Enrollments");
 
                     b.Navigation("Lessons");
-                });
-
-            modelBuilder.Entity("RSD_E_Learning.Models.DB+FinalAttempt", b =>
-                {
-                    b.Navigation("StudentFinalAnswers");
-                });
-
-            modelBuilder.Entity("RSD_E_Learning.Models.DB+FinalExam", b =>
-                {
-                    b.Navigation("FinalQuestions");
-
-                    b.Navigation("FinalSubmissions");
                 });
 
             modelBuilder.Entity("RSD_E_Learning.Models.DB+Lesson", b =>

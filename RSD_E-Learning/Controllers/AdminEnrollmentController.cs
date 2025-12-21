@@ -15,6 +15,7 @@ namespace RSD_E_Learning.Controllers
             _db = db;
         }
 
+        // ================= LIST =================
         public async Task<IActionResult> Index()
         {
             var enrollments = await _db.Enrollments
@@ -24,6 +25,37 @@ namespace RSD_E_Learning.Controllers
                 .ToListAsync();
 
             return View(enrollments);
+        }
+
+        // ================= AJAX FILTER =================
+        [HttpGet]
+        public async Task<IActionResult> Filter(string? search, bool? paymentStatus)
+        {
+            var query = _db.Enrollments
+                .Include(e => e.Student).ThenInclude(s => s.User)
+                .Include(e => e.Course)
+                .AsQueryable();
+
+            // SEARCH: student name / email / course
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                query = query.Where(e =>
+                    e.Student!.User!.FullName.Contains(search) ||
+                    e.Student.User.Email.Contains(search) ||
+                    e.Course!.Title.Contains(search));
+            }
+
+            // FILTER: payment status
+            if (paymentStatus.HasValue)
+            {
+                query = query.Where(e => e.PaymentStatus == paymentStatus.Value);
+            }
+
+            var enrollments = await query
+                .OrderByDescending(e => e.EnrolledAt)
+                .ToListAsync();
+
+            return PartialView("_EnrollmentTable", enrollments);
         }
     }
 }

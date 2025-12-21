@@ -70,7 +70,7 @@ public class AdminSystemSettingsController : Controller
 
         await _db.SaveChangesAsync();
 
-        TempData["Success"] = "System settings updated successfully.";
+        TempData["SystemSettingsSuccess"] = "System settings updated successfully.";
         return RedirectToAction(nameof(Index));
     }
 }

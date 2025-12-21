@@ -1,8 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using RSD_E_Learning.Models;
+using RSD_E_Learning.Services;
 using System.Text;
 
 namespace RSD_E_Learning.Controllers
@@ -11,10 +12,12 @@ namespace RSD_E_Learning.Controllers
     public class AdminTeacherController : Controller
     {
         private readonly DB _db;
+        private readonly IEmailService _emailService; 
 
-        public AdminTeacherController(DB db)
+        public AdminTeacherController(DB db, IEmailService emailService)
         {
             _db = db;
+            _emailService = emailService;
         }
 
         // ================== LIST ==================
@@ -153,7 +156,7 @@ namespace RSD_E_Learning.Controllers
 
             await _db.SaveChangesAsync();
 
-            TempData["Success"] = "Teacher account created successfully.";
+            TempData["TeacherSuccess"] = "Teacher account created successfully.";
             return RedirectToAction(nameof(Index));
         }
 
@@ -194,17 +197,35 @@ namespace RSD_E_Learning.Controllers
                 .Include(t => t.User)
                 .FirstOrDefaultAsync(t => t.TeacherId == vm.Id);
 
-            if (teacher == null)
+            if (teacher == null || teacher.User == null)
                 return Json(new { success = false });
 
+            bool wasActive = teacher.IsActive;
             teacher.IsActive = !teacher.IsActive;
+
+            if (teacher.IsActive)
+            {
+                await _emailService.SendAsync(
+                    teacher.User.Email,
+                    "Teacher Account Activated",
+                    EmailTemplates.TeacherActivated(teacher.User.FullName)
+                );
+            }
+            else
+            {
+                await _emailService.SendAsync(
+                    teacher.User.Email,
+                    "Teacher Account Deactivated",
+                    EmailTemplates.TeacherDeactivated(teacher.User.FullName)
+                );
+            }
 
             _db.AuditLogs.Add(new DB.AuditLog
             {
                 UserId = teacher.UserId,
-                Action = teacher.IsActive
-                    ? $"Activated teacher account: {teacher.User.Email}"
-                    : $"Deactivated teacher account: {teacher.User.Email}",
+                Action = wasActive
+                    ? $"Deactivated teacher account: {teacher.User.Email}"
+                    : $"Activated teacher account: {teacher.User.Email}",
                 Timestamp = DateTime.UtcNow
             });
 
@@ -216,9 +237,6 @@ namespace RSD_E_Learning.Controllers
                 isActive = teacher.IsActive
             });
         }
-
-
-
 
         // ================== RESET PASSWORD (GET) ==================
         [HttpGet]

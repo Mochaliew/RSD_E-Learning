@@ -1,0 +1,43 @@
+﻿@model IEnumerable<RSD_E_Learning.Models.DB.Enrollment>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Student</th>
+            <th>Course</th>
+            <th>Enrolled At</th>
+            <th>Payment Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (!Model.Any())
+        {
+            <tr>
+                <td colspan="4" class="text-center text-muted">
+                    No enrollments found.
+                </td>
+            </tr>
+        }
+        else
+        {
+            foreach (var e in Model)
+            {
+                <tr>
+                    <td>@e.Student!.User!.FullName</td>
+                    <td>@e.Course!.Title</td>
+                    <td>@e.EnrolledAt.ToString("dd MMM yyyy")</td>
+                    <td>
+                        @if (e.PaymentStatus)
+                        {
+                            <span class="badge bg-success">Paid</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger">Unpaid</span>
+                        }
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
