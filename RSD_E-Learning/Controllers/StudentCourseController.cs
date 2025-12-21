@@ -528,22 +528,41 @@ namespace RSD_E_Learning.Controllers
             if (student == null)
                 return Unauthorized();
 
+            // 1️⃣ Load course WITH final exams
+            var course = await _db.Courses
+                .Include(c => c.Teacher)
+                    .ThenInclude(t => t.User)
+                .Include(c => c.FinalExams)
+                .FirstOrDefaultAsync(c => c.CourseId == courseId);
+
+            if (course == null)
+                return NotFound();
+
+            //  No final exam → NO certificate
+            if (course.FinalExams == null || !course.FinalExams.Any())
+                return Forbid();
+
+            // 2Course progress must be 100%
             var progress = await _db.StudentCourseProgresses
                 .FirstOrDefaultAsync(p =>
                     p.StudentId == student.StudentId &&
                     p.CourseId == courseId);
 
             if (progress == null || progress.ProgressPercentage < 100)
-                return Forbid(); // ❗ IMPORTANT SECURITY
+                return Forbid();
 
-            var course = await _db.Courses
-                .Include(c => c.Teacher)
-                    .ThenInclude(t => t.User)
-                .FirstOrDefaultAsync(c => c.CourseId == courseId);
+            //  Must PASS at least one final exam
+            var finalExamIds = course.FinalExams.Select(f => f.FinalId).ToList();
 
-            if (course == null)
-                return NotFound();
+            bool hasPassedFinalExam = await _db.FinalAttempts.AnyAsync(a =>
+                a.StudentId == student.StudentId &&
+                finalExamIds.Contains(a.FinalId) &&
+                a.IsPassed == true);
 
+            if (!hasPassedFinalExam)
+                return Forbid();
+
+            //  Certificate allowed
             ViewBag.StudentName = student.User!.FullName;
             ViewBag.CourseTitle = course.Title;
             ViewBag.Instructor = course.Teacher!.User!.FullName;
@@ -551,6 +570,7 @@ namespace RSD_E_Learning.Controllers
 
             return View();
         }
+
 
 
 
