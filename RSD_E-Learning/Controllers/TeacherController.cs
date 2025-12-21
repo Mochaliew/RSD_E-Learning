@@ -872,6 +872,24 @@ namespace RSD_E_Learning.Controllers
             return Json(new { success = true, message = "File deleted successfully" });
         }
 
+        // ------------------------- DELETELESSON [POST] ------------------------- //
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteLesson(int id)
+        {
+            var lesson = await _context.Lessons
+                .FirstOrDefaultAsync(l => l.LessonId == id);
+
+            if (lesson == null) return NotFound();
+
+            _context.Lessons.Remove(lesson);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Lesson deleted successfully.";
+            return RedirectToAction("CourseDetail", "Teacher",
+    new { id = lesson.CourseId });
+        }
+
         // ------------------------- CREATEASSESSMENT [POST] ------------------------- // 
 
         [HttpPost]
@@ -904,12 +922,10 @@ namespace RSD_E_Learning.Controllers
                 CourseId = model.CourseId,
                 Title = model.Title,
                 TotalMarks = model.Questions.Count,
-// HEAD
                 DeadLine = model.DeadLine,
                  PassingMark = model.PassingMark,
 
-                //DeadLine = model.DeadLine.ToUniversalTime()
-                 //50ef53410ac889cfb59e987c326cfdad317e1629
+
             };
 
             _context.Assessments.Add(assessment);
@@ -936,13 +952,17 @@ namespace RSD_E_Learning.Controllers
                 message = "Assessment and questions saved successfully",
                 assessmentId = assessment.AssessmentId
             });
+
         }
+
+        // ------------------------- CREATEASSESSMENT [GET] ------------------------- //
         [HttpGet]
         public IActionResult CreateAssessment(int courseId)
         {
             ViewBag.CourseId = courseId;
             return View();
         }
+
         // ------------------------- VIEW ASSESSMENT [GET] ------------------------- //
         [HttpGet]
         public async Task<IActionResult> ViewAssessment(int id)
@@ -973,6 +993,22 @@ namespace RSD_E_Learning.Controllers
             };
 
             return View(vm);
+        }
+
+        // ------------------------- DELETEASSESSMENT [POST] ------------------------- //
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteAssessment(int id)
+        {
+            var assessment = await _context.Assessments.FindAsync(id);
+            if (assessment == null) return NotFound();
+
+            _context.Assessments.Remove(assessment);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Assessment deleted successfully.";
+            return RedirectToAction("CourseDetail", "Teacher",
+    new { id = assessment.CourseId });
         }
 
         // ------------------------- VIEW FINAL [GET] ------------------------- //
@@ -1089,6 +1125,7 @@ namespace RSD_E_Learning.Controllers
             {
                 return BadRequest($"Error saving questions: {ex.InnerException?.Message ?? ex.Message}");
             }
+           
         }
 
         // ------------------------- CREATEFINAL [GET] ------------------------- //
@@ -1097,6 +1134,22 @@ namespace RSD_E_Learning.Controllers
         {
             ViewBag.CourseId = courseId;
             return View();
+        }
+
+        // ------------------------- DELETEFINAL [POST] ------------------------- //
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteFinalExam(int id)
+        {
+            var final = await _context.FinalExams.FindAsync(id);
+            if (final == null) return NotFound();
+
+            _context.FinalExams.Remove(final);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Final exam deleted successfully.";
+            return RedirectToAction("CourseDetail", "Teacher",
+    new { id = final.CourseId });
         }
     }
 }
