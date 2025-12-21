@@ -2,44 +2,58 @@
 
 @{
     ViewData["Title"] = "Enrollment Management";
-    Layout = "_Layout";
 }
 
-<h2>Enrollment Management</h2>
+<h2 class="mb-3">Enrollment Management</h2>
 
-<table class="table table-bordered table-striped">
-    <thead>
-        <tr>
-            <th>Student</th>
-            <th>Course</th>
-            <th>Enrolled At</th>
-            <th>Payment Status</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var e in Model)
-        {
-            <tr>
-                <td>@e.Student!.User!.FullName</td>
-                <td>@e.Course!.Title</td>
-                <td>@e.EnrolledAt.ToString("dd MMM yyyy")</td>
-                <td>
-                    @if (e.PaymentStatus)
-                    {
-                        <span class="badge bg-success">Paid</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-danger">Unpaid</span>
-                    }
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+<!-- ================= SEARCH & FILTER ================= -->
+<form id="filterForm" class="row g-2 mb-4">
+
+    <div class="col-md-5">
+        <input name="search"
+               class="form-control"
+               placeholder="Search student, email or course" />
+    </div>
+
+    <div class="col-md-3">
+        <select name="paymentStatus" class="form-select">
+            <option value="">All Payments</option>
+            <option value="true">Paid</option>
+            <option value="false">Unpaid</option>
+        </select>
+    </div>
+
+    <div class="col-md-2 d-grid">
+        <button class="btn btn-primary">Apply</button>
+    </div>
+
+</form>
+
+<!-- ================= TABLE ================= -->
+<div id="enrollmentTable">
+    @await Html.PartialAsync("_EnrollmentTable", Model)
+</div>
 
 <a asp-controller="AdminDashboard"
    asp-action="Index"
    class="btn btn-secondary mt-3">
     ← Back to Dashboard
 </a>
+
+@section Scripts {
+    <script>
+        const form = document.getElementById('filterForm');
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const params = new URLSearchParams(new FormData(form)).toString();
+
+            fetch('/AdminEnrollment/Filter?' + params)
+                .then(res => res.text())
+                .then(html => {
+                    document.getElementById('enrollmentTable').innerHTML = html;
+                });
+        });
+    </script>
+}
