@@ -7,6 +7,21 @@
 
 <h2 class="mb-3">Manage Students</h2>
 
+<div class="d-flex gap-2 mb-3">
+    <a asp-controller="AdminEnrollment"
+       asp-action="Index"
+       class="btn btn-outline-primary btn-sm">
+        View Enrollments
+    </a>
+
+    <a asp-controller="AdminTransaction"
+       asp-action="Index"
+       class="btn btn-outline-success btn-sm">
+        View Transactions
+    </a>
+</div>
+
+
 <!-- ================= SEARCH & FILTER ================= -->
 <form id="filterForm" class="row g-2 mb-4 align-items-end">
 
