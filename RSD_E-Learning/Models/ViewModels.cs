@@ -49,8 +49,10 @@ namespace RSD_E_Learning.Models
         public int TotalStudents { get; set; }
         public int TotalLessons { get; set; }
         public int TotalAssessments { get; set; }
+        public int TotalFinalExams { get; set; }
         public List<Lesson> UpcomingLessons { get; set; } = new();
         public List<Assessment> RecentAssessments { get; set; } = new();
+        public List<FinalExam> RecentFinalExams { get; set; } = new();
     }
 
     // Course Detail View Models //
@@ -58,6 +60,7 @@ namespace RSD_E_Learning.Models
     {
         public DB.Course Course { get; set; } = new();
         public List<LessonWithFilesVm> LessonsWithFiles { get; set; } = new();
+        public List<DB.FinalExam> FinalExams { get; set; } = new();
         public List<DB.Assessment> Assessments { get; set; } = new();
         public IEnumerable<SelectListItem> Categories { get; set; } = new List<SelectListItem>();
     }
@@ -491,7 +494,27 @@ namespace RSD_E_Learning.Models
             public List<CreateAssessmentQuestionVm> Questions { get; set; } = new();
         }
 
-        public class CreateAssessmentQuestionVm
+        public class CreateFinalExamVm
+        {
+            public int CourseId { get; set; }
+            public string Title { get; set; } = "";
+            public int PassingMark { get; set; }
+            public DateTime DeadLine { get; set; }
+
+            public List<CreateFinalExamQuestionVm> Questions { get; set; } = new();
+        }
+
+        public class CreateFinalExamQuestionVm
+        {
+            public string QuestionDetail { get; set; } = "";
+            public string AnswerA { get; set; } = "";
+            public string AnswerB { get; set; } = "";
+            public string AnswerC { get; set; } = "";
+            public string AnswerD { get; set; } = "";
+            public string CorrectAnswer { get; set; } = "";
+        }
+
+    public class CreateAssessmentQuestionVm
         {
             public string QuestionDetail { get; set; } = "";
             public string AnswerA { get; set; } = "";

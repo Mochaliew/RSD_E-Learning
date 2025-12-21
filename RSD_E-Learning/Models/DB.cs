@@ -30,16 +30,16 @@ public class DB : DbContext
     public DbSet<Certificate> Certificates { get; set; }
     public DbSet<Assessment> Assessments { get; set; }
     public DbSet<AssessmentSubmission> AssessmentSubmissions { get; set; }
-
     public DbSet<AssessmentQuestion> AssessmentQuestions { get; set; }
-
     public DbSet<AssessmentAttempt> AssessmentAttempts { get; set; }
     public DbSet<StudentAnswer> StudentAnswers { get; set; }
-
+    public DbSet<FinalExam> FinalExams { get; set; }
+    public DbSet<FinalSubmission> FinalSubmissions { get; set; }
+    public DbSet<FinalQuestion> FinalQuestions { get; set; }
+    public DbSet<FinalAttempt> FinalAttempts { get; set; }
+    public DbSet<StudentFinalAnswer> StudentFinalAnswers { get; set; }
     public DbSet<StudentCourseProgress> StudentCourseProgresses { get; set; }
     public DbSet<StudentMaterialProgress> StudentMaterialProgresses { get; set; }
-
-
     public DbSet<PaymentTransaction> PaymentTransactions { get; set; }
 
 
@@ -480,6 +480,129 @@ public class DB : DbContext
         public AssessmentQuestion? Question { get; set; }
     }
 
+    // ----------------------------------- FINAL EXAM ------------------------------------ //
+    public class FinalExam
+    {
+        [Key]
+        public int FinalId { get; set; }
+
+        [ForeignKey(nameof(Course))]
+        public int CourseId { get; set; }
+
+        [Required, StringLength(200)]
+        public string Title { get; set; } = "";
+
+        public int? TotalMarks { get; set; }
+
+        public DateTime DeadLine { get; set; }
+
+        public Course? Course { get; set; }
+
+        public int PassingMark { get; set; }
+
+
+        public ICollection<FinalQuestion> FinalQuestions { get; set; }
+            = new List<FinalQuestion>();
+
+        public ICollection<FinalSubmission> FinalSubmissions { get; set; }
+            = new List<FinalSubmission>();
+    }
+
+    // ----------------------------------- FINAL SUBMISSION ------------------------------------ //
+    public class FinalSubmission
+    {
+        [Key]
+        public int FinalSubmissionId { get; set; }
+
+        [ForeignKey(nameof(Student))]
+        public int StudentId { get; set; }
+
+        [ForeignKey(nameof(Lesson))]
+        public int LessonId { get; set; }
+
+        public DateTime SubmittedDate { get; set; } = DateTime.UtcNow;
+
+        public double? Grade { get; set; }
+
+        // Navigation Properties
+        public Student? Student { get; set; }
+        public Lesson? Lesson { get; set; }
+    }
+
+    // ----------------------------------- FINAL QUESTION ------------------------------------ //
+
+    public class FinalQuestion
+    {
+        [Key]
+        public int QuestionId { get; set; }
+
+        [ForeignKey(nameof(FinalExam))]
+        public int FinalId { get; set; }
+
+        [Required, StringLength(500)]
+        public string QuestionDetail { get; set; } = "";
+
+        public string AnswerA { get; set; } = "";
+
+        public string AnswerB { get; set; } = "";
+
+        public string AnswerC { get; set; } = "";
+
+        public string AnswerD { get; set; } = "";
+
+        public string CorrectAnswer { get; set; } = "";
+
+        public FinalExam? FinalExam { get; set; }
+
+    }
+
+    // ----------------------------------- FINAL ATTEMPT ------------------------------------ //
+    public class FinalAttempt
+    {
+        [Key]
+        public int AttemptId { get; set; }
+
+        [ForeignKey(nameof(Student))]
+        public int StudentId { get; set; }
+
+        [ForeignKey(nameof(FinalExam))]
+        public int FinalId { get; set; }
+
+        public DateTime AttemptedAt { get; set; } = DateTime.UtcNow;
+
+        public double Score { get; set; }
+
+        public bool IsPassed { get; set; }
+
+        // Navigation
+        public Student? Student { get; set; }
+        public FinalExam? FinalExam { get; set; }
+
+        public ICollection<StudentFinalAnswer> StudentFinalAnswers { get; set; } = new List<StudentFinalAnswer>();
+    }
+
+    // ----------------------------------- STUDENT FINAL ANSWER ------------------------------------ //
+    public class StudentFinalAnswer
+    {
+        [Key]
+        public int AnswerId { get; set; }
+
+        [ForeignKey(nameof(FinalAttempt))]
+        public int AttemptId { get; set; }
+
+        [ForeignKey(nameof(FinalQuestion))]
+        public int QuestionId { get; set; }
+
+        [Required]
+        public string SelectedAnswer { get; set; } = "";
+
+        public bool IsCorrect { get; set; }
+
+        // Navigation
+        public FinalAttempt? FinalAttempt { get; set; }
+        public FinalQuestion? FinalQuestion { get; set; }
+    }
+
     // ----------------------------------- STUDENT COURSE PROGRESS ------------------------------------ //
     public class StudentCourseProgress
     {
@@ -520,8 +643,6 @@ public class DB : DbContext
         public CourseFile? CourseFile { get; set; }
     }
 
-
-  
     public class PaymentTransaction
     {
         public int PaymentTransactionId { get; set; }
@@ -539,13 +660,6 @@ public class DB : DbContext
     }
 
 
-
-
-
-
-
-
-
 protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -560,6 +674,18 @@ protected override void OnModelCreating(ModelBuilder modelBuilder)
         .HasOne(sa => sa.Question)
         .WithMany()
         .HasForeignKey(sa => sa.QuestionId)
+        .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<StudentFinalAnswer>()
+        .HasOne(sfa => sfa.FinalAttempt)
+        .WithMany(fa => fa.StudentFinalAnswers)
+        .HasForeignKey(sfa => sfa.AttemptId)
+        .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<StudentFinalAnswer>()
+        .HasOne(sfa => sfa.FinalQuestion)
+        .WithMany()
+        .HasForeignKey(sfa => sfa.QuestionId)
         .OnDelete(DeleteBehavior.Restrict);
 
         //Relationships//
@@ -582,6 +708,8 @@ protected override void OnModelCreating(ModelBuilder modelBuilder)
          .WithMany(s => s.Enrollments)
          .HasForeignKey(e => e.StudentId)
          .OnDelete(DeleteBehavior.Restrict);
+
+
     }
     private static string HashPassword(string password)
     {

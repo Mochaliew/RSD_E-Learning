@@ -1,0 +1,419 @@
+﻿@{
+    ViewData["Title"] = "Create Final Exam";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/css/Teacher.css" />
+</head>
+
+<body>
+    <input type="hidden" id="courseId" value="@ViewBag.CourseId" />
+
+    <div class="container">
+        <div class="header">
+            <h1>Create Final Exam</h1>
+            <p>Design a comprehensive final exam for your course</p>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-step">
+                <div class="step-circle active" id="step1Circle">1</div>
+                <span class="step-label">Basic Info</span>
+            </div>
+            <div class="progress-step">
+                <div class="step-circle" id="step2Circle">2</div>
+                <span class="step-label">Add Questions</span>
+            </div>
+            <div class="progress-step">
+                <div class="step-circle" id="step3Circle">3</div>
+                <span class="step-label">Preview & Publish</span>
+            </div>
+        </div>
+
+        <form id="finalExamForm">
+            <!-- Step 1: Basic Information -->
+            <div class="form-section active" id="step1">
+                <div class="form-group">
+                    <label for="finalExamTitle">Final Exam Title *</label>
+                    <input type="text" id="finalExamTitle" required placeholder="Enter final exam title">
+                </div>
+
+                <div class="form-group">
+                    <label for="passingMark">Passing Mark (/100%) *</label>
+                    <input type="number" id="passingMark" min="0" max="100" value="70" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="deadline">Deadline *</label>
+                    <input type="datetime-local" id="deadline" class="form-control" required />
+                </div>
+
+                <div class="button-group">
+                    <button type="button" class="btn btn-primary" onclick="nextStep(2)">Next: Add Questions</button>
+                    <a href="/Teacher/TeacherIndex" class="btn btn-cancel">Cancel</a>
+                </div>
+            </div>
+
+            <!-- Step 2: Add Questions -->
+            <div class="form-section" id="step2">
+                <div id="questionsContainer">
+                    <!-- Question 1 (Template) -->
+                    <div class="question-container">
+                        <div class="question-header">
+                            <span class="question-number">Question 1</span>
+                        </div>
+                        <div class="form-group">
+                            <label>Question Text *</label>
+                            <textarea class="question-text" rows="3" required placeholder="Enter your question"></textarea>
+                        </div>
+                        <div class="options-group">
+                            <label>Answer Options:</label>
+                            <div class="option-item">
+                                <span class="option-label">Option A:</span>
+                                <input type="text" class="option-text" placeholder="Enter option A" required>
+                                <input type="radio" name="correct-1" value="A" required>
+                                <label>Correct</label>
+                            </div>
+                            <div class="option-item">
+                                <span class="option-label">Option B:</span>
+                                <input type="text" class="option-text" placeholder="Enter option B" required>
+                                <input type="radio" name="correct-1" value="B">
+                                <label>Correct</label>
+                            </div>
+                            <div class="option-item">
+                                <span class="option-label">Option C:</span>
+                                <input type="text" class="option-text" placeholder="Enter option C" required>
+                                <input type="radio" name="correct-1" value="C">
+                                <label>Correct</label>
+                            </div>
+                            <div class="option-item">
+                                <span class="option-label">Option D:</span>
+                                <input type="text" class="option-text" placeholder="Enter option D" required>
+                                <input type="radio" name="correct-1" value="D">
+                                <label>Correct</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="button" class="add-question-btn" onclick="addQuestion()">+ Add Another Question</button>
+
+                <div class="button-group">
+                    <button type="button" class="btn btn-secondary" onclick="prevStep(1)">Back</button>
+                    <button type="button" class="btn btn-primary" onclick="nextStep(3)">Next: Preview</button>
+                </div>
+            </div>
+
+            <!-- Step 3: Preview & Publish -->
+            <div class="form-section" id="step3">
+                <div class="preview-section">
+                    <h3>Final Exam Preview</h3>
+
+                    <div class="preview-info">
+                        <div class="info-item">
+                            <div class="info-label">Final Exam Title</div>
+                            <div class="info-value" id="previewTitle">-</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Total Questions</div>
+                            <div class="info-value" id="previewQuestions">0</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Passing Mark</div>
+                            <div class="info-value" id="previewPassing">-</div>
+                        </div>
+                    </div>
+
+                    <h4 style="margin: 25px 0 15px 0; color: #333;">Questions:</h4>
+                    <div id="previewQuestionsContainer"></div>
+                </div>
+
+                <div class="button-group">
+                    <button type="button" class="btn btn-secondary" onclick="prevStep(2)">Back</button>
+                    <button type="button" class="btn btn-primary" onclick="publishFinalExam()">Publish Final Exam</button>
+                </div>
+
+                <div class="success-message" id="successMessage">
+                    ✓ Final exam published successfully!
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Wait for DOM to be fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Global variables
+            window.questionCount = 1;
+            window.currentStep = 1;
+            console.log('Page loaded, scripts ready');
+        });
+
+        function nextStep(step) {
+            // Validate current step
+            if (!validateStep(currentStep)) {
+                return;
+            }
+
+            // Hide current step
+            const currentSection = document.getElementById(`step${window.currentStep}`);
+            const currentCircle = document.getElementById(`step${window.currentStep}Circle`);
+
+            if (currentSection) currentSection.classList.remove('active');
+            if (currentCircle) currentCircle.classList.remove('active');
+
+            // Show next step
+            const nextSection = document.getElementById(`step${step}`);
+            const nextCircle = document.getElementById(`step${step}Circle`);
+
+            if (nextSection) nextSection.classList.add('active');
+            if (nextCircle) nextCircle.classList.add('active');
+
+            // If going to step 3, show preview
+            if (step === 3) {
+                showPreview();
+            }
+
+            window.currentStep = step;
+            window.scrollTo(0, 0);
+        }
+
+        function prevStep(step) {
+            const currentSection = document.getElementById(`step${window.currentStep}`);
+            const currentCircle = document.getElementById(`step${window.currentStep}Circle`);
+
+            if (currentSection) currentSection.classList.remove('active');
+            if (currentCircle) currentCircle.classList.remove('active');
+
+            const prevSection = document.getElementById(`step${step}`);
+            const prevCircle = document.getElementById(`step${step}Circle`);
+
+            if (prevSection) prevSection.classList.add('active');
+            if (prevCircle) prevCircle.classList.add('active');
+
+            window.currentStep = step;
+            window.scrollTo(0, 0);
+        }
+
+        function validateStep(step) {
+            if (step === 1) {
+                const titleInput = document.getElementById('finalExamTitle');
+                const passingMarkInput = document.getElementById('passingMark');
+                const deadlineInput = document.getElementById('deadline');
+
+                if (!titleInput || !passingMarkInput || !deadlineInput) {
+                    console.error('Form elements not found');
+                    return false;
+                }
+
+                const title = titleInput.value.trim();
+                const passingMark = passingMarkInput.value;
+                const deadline = deadlineInput.value;
+
+                if (!title) {
+                    alert('Please enter a final exam title');
+                    return false;
+                }
+                if (!passingMark || passingMark < 0 || passingMark > 100) {
+                    alert('Please enter a valid passing mark (0-100)');
+                    return false;
+                }
+                if (!deadline) {
+                    alert('Please select a deadline');
+                    return false;
+                }
+            } else if (step === 2) {
+                const questions = document.querySelectorAll('.question-container');
+                if (questions.length === 0) {
+                    alert('Please add at least one question');
+                    return false;
+                }
+
+                for (let i = 0; i < questions.length; i++) {
+                    const questionText = questions[i].querySelector('.question-text').value.trim();
+                    const options = questions[i].querySelectorAll('.option-text');
+                    const correctAnswer = questions[i].querySelector('input[type="radio"]:checked');
+
+                    if (!questionText) {
+                        alert(`Please enter text for Question ${i + 1}`);
+                        return false;
+                    }
+
+                    for (let opt of options) {
+                        if (!opt.value.trim()) {
+                            alert(`Please fill all options for Question ${i + 1}`);
+                            return false;
+                        }
+                    }
+
+                    if (!correctAnswer) {
+                        alert(`Please select the correct answer for Question ${i + 1}`);
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        function addQuestion() {
+            window.questionCount++;
+            const container = document.getElementById('questionsContainer');
+            const newQuestion = `
+                <div class="question-container">
+                    <div class="question-header">
+                        <span class="question-number">Question ${window.questionCount}</span>
+                        <button type="button" class="remove-question-btn" onclick="removeQuestion(this)">× Remove</button>
+                    </div>
+                    <div class="form-group">
+                        <label>Question Text *</label>
+                        <textarea class="question-text" rows="3" required placeholder="Enter your question"></textarea>
+                    </div>
+                    <div class="options-group">
+                        <label>Answer Options:</label>
+                        <div class="option-item">
+                            <span class="option-label">Option A:</span>
+                            <input type="text" class="option-text" placeholder="Enter option A" required>
+                            <input type="radio" name="correct-${window.questionCount}" value="A" required>
+                            <label>Correct</label>
+                        </div>
+                        <div class="option-item">
+                            <span class="option-label">Option B:</span>
+                            <input type="text" class="option-text" placeholder="Enter option B" required>
+                            <input type="radio" name="correct-${window.questionCount}" value="B">
+                            <label>Correct</label>
+                        </div>
+                        <div class="option-item">
+                            <span class="option-label">Option C:</span>
+                            <input type="text" class="option-text" placeholder="Enter option C" required>
+                            <input type="radio" name="correct-${window.questionCount}" value="C">
+                            <label>Correct</label>
+                        </div>
+                        <div class="option-item">
+                            <span class="option-label">Option D:</span>
+                            <input type="text" class="option-text" placeholder="Enter option D" required>
+                            <input type="radio" name="correct-${window.questionCount}" value="D">
+                            <label>Correct</label>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', newQuestion);
+        }
+
+        function removeQuestion(button) {
+            button.closest('.question-container').remove();
+            updateQuestionNumbers();
+        }
+
+        function updateQuestionNumbers() {
+            const questions = document.querySelectorAll('.question-container');
+            window.questionCount = questions.length;
+            questions.forEach((q, index) => {
+                q.querySelector('.question-number').textContent = `Question ${index + 1}`;
+            });
+        }
+
+        function showPreview() {
+            const title = document.getElementById('finalExamTitle').value;
+            const passingMark = document.getElementById('passingMark').value;
+            const questions = document.querySelectorAll('.question-container');
+
+            document.getElementById('previewTitle').textContent = title;
+            document.getElementById('previewQuestions').textContent = questions.length;
+            document.getElementById('previewPassing').textContent = passingMark + '%';
+
+            const previewContainer = document.getElementById('previewQuestionsContainer');
+            previewContainer.innerHTML = '';
+
+            questions.forEach((q, index) => {
+                const questionText = q.querySelector('.question-text').value;
+                const options = q.querySelectorAll('.option-text');
+                const correctAnswer = q.querySelector('input[type="radio"]:checked').value;
+
+                const previewHTML = `
+                    <div class="preview-question">
+                        <div class="preview-question-number">Question ${index + 1}</div>
+                        <div class="preview-question-text">${questionText}</div>
+                        <div class="preview-options">
+                            <div class="preview-option ${correctAnswer === 'A' ? 'correct' : ''}">A. ${options[0].value}</div>
+                            <div class="preview-option ${correctAnswer === 'B' ? 'correct' : ''}">B. ${options[1].value}</div>
+                            <div class="preview-option ${correctAnswer === 'C' ? 'correct' : ''}">C. ${options[2].value}</div>
+                            <div class="preview-option ${correctAnswer === 'D' ? 'correct' : ''}">D. ${options[3].value}</div>
+                        </div>
+                    </div>
+                `;
+                previewContainer.insertAdjacentHTML('beforeend', previewHTML);
+            });
+        }
+
+        async function publishFinalExam() {
+            const courseId = document.getElementById('courseId').value;
+            const title = document.getElementById('finalExamTitle').value;
+            const passingMark = parseInt(document.getElementById('passingMark').value);
+            const deadline = document.getElementById('deadline').value;
+
+            const questions = [];
+            const questionContainers = document.querySelectorAll('.question-container');
+
+            questionContainers.forEach(q => {
+                const questionText = q.querySelector('.question-text').value;
+                const options = q.querySelectorAll('.option-text');
+                const correctAnswer = q.querySelector('input[type="radio"]:checked').value;
+
+                questions.push({
+                    QuestionDetail: questionText,
+                    AnswerA: options[0].value,
+                    AnswerB: options[1].value,
+                    AnswerC: options[2].value,
+                    AnswerD: options[3].value,
+                    CorrectAnswer: correctAnswer
+                });
+            });
+
+            const payload = {
+                CourseId: parseInt(courseId),
+                Title: title,
+                PassingMark: passingMark,
+                DeadLine: deadline,
+                Questions: questions
+            };
+
+            try {
+                const response = await fetch('/api/teacher/create-final', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    document.getElementById('successMessage').style.display = 'block';
+                    setTimeout(() => {
+                        window.location.href = '/Teacher/ViewCourse';
+                    }, 2000);
+                } else {
+                    const error = await response.text();
+                    alert('Error: ' + error);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to publish final exam. Please try again.');
+            }
+        }
+
+        // Make functions available globally
+        window.nextStep = nextStep;
+        window.prevStep = prevStep;
+        window.addQuestion = addQuestion;
+        window.removeQuestion = removeQuestion;
+        window.publishFinalExam = publishFinalExam;
+    </script>
+</body>
+</html>

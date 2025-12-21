@@ -340,6 +340,19 @@ namespace RSD_E_Learning.Controllers
                 });
             }
 
+            var finals = await _context.FinalExams
+                .Where(f => f.CourseId == id)
+                .OrderByDescending(f => f.FinalId)
+                .ToListAsync();
+
+            foreach (var final in finals)
+            {
+                var questionCount = await _context.FinalQuestions
+                    .CountAsync(q => q.FinalId == final.FinalId);
+                ViewBag.FinalQuestionCounts = ViewBag.FinalQuestionCounts ?? new Dictionary<int, int>();
+                ((Dictionary<int, int>)ViewBag.FinalQuestionCounts)[final.FinalId] = questionCount;
+            }
+
             var assessments = await _context.Assessments
                 .Where(a => a.CourseId == id)
                 .OrderByDescending(a => a.AssessmentId)
@@ -369,6 +382,7 @@ namespace RSD_E_Learning.Controllers
                 Course = course,
                 LessonsWithFiles = lessonsWithFiles,
                 Assessments = assessments,
+                FinalExams = finals,
                 Categories = categories
             };
 
@@ -814,6 +828,8 @@ namespace RSD_E_Learning.Controllers
             return RedirectToAction("CourseDetail", new { id = model.CourseId });
         }
 
+        // ------------------------- DELETELESSONFILE [POST] ------------------------- //
+
         [HttpPost]
         public async Task<IActionResult> DeleteLessonFile(int fileId)
         {
@@ -959,5 +975,96 @@ namespace RSD_E_Learning.Controllers
             return View(vm);
         }
 
+        // ------------------------- CREATEFINAL [POST] ------------------------- // 
+        [HttpPost]
+        [Route("api/teacher/create-final")]
+        public async Task<IActionResult> CreateFinalApi([FromBody] CreateFinalExamVm model)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var teacherIdClaim = User.FindFirst("TeacherId");
+            if (teacherIdClaim == null)
+                return Unauthorized();
+
+            int teacherId = int.Parse(teacherIdClaim.Value);
+
+            if (model.CourseId <= 0)
+                return BadRequest("CourseId is required.");
+
+            var course = await _context.Courses
+                .FirstOrDefaultAsync(c => c.CourseId == model.CourseId && c.TeacherId == teacherId);
+
+            if (course == null)
+                return BadRequest("Invalid or unauthorized course.");
+
+            // Create the final exam
+            var final = new DB.FinalExam
+            {
+                CourseId = model.CourseId,
+                Title = model.Title,
+                TotalMarks = model.Questions.Count,
+                DeadLine = model.DeadLine,
+                PassingMark = model.PassingMark,
+            };
+
+            _context.FinalExams.Add(final);
+
+            // Save to get the FinalId
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Error saving final exam: {ex.InnerException?.Message ?? ex.Message}");
+            }
+
+            // Now add questions one by one to see which one fails
+            try
+            {
+                foreach (var q in model.Questions)
+                {
+                    var question = new DB.FinalQuestion
+                    {
+                        FinalId = final.FinalId,
+                        QuestionDetail = q.QuestionDetail ?? "",
+                        AnswerA = q.AnswerA ?? "",
+                        AnswerB = q.AnswerB ?? "",
+                        AnswerC = q.AnswerC ?? "",
+                        AnswerD = q.AnswerD ?? "",
+                        CorrectAnswer = q.CorrectAnswer ?? ""
+                    };
+
+                    _context.FinalQuestions.Add(question);
+                }
+
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    message = "Final exam and questions saved successfully",
+                    finalExamId = final.FinalId,
+                    questionCount = model.Questions.Count
+                });
+            }
+            catch (DbUpdateException dbEx)
+            {
+                // More detailed error for database issues
+                return BadRequest($"Database error saving questions: {dbEx.InnerException?.Message ?? dbEx.Message}");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Error saving questions: {ex.InnerException?.Message ?? ex.Message}");
+            }
+        }
+
+        // ------------------------- CREATEFINAL [GET] ------------------------- //
+        [HttpGet]
+        public IActionResult CreateFinalExam(int courseId)
+        {
+            ViewBag.CourseId = courseId;
+            return View();
+        }
     }
 }

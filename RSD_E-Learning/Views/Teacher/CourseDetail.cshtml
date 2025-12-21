@@ -73,7 +73,23 @@
         margin: 0;
     }
 
+    .final-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
     .lesson-item {
+        display: block;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+    }
+
+    .final-item {
         display: block;
         padding: 20px;
         background: #f8f9fa;
@@ -87,6 +103,11 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             transform: translateY(-2px);
         }
+
+    .final-item:hover {
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        transform: translateY(-2px);
+    }
 
     .file-item, .assessment-item {
         display: flex;
@@ -102,6 +123,20 @@
         flex: 1;
     }
 
+    .file-item, .final-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        margin-bottom: 10px;
+    }
+
+    .file-info, .ginal-info {
+        flex: 1;
+    }
+
     .lesson-name {
         font-weight: 600;
         color: #333;
@@ -110,6 +145,12 @@
     }
 
     .lesson-meta {
+        font-size: 0.9rem;
+        color: #666;
+        line-height: 1.6;
+    }
+
+    .final-meta {
         font-size: 0.9rem;
         color: #666;
         line-height: 1.6;
@@ -447,8 +488,50 @@
             <div class="empty-message">No assessments created yet</div>
         }
     </div>
-</div>
 
+    <div class="section-card">
+        <div class="section-title">
+            <span>Final Exams (@Model.FinalExams.Count)</span>
+            <a href="@Url.Action("CreateFinalExam", "Teacher", new { courseId = Model.Course.CourseId })" class="btn-edit-section">+ Create Final Exam</a>
+        </div>
+        @if (Model.FinalExams.Any())
+        {
+            <ul class="assessment-list">
+                @foreach (var final in Model.FinalExams)
+                {
+                    <li class="assessment-item">
+                        <div class="assessment-info">
+                            <div class="assessment-name">📝 @final.Title</div>
+                            <div class="assessment-meta">
+                                @{
+                                    var questionCount = 0;
+                                    if (ViewBag.FinalQuestionCounts != null)
+                                    {
+                                        var counts = (Dictionary<int, int>)ViewBag.FinalQuestionCounts;
+                                        if (counts.ContainsKey(final.FinalId))
+                                        {
+                                            questionCount = counts[final.FinalId];
+                                        }
+                                    }
+                                }
+                                Questions: @questionCount |
+                                Deadline: @final.DeadLine.ToString("MMM dd, yyyy hh:mm tt") |
+                                Passing Mark: @final.PassingMark%
+                            </div>
+                        </div>
+                        <div class="item-actions">
+                            <a href="@Url.Action("ViewFinalExam", "Teacher", new { id = final.FinalId })" class="btn-icon btn-view">View</a>
+                        </div>
+                    </li>
+                }
+            </ul>
+        }
+        else
+        {
+            <div class="empty-message">No final exams created yet</div>
+        }
+    </div>
+</div>
 <script>
     function toggleEdit(section) {
         const view = document.getElementById(section + 'View');

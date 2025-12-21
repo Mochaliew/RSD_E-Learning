@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RSD_E_Learning.Models;
 
@@ -11,9 +12,11 @@ using RSD_E_Learning.Models;
 namespace RSD_E_Learning.Migrations
 {
     [DbContext(typeof(DB))]
-    partial class DBModelSnapshot : ModelSnapshot
+    [Migration("20251221060205_FinalExamTables")]
+    partial class FinalExamTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -461,11 +464,11 @@ namespace RSD_E_Learning.Migrations
 
             modelBuilder.Entity("RSD_E_Learning.Models.DB+FinalQuestion", b =>
                 {
-                    b.Property<int>("FinalQuestionId")
+                    b.Property<int>("QuestionId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("FinalQuestionId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("QuestionId"));
 
                     b.Property<string>("AnswerA")
                         .IsRequired()
@@ -495,7 +498,7 @@ namespace RSD_E_Learning.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
-                    b.HasKey("FinalQuestionId");
+                    b.HasKey("QuestionId");
 
                     b.HasIndex("FinalId");
 
@@ -739,11 +742,11 @@ namespace RSD_E_Learning.Migrations
                     b.Property<int>("AttemptId")
                         .HasColumnType("int");
 
-                    b.Property<int>("FinalQuestionId")
-                        .HasColumnType("int");
-
                     b.Property<bool>("IsCorrect")
                         .HasColumnType("bit");
+
+                    b.Property<int>("QuestionId")
+                        .HasColumnType("int");
 
                     b.Property<string>("SelectedAnswer")
                         .IsRequired()
@@ -753,7 +756,7 @@ namespace RSD_E_Learning.Migrations
 
                     b.HasIndex("AttemptId");
 
-                    b.HasIndex("FinalQuestionId");
+                    b.HasIndex("QuestionId");
 
                     b.ToTable("StudentFinalAnswers");
                 });
@@ -1094,7 +1097,7 @@ namespace RSD_E_Learning.Migrations
             modelBuilder.Entity("RSD_E_Learning.Models.DB+FinalQuestion", b =>
                 {
                     b.HasOne("RSD_E_Learning.Models.DB+FinalExam", "FinalExam")
-                        .WithMany("FinalQuestions")
+                        .WithMany("Questions")
                         .HasForeignKey("FinalId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1212,15 +1215,15 @@ namespace RSD_E_Learning.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("RSD_E_Learning.Models.DB+FinalQuestion", "FinalQuestion")
+                    b.HasOne("RSD_E_Learning.Models.DB+FinalQuestion", "Question")
                         .WithMany()
-                        .HasForeignKey("FinalQuestionId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasForeignKey("QuestionId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("FinalAttempt");
 
-                    b.Navigation("FinalQuestion");
+                    b.Navigation("Question");
                 });
 
             modelBuilder.Entity("RSD_E_Learning.Models.DB+StudentMaterialProgress", b =>
@@ -1290,9 +1293,9 @@ namespace RSD_E_Learning.Migrations
 
             modelBuilder.Entity("RSD_E_Learning.Models.DB+FinalExam", b =>
                 {
-                    b.Navigation("FinalQuestions");
-
                     b.Navigation("FinalSubmissions");
+
+                    b.Navigation("Questions");
                 });
 
             modelBuilder.Entity("RSD_E_Learning.Models.DB+Lesson", b =>
