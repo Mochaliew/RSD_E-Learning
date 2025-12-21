@@ -59,7 +59,6 @@ public class AdminSystemSettingsController : Controller
         s.StorageType = vm.StorageType;
         s.MaxUploadSizeMB = vm.MaxUploadSizeMB;
         s.AllowedFileTypes = vm.AllowedFileTypes;
-        s.CertificateTemplatePath = vm.CertificateTemplatePath;
 
         //auditlog
         _db.AuditLogs.Add(new DB.AuditLog

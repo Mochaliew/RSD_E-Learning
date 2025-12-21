@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using RSD_E_Learning.Services;
 using RSD_E_Learning.Models;
 
 public class CertificateController : Controller
@@ -16,17 +17,25 @@ public class CertificateController : Controller
     [Authorize(Roles = "Student")]
     public async Task<IActionResult> MyCertificates()
     {
-        var studentId = int.Parse(User.FindFirst("StudentId")!.Value);
+        var email = User.Identity!.Name;
+
+        var student = await _db.Students
+            .Include(s => s.User)
+            .FirstOrDefaultAsync(s => s.User!.Email == email);
+
+        if (student == null)
+            return Unauthorized();
 
         var certs = await _db.Certificates
             .Include(c => c.Course).ThenInclude(c => c!.Category)
             .Include(c => c.Course).ThenInclude(c => c!.Teacher).ThenInclude(t => t!.User)
-            .Where(c => c.StudentId == studentId)
+            .Where(c => c.StudentId == student.StudentId)
             .OrderByDescending(c => c.IssuedDate)
             .ToListAsync();
 
         return View(certs);
     }
+
 
     // ================= VIEW CERTIFICATE =================
     [AllowAnonymous]

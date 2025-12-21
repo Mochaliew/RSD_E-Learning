@@ -420,7 +420,6 @@ namespace RSD_E_Learning.Models
             public string AllowedFileTypes { get; set; } = ".pdf,.jpg,.png";
 
             // Certificate
-            public string? CertificateTemplatePath { get; set; }
         }
 
         // Role Permissin View Models //

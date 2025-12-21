@@ -1,10 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using RSD_E_Learning.Models;
-using System.Text;
-
+using RSD_E_Learning.Services;
 using Stripe;
-
+using System.Text;
 using static RSD_E_Learning.Models.DB;
 
 

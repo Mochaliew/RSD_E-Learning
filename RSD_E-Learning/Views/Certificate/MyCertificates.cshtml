@@ -1,168 +1,36 @@
 ﻿@model IEnumerable<RSD_E_Learning.Models.DB.Certificate>
 
-@{
-    ViewData["Title"] = "My Certificates";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+<h2 class="mb-4">My Certificates</h2>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">No certificates earned yet.</div>
 }
-
-<div class="container my-5">
-
-    <!-- Page Header -->
-    <div class="row mb-4">
-        <div class="col">
-            <h1 class="display-5">
-                <i class="bi bi-award-fill text-warning"></i> My Certificates
-            </h1>
-            <p class="lead text-muted">View and download your earned certificates</p>
-        </div>
-    </div>
-
-    @if (Model != null && Model.Any())
-    {
-        <div class="row">
-            @foreach (var cert in Model)
+else
+{
+    <table class="table table-bordered">
+        <thead class="table-light">
+            <tr>
+                <th>Course</th>
+                <th>Issued Date</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var c in Model)
             {
-                <div class="col-md-6 col-lg-4 mb-4">
-                    <div class="card h-100 shadow-sm hover-shadow">
-
-                        <!-- Card Header with Category Badge -->
-                        <div class="card-header bg-gradient-primary text-white">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="badge bg-light text-dark">
-                                    @(cert.Course?.Category?.Name ?? "N/A")
-                                </span>
-                                <i class="bi bi-award" style="font-size: 1.5rem;"></i>
-                            </div>
-                        </div>
-
-                        <!-- Card Body -->
-                        <div class="card-body">
-                            <h5 class="card-title text-primary mb-3">
-                                @(cert.Course?.Title ?? "Unknown Course")
-                            </h5>
-
-                            <div class="mb-3">
-                                <small class="text-muted d-block mb-1">
-                                    <i class="bi bi-person"></i>
-                                    <strong>Instructor:</strong> @(cert.Course?.Teacher?.User?.FullName ?? "N/A")
-                                </small>
-                                <small class="text-muted d-block mb-1">
-                                    <i class="bi bi-calendar3"></i>
-                                    <strong>Issued:</strong> @cert.IssuedDate.ToString("MMM dd, yyyy")
-                                </small>
-                                <small class="text-muted d-block">
-                                    <i class="bi bi-hash"></i>
-                                    <strong>ID:</strong> CERT-@cert.CertificateId.ToString("D6")
-                                </small>
-                            </div>
-
-                            @if (!string.IsNullOrEmpty(cert.Course?.Description))
-                            {
-                                <p class="card-text small text-muted">
-                                    @(cert.Course.Description.Length > 100
-                                                            ? cert.Course.Description.Substring(0, 100) + "..."
-                                                            : cert.Course.Description)
-                    </p>
-                                        }
-                        </div>
-
-                        <!-- Card Footer with Actions -->
-                        <div class="card-footer bg-white border-top-0">
-                            <div class="d-grid gap-2">
-                                <a href="@Url.Action("View", "Certificate", new { id = cert.CertificateId })"
-                                   class="btn btn-primary btn-sm">
-                                    <i class="bi bi-eye"></i> View Certificate
-                                </a>
-                                <div class="btn-group" role="group">
-                                    <a href="@Url.Action("Download", "Certificate", new { id = cert.CertificateId })"
-                                       class="btn btn-outline-secondary btn-sm">
-                                        <i class="bi bi-download"></i> Download
-                                    </a>
-                                    <a href="@Url.Action("Verify", "Certificate", new { id = cert.CertificateId })"
-                                       class="btn btn-outline-info btn-sm"
-                                       target="_blank">
-                                        <i class="bi bi-shield-check"></i> Verify
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-            }
-        </div>
-
-        <!-- Statistics Summary -->
-        <div class="row mt-4">
-            <div class="col">
-                <div class="card bg-light">
-                    <div class="card-body">
-                        <div class="row text-center">
-                            <div class="col-md-4">
-                                <h3 class="text-primary">@Model.Count()</h3>
-                                <p class="text-muted mb-0">Total Certificates</p>
-                            </div>
-                            <div class="col-md-4">
-                                <h3 class="text-success">@Model.Where(c => c.Course?.Category?.Name != null).GroupBy(c => c.Course!.Category!.Name).Count()</h3>
-                                <p class="text-muted mb-0">Categories Completed</p>
-                            </div>
-                            <div class="col-md-4">
-                                <h3 class="text-info">
-                                    @(Model.Any() ? Model.Max(c => c.IssuedDate).ToString("MMM yyyy") : "N/A")
-                                </h3>
-                                <p class="text-muted mb-0">Latest Achievement</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    }
-    else
-    {
-        <!-- Empty State -->
-        <div class="row">
-            <div class="col-md-8 offset-md-2">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body text-center py-5">
-                        <i class="bi bi-award text-muted" style="font-size: 5rem;"></i>
-                        <h3 class="mt-4 mb-3">No Certificates Yet</h3>
-                        <p class="text-muted mb-4">
-                            Complete courses to earn certificates and showcase your achievements.
-                        </p>
-                        <a href="@Url.Action("Catalog", "Courses")" class="btn btn-primary btn-lg">
-                            <i class="bi bi-search"></i> Browse Courses
+                <tr>
+                    <td>@c.Course!.Title</td>
+                    <td>@c.IssuedDate.ToString("dd MMM yyyy")</td>
+                    <td>
+                        <a asp-action="View"
+                           asp-route-id="@c.CertificateId"
+                           class="btn btn-sm btn-primary">
+                            View Certificate
                         </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    }
-
-    <!-- Back Button -->
-    <div class="text-center mt-4">
-        <a href="@Url.Action("Index", "Home")" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left"></i> Back to Dashboard
-        </a>
-    </div>
-
-</div>
-
-<style>
-    .bg-gradient-primary {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    }
-
-    .hover-shadow {
-        transition: all 0.3s ease;
-    }
-
-        .hover-shadow:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.15) !important;
-        }
-
-    .bi {
-        vertical-align: middle;
-    }
-</style>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
