@@ -406,7 +406,17 @@
                                 </div>
                             </div>
                             <div class="item-actions">
-                                <a href="@Url.Action("EditLesson", "Teacher", new { id = lessonItem.Lesson.LessonId })" class="btn-icon btn-view">Edit</a>
+                                <a href="@Url.Action("EditLesson", "Teacher", new { id = lessonItem.Lesson.LessonId })"
+                                   class="btn-icon btn-view">Edit</a>
+
+                                <form asp-action="DeleteLesson"
+                                      asp-controller="Teacher"
+                                      method="post"
+                                      onsubmit="return confirm('Are you sure you want to delete this lesson?');">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@lessonItem.Lesson.LessonId" />
+                                    <button type="submit" class="btn-icon btn-delete">Delete</button>
+                                </form>
                             </div>
                         </div>
 
@@ -477,7 +487,17 @@
                             </div>
                         </div>
                         <div class="item-actions">
-                            <a href="@Url.Action("ViewAssessment", "Teacher", new { id = assessment.AssessmentId })" class="btn-icon btn-view">View</a>
+                            <a href="@Url.Action("ViewAssessment", "Teacher", new { id = assessment.AssessmentId })"
+                               class="btn-icon btn-view">View</a>
+
+                            <form asp-action="DeleteAssessment"
+                                  asp-controller="Teacher"
+                                  method="post"
+                                  onsubmit="return confirm('Delete this assessment?');">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@assessment.AssessmentId" />
+                                <button type="submit" class="btn-icon btn-delete">Delete</button>
+                            </form>
                         </div>
                     </li>
                 }
@@ -520,7 +540,17 @@
                             </div>
                         </div>
                         <div class="item-actions">
-                            <a href="@Url.Action("ViewFinalExam", "Teacher", new { id = final.FinalId })" class="btn-icon btn-view">View</a>
+                            <a href="@Url.Action("ViewFinalExam", "Teacher", new { id = final.FinalId })"
+                               class="btn-icon btn-view">View</a>
+
+                            <form asp-action="DeleteFinalExam"
+                                  asp-controller="Teacher"
+                                  method="post"
+                                  onsubmit="return confirm('Delete this final exam?');">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@final.FinalId" />
+                                <button type="submit" class="btn-icon btn-delete">Delete</button>
+                            </form>
                         </div>
                     </li>
                 }
