@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RSD_E_Learning.Models;
+using RSD_E_Learning.Services;
 
 namespace RSD_E_Learning.Controllers
 {
@@ -9,10 +10,12 @@ namespace RSD_E_Learning.Controllers
     public class AdminStudentController : Controller
     {
         private readonly DB _db;
+        private readonly IEmailService _emailService;
 
-        public AdminStudentController(DB db)
+        public AdminStudentController(DB db, IEmailService emailService )
         {
             _db = db;
+            _emailService = emailService;
         }
 
         // ================= LIST =================
@@ -51,8 +54,6 @@ namespace RSD_E_Learning.Controllers
             return View(vm);
         }
 
-
-
         // ================= SINGLE TOGGLE (AJAX) =================
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -67,9 +68,28 @@ namespace RSD_E_Learning.Controllers
 
             bool isActive = student.User.LockoutEnd == null;
 
-            student.User.LockoutEnd = isActive
-                ? DateTime.UtcNow.AddYears(100)
-                : null;
+            if (isActive)
+            {
+                // DEACTIVATE
+                student.User.LockoutEnd = DateTime.UtcNow.AddYears(100);
+
+                await _emailService.SendAsync(
+                    student.User.Email,
+                    "Account Deactivated",
+                    EmailTemplates.StudentDeactivated(student.User.FullName)
+                );
+            }
+            else
+            {
+                // ACTIVATE
+                student.User.LockoutEnd = null;
+
+                await _emailService.SendAsync(
+                    student.User.Email,
+                    "Account Activated",
+                    EmailTemplates.StudentActivated(student.User.FullName)
+                );
+            }
 
             _db.AuditLogs.Add(new DB.AuditLog
             {
@@ -88,6 +108,7 @@ namespace RSD_E_Learning.Controllers
                 isActive = student.User.LockoutEnd == null
             });
         }
+
 
         // ================= AJAX FILTER =================
         [HttpGet]
@@ -140,6 +161,12 @@ namespace RSD_E_Learning.Controllers
                 {
                     student.User.LockoutEnd = null;
 
+                    await _emailService.SendAsync(
+                        student.User.Email,
+                        "Account Activated",
+                        EmailTemplates.StudentActivated(student.User.FullName)
+                    );
+
                     _db.AuditLogs.Add(new DB.AuditLog
                     {
                         UserId = student.UserId,
@@ -150,6 +177,12 @@ namespace RSD_E_Learning.Controllers
                 else if (actionType == "deactivate")
                 {
                     student.User.LockoutEnd = DateTime.UtcNow.AddYears(100);
+
+                    await _emailService.SendAsync(
+                        student.User.Email,
+                        "Account Deactivated",
+                        EmailTemplates.StudentDeactivated(student.User.FullName)
+                    );
 
                     _db.AuditLogs.Add(new DB.AuditLog
                     {
@@ -163,6 +196,5 @@ namespace RSD_E_Learning.Controllers
             await _db.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
-
     }
 }
