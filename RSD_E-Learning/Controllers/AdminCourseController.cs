@@ -169,5 +169,107 @@ namespace RSD_E_Learning.Controllers
                 isPublished = course.IsPublished
             });
         }
+
+        //Aproval Controller
+        // ===================== PENDING COURSES =====================
+        public async Task<IActionResult> Approval ()
+        {
+            var courses = await _db.Courses
+                .Include(c => c.Teacher)
+                    .ThenInclude(t => t.User)
+                .Include(c => c.Category)
+                .Where(c => !c.IsApproved && !c.IsRejected)
+                .ToListAsync();
+
+            return View(courses);
+        }
+
+        // ===================== APPROVE =====================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Approve(int id)
+        {
+            var course = await _db.Courses
+                .Include(c => c.Teacher)
+                    .ThenInclude(t => t.User)
+                .FirstOrDefaultAsync(c => c.CourseId == id);
+
+            if (course == null) return NotFound();
+
+            course.IsApproved = true;
+            course.IsPublished = true;
+            course.IsRejected = false;
+            course.RejectionReason = null;
+
+            //AUDIT LOG
+            _db.AuditLogs.Add(new DB.AuditLog
+            {
+                Action = $"Approved course: {course.Title} (Teacher: {course.Teacher!.User!.Email})",
+                Timestamp = DateTime.UtcNow
+            });
+
+            await _db.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
+
+        // ===================== REJECT =====================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Reject(int id, string reason)
+        {
+            if (string.IsNullOrWhiteSpace(reason))
+            {
+                TempData["Error"] = "Rejection reason is required.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var course = await _db.Courses
+                .Include(c => c.Teacher)
+                    .ThenInclude(t => t.User)
+                .FirstOrDefaultAsync(c => c.CourseId == id);
+
+            if (course == null) return NotFound();
+
+            course.IsApproved = false;
+            course.IsPublished = false;
+            course.IsRejected = true;
+            course.RejectionReason = reason;
+
+            //AUDIT LOG
+            _db.AuditLogs.Add(new DB.AuditLog
+            {
+                Action = $"Rejected course: {course.Title} | Reason: {reason}",
+                Timestamp = DateTime.UtcNow
+            });
+
+            await _db.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
+
+        // Course Statictics
+        public async Task<IActionResult> Statistics()
+        {
+            var vm = new CourseStatisticsVm
+            {
+                TotalCourses = await _db.Courses.CountAsync(),
+
+                PendingCourses = await _db.Courses
+                    .CountAsync(c => !c.IsApproved && !c.IsRejected),
+
+                ApprovedCourses = await _db.Courses
+                    .CountAsync(c => c.IsApproved && !c.IsRejected),
+
+                RejectedCourses = await _db.Courses
+                    .CountAsync(c => c.IsRejected),
+
+                PublishedCourses = await _db.Courses
+                    .CountAsync(c => c.IsPublished),
+
+                UnpublishedCourses = await _db.Courses
+                    .CountAsync(c => !c.IsPublished)
+            };
+
+            return View(vm);
+        }
     }
 }

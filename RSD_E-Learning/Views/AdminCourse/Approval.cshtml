@@ -1,0 +1,79 @@
+﻿@model IEnumerable<RSD_E_Learning.Models.DB.Course>
+
+@{
+    ViewData["Title"] = "Course Approval";
+}
+
+<h2 class="mb-3">Pending Course Approval</h2>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-warning">@TempData["Error"]</div>
+}
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        No pending courses for approval.
+    </div>
+}
+else
+{
+    <table class="table table-bordered align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Course</th>
+                <th>Teacher</th>
+                <th>Category</th>
+                <th style="width:320px">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var c in Model)
+            {
+                <tr>
+                    <td>@c.Title</td>
+                    <td>@c.Teacher!.User!.FullName</td>
+                    <td>@c.Category!.Name</td>
+                    <td>
+                        <!-- APPROVE -->
+                        <form asp-action="Approve"
+                              asp-controller="AdminCourse"
+                              method="post"
+                              class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@c.CourseId" />
+                            <button class="btn btn-success btn-sm">
+                                Approve
+                            </button>
+                        </form>
+
+                        <!-- REJECT -->
+                        <form asp-action="Reject"
+                              asp-controller="AdminCourse"
+                              method="post"
+                              class="mt-2">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@c.CourseId" />
+
+                            <textarea name="reason"
+                              class="form-control mb-1"
+                              placeholder="Reason for rejection"
+                              required></textarea>
+
+                            <button class="btn btn-danger btn-sm">
+                                Reject
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<a asp-action="Index"
+   asp-controller="AdminCourse"
+   class="btn btn-secondary mt-3">
+    ← Back to Manage Courses
+</a>
