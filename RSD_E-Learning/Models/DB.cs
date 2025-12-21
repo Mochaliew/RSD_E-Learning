@@ -283,6 +283,8 @@ public class DB : DbContext
         public ICollection<Lesson> Lessons { get; set; } = new List<Lesson>();
         public ICollection<Certificate> Certificates { get; set; } = new List<Certificate>();
         public ICollection<Assessment> Assessments { get; set; } = new List<Assessment>();
+
+        public ICollection<FinalExam> FinalExams { get; set; } = new List<FinalExam>();
     }
 
     // ----------------------------------- COURSEFILE ------------------------------------ //
