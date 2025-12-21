@@ -53,6 +53,45 @@ else
     </ul>
 }
 
+<hr />
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card text-center shadow-sm">
+            <div class="card-body">
+                <h5>📚 Materials</h5>
+                <p>@Model.Lessons.Sum(l => l.CourseFiles.Count) items</p>
+                <a href="#materials" class="btn btn-outline-primary btn-sm">View</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card text-center shadow-sm">
+            <div class="card-body">
+                <h5>📝 Assessments</h5>
+                <p>@Model.Assessments.Count assessment(s)</p>
+                <a href="#assessments" class="btn btn-outline-primary btn-sm">View</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card text-center shadow-sm">
+            <div class="card-body">
+                <h5>🎓 Certificate</h5>
+                <p>Complete course</p>
+                <a asp-action="Certificate"
+                   asp-route-courseId="@Model.CourseId"
+                   class="btn btn-outline-success btn-sm">
+                    View
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 
 <!-- ================== COURSE MATERIALS ================== -->
 <h4>Course Materials</h4>
