@@ -38,8 +38,7 @@ public class DB : DbContext
 
     public DbSet<StudentCourseProgress> StudentCourseProgresses { get; set; }
     public DbSet<StudentMaterialProgress> StudentMaterialProgresses { get; set; }
-
-
+    public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
     public DbSet<PaymentTransaction> PaymentTransactions { get; set; }
 
 
@@ -537,15 +536,17 @@ public class DB : DbContext
 
         public DateTime TransactionDate { get; set; } = DateTime.UtcNow;
     }
+    public class PasswordResetToken
+    {
+        public int PasswordResetTokenId { get; set; }
 
+        public int UserId { get; set; }
+        public User User { get; set; } = null!;
 
-
-
-
-
-
-
-
+        public string Token { get; set; } = "";
+        public DateTime ExpiryDate { get; set; }
+        public bool IsUsed { get; set; } = false;
+    }
 protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

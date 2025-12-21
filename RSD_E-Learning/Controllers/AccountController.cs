@@ -14,10 +14,12 @@ namespace RSD_E_Learning.Controllers
     public class AccountController : Controller
     {
         private readonly DB _db;
+        private readonly IEmailService _emailService;
 
-        public AccountController(DB db)
+        public AccountController(DB db, IEmailService emailService)
         {
             _db = db;
+            _emailService = emailService;
         }
 
 
@@ -115,7 +117,6 @@ namespace RSD_E_Learning.Controllers
                 new Claim("FullName", user.FullName),
                 new Claim("UserId", user.Id.ToString()),
                 new Claim("StudentId", student.StudentId.ToString()),
-                //new Claim("Role", "Student")
                 new Claim(ClaimTypes.Role, "Student")
 
             };
@@ -162,39 +163,157 @@ namespace RSD_E_Learning.Controllers
             );
         }
 
+        // -------------------- FORGOT PASSWORD --------------------
         [HttpGet]
         public IActionResult ForgotPassword()
         {
             return View();
         }
 
-
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ForgotPassword(string email, string newPassword)
+        public async Task<IActionResult> ForgotPassword(string email)
         {
-            if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(newPassword))
+            if (string.IsNullOrEmpty(email))
             {
-                ModelState.AddModelError("", "All fields are required.");
+                ModelState.AddModelError("", "Email is required.");
                 return View();
             }
 
             var user = await _db.Users
                 .FirstOrDefaultAsync(u => u.Email == email && u.Role == DB.UserRole.Student);
 
+            // Security: do not reveal existence
             if (user == null)
             {
-                ModelState.AddModelError("", "Student account not found.");
+                TempData["StudentLoginSuccess"] =
+                "A reset link has been sent to your email.";
+
+                return RedirectToAction("Login");
+            }
+
+            // Generate token
+            string token = Guid.NewGuid().ToString("N");
+
+            var resetToken = new DB.PasswordResetToken
+            {
+                UserId = user.Id,
+                Token = token,
+                ExpiryDate = DateTime.UtcNow.AddMinutes(30),
+                IsUsed = false
+            };
+
+            _db.PasswordResetTokens.Add(resetToken);
+            await _db.SaveChangesAsync();
+
+            //Build reset link
+            var resetLink = Url.Action(
+                "ResetPassword",
+                "Account",
+                new { token },
+                Request.Scheme
+            );
+
+            // SEND EMAIL (USING YOUR EmailService)
+            await _emailService.SendAsync(
+                user.Email,
+                "Reset Your Password",
+                $@"
+            <p>Hello {user.FullName},</p>
+            <p>You requested to reset your password.</p>
+            <p>
+                <a href='{resetLink}'>Click here to reset your password</a>
+            </p>
+            <p>This link will expire in 30 minutes.</p>
+            <p>If you did not request this, please ignore this email.</p>
+        "
+            );
+
+            TempData["Success"] =
+                "If the email exists, a password reset link has been sent.";
+
+            return RedirectToAction("Login");
+        }
+
+
+        // -------------------- RESET PASSWORD --------------------
+        [HttpGet]
+        public async Task<IActionResult> ResetPassword(string token)
+        {
+            if (string.IsNullOrEmpty(token))
+                return RedirectToAction("Login");
+
+            var resetToken = await _db.PasswordResetTokens
+                .Include(t => t.User)
+                .FirstOrDefaultAsync(t =>
+                    t.Token == token &&
+                    !t.IsUsed &&
+                    t.ExpiryDate > DateTime.UtcNow);
+
+            if (resetToken == null)
+            {
+                TempData["Error"] = "Invalid or expired reset link.";
+                return RedirectToAction("Login");
+            }
+
+            ViewBag.Token = token;
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetPassword(
+    string token,
+    string newPassword,
+    string confirmPassword)
+        {
+            if (string.IsNullOrEmpty(newPassword) || string.IsNullOrEmpty(confirmPassword))
+            {
+                ModelState.AddModelError("", "All fields are required.");
+                ViewBag.Token = token;
                 return View();
             }
 
-            user.PasswordHash = HashPassword(newPassword);
+            if (newPassword != confirmPassword)
+            {
+                ModelState.AddModelError("", "Passwords do not match.");
+                ViewBag.Token = token;
+                return View();
+            }
+
+            var resetToken = await _db.PasswordResetTokens
+                .Include(t => t.User)
+                .FirstOrDefaultAsync(t =>
+                    t.Token == token &&
+                    !t.IsUsed &&
+                    t.ExpiryDate > DateTime.UtcNow);
+
+            if (resetToken == null)
+            {
+                TempData["Error"] = "Invalid or expired reset link.";
+                return RedirectToAction("Login");
+            }
+
+            resetToken.User.PasswordHash = HashPassword(newPassword);
+            resetToken.IsUsed = true;
+
             await _db.SaveChangesAsync();
 
             TempData["Success"] = "Password reset successful. Please login.";
             return RedirectToAction("Login");
         }
 
+        private async Task SendEmailAsync(string to, string subject, string body)
+        {
+            await Task.Run(() =>
+            {
+                Console.WriteLine("===== PASSWORD RESET EMAIL =====");
+                Console.WriteLine($"To: {to}");
+                Console.WriteLine($"Subject: {subject}");
+                Console.WriteLine(body);
+                Console.WriteLine("================================");
+            });
+        }
 
         private bool VerifyPassword(string password, string hash)
         {
